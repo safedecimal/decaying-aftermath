@@ -1,0 +1,94 @@
+name: Release new version only
+
+on:
+  push:
+    branches: [main]
+    paths: [VERSION]
+
+permissions:
+  contents: read
+
+jobs:
+  reserve:
+    name: Reserve unused version
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    outputs:
+      is_new: ${{ steps.reserve.outputs.is_new }}
+      version: ${{ steps.reserve.outputs.version }}
+      tag: ${{ steps.reserve.outputs.tag }}
+      release_id: ${{ steps.reserve.outputs.release_id }}
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Atomically reserve version before any build
+        id: reserve
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const fs = require('node:fs');
+            const { execFileSync } = require('node:child_process');
+            const { reserveVersion } = require('./.github/scripts/reserve-version.cjs');
+            let previousVersion = null;
+            const before = context.payload.before;
+            if (before && !/^0+$/.test(before)) {
+              const files = execFileSync('git', ['ls-tree', '--name-only', before, '--', 'VERSION'], { encoding: 'utf8' });
+              if (files.trim() === 'VERSION') {
+                previousVersion = execFileSync('git', ['show', `${before}:VERSION`], { encoding: 'utf8' });
+              }
+            }
+            await reserveVersion({
+              github, context, core,
+              versionText: fs.readFileSync('VERSION', 'utf8'),
+              previousVersion,
+            });
+
+  build-and-release:
+    name: Build once and publish
+    needs: reserve
+    # Also blocks Re-run failed jobs, which can reuse the first job's outputs.
+    if: needs.reserve.outputs.is_new == 'true' && github.run_attempt == '1'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - name: Test version reservation policy
+        run: node --test .github/scripts/reserve-version.test.cjs
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: gradle
+      - name: Build Fabric mod
+        run: ./gradlew --no-daemon build
+      - name: Upload JAR and publish reserved release
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        env:
+          RELEASE_ID: ${{ needs.reserve.outputs.release_id }}
+          MOD_VERSION: ${{ needs.reserve.outputs.version }}
+        with:
+          script: |
+            const fs = require('node:fs');
+            const crypto = require('node:crypto');
+            const version = process.env.MOD_VERSION;
+            const release_id = Number(process.env.RELEASE_ID);
+            const name = `decaying-aftermath-${version}.jar`;
+            const data = fs.readFileSync(`build/libs/${name}`);
+            const sha256 = crypto.createHash('sha256').update(data).digest('hex');
+            await github.rest.repos.uploadReleaseAsset({
+              ...context.repo, release_id, name, data,
+              headers: { 'content-type': 'application/java-archive', 'content-length': data.length },
+            });
+            await github.rest.repos.updateRelease({
+              ...context.repo, release_id, draft: false,
+              body: `Minecraft 26.3 / Fabric. Requires Java 25, Fabric Loader 0.20.1+ and Fabric API for 26.3.\n\nCommit: ${context.sha}\nSHA-256: ${sha256}`,
+            });
+            core.info(`Published ${name} (SHA-256 ${sha256}).`);

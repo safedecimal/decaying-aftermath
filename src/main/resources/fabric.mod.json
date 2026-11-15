@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "decaying_aftermath",
+  "version": "${version}",
+  "name": "Decaying Aftermath",
+  "description": "Decaying Aftermath for Minecraft 26.3 (Fabric).",
+  "authors": ["safedecimal"],
+  "license": "All-Rights-Reserved",
+  "environment": "*",
+  "entrypoints": {
+    "main": ["io.github.safedecimal.decayingaftermath.DecayingAftermath"]
+  },
+  "depends": {
+    "fabricloader": ">=0.20.1",
+    "minecraft": "26.3",
+    "java": ">=25",
+    "fabric-api": "*"
+  }
+}
