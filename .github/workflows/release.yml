@@ -42,7 +42,8 @@ jobs:
               }
             }
             await reserveVersion({
-              github, context, core,
+              github, core,
+              context: { repo: context.repo, sha: context.sha, runAttempt: process.env.GITHUB_RUN_ATTEMPT },
               versionText: fs.readFileSync('VERSION', 'utf8'),
               previousVersion,
             });

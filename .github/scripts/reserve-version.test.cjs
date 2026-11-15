@@ -148,5 +148,14 @@ test('workflow filters only main/VERSION and gates failed-job reruns', () => {
   assert.match(workflow, /branches: \[main\]/);
   assert.match(workflow, /paths: \[VERSION\]/);
   assert.match(workflow, /if: needs\.reserve\.outputs\.is_new == 'true' && github\.run_attempt == '1'/);
+  assert.match(workflow, /runAttempt: process\.env\.GITHUB_RUN_ATTEMPT/);
   assert.doesNotMatch(workflow, /workflow_dispatch|pull_request|schedule:/);
+});
+
+test('missing run attempt fails visibly, not a misleading successful skip', async () => {
+  await assert.rejects(reserveVersion({
+    context: {},
+    core: { setOutput() {} },
+    versionText: '0.1.0',
+  }), /Missing or invalid GITHUB_RUN_ATTEMPT/);
 });

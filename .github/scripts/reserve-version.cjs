@@ -4,6 +4,9 @@ const VERSION_PATTERN = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9
 
 async function reserveVersion({ github, context, core, versionText, previousVersion = null }) {
   core.setOutput('is_new', 'false');
+  if (!Number.isInteger(Number(context.runAttempt)) || Number(context.runAttempt) < 1) {
+    throw new Error('Missing or invalid GITHUB_RUN_ATTEMPT; refusing to build.');
+  }
   if (String(context.runAttempt) !== '1') {
     core.info('Re-run: building a version twice is forbidden.');
     return;
