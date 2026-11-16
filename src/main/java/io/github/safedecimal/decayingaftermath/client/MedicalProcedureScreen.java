@@ -30,7 +30,7 @@ public final class MedicalProcedureScreen extends Screen {
     private int soundTicks;
 
     public MedicalProcedureScreen(MedicalInventoryScreen previous,int slot,BodyPart part,TreatmentKind kind) {
-        super(Component.literal("Medical procedure"));
+        super(Component.translatable("decaying_aftermath.procedure.title"));
         this.previous=previous;this.slot=slot;this.part=part;this.kind=kind;
         if(kind==TreatmentKind.FENTANYL) {objectX=116;objectY=25;}
     }
@@ -93,13 +93,13 @@ public final class MedicalProcedureScreen extends Screen {
                 MedicalClient.blit(graphics,"syringe_fill",(int)objectX+3,(int)objectY+20,15,59,20,78,0xFF63C9D6);
                 graphics.disableScissor();
             }
-            graphics.centeredText(font,"Remaining "+Math.round(remaining*100)+"%",128,220,0xFFFFFFFF);
+            graphics.centeredText(font,Component.translatable("decaying_aftermath.procedure.remaining",Math.round(remaining*100)).getString(),128,220,0xFFFFFFFF);
         } else if(isPotion()) {
             drawSelectedPart(graphics,115,86,34,106);
             ItemStack bottle=minecraft.player==null?ItemStack.EMPTY:minecraft.player.inventoryMenu.getSlot(slot).getItem();
             graphics.pose().pushMatrix();graphics.pose().translate((float)objectX,(float)objectY);graphics.pose().scale(2,2);
             graphics.item(bottle,0,0);graphics.pose().popMatrix();
-            graphics.centeredText(font,"Applied "+Math.round(pourProgress*100)+"%",128,210,0xFFFFFFFF);
+            graphics.centeredText(font,Component.translatable("decaying_aftermath.procedure.applied",Math.round(pourProgress*100)).getString(),128,210,0xFFFFFFFF);
         } else {
             drawSelectedPart(graphics,117,75,27,116);
             String texture=kind==TreatmentKind.SPLINT?"splint":"tourniquet";
@@ -114,7 +114,7 @@ public final class MedicalProcedureScreen extends Screen {
         }
         graphics.pose().popMatrix();
         graphics.centeredText(font,guide(),width/2,Math.max(5,oy-12),0xFFFFFFFF);
-        graphics.centeredText(font,"Esc: cancel; already injected amount is not returned",width/2,
+        graphics.centeredText(font,Component.translatable("decaying_aftermath.procedure.cancel").getString(),width/2,
                 Math.min(height-12,(int)(oy+256*scale+6)),0xFFD0D0D0);
     }
 
@@ -126,11 +126,11 @@ public final class MedicalProcedureScreen extends Screen {
     }
 
     private String guide() {
-        if(isWrap()) return "Grab the roll and wrap clockwise around the limb";
-        if(kind==TreatmentKind.FENTANYL) return "Drag syringe down, inject, then pull it out";
-        if(isPotion()) return "Drag potion onto the body and hold to apply it";
-        if(kind==TreatmentKind.SPLINT) return stage==0?"Align the splint, then pull both straps":"Pull each fastening strap across the limb";
-        return stage==0?"Fit the tourniquet onto the limb":"Hold and turn clockwise to tighten";
+        if(isWrap()) return Component.translatable("decaying_aftermath.procedure.guide.wrap").getString();
+        if(kind==TreatmentKind.FENTANYL) return Component.translatable("decaying_aftermath.procedure.guide.syringe").getString();
+        if(isPotion()) return Component.translatable("decaying_aftermath.procedure.guide.potion").getString();
+        if(kind==TreatmentKind.SPLINT) return stage==0?Component.translatable("decaying_aftermath.procedure.guide.splint_align").getString():Component.translatable("decaying_aftermath.procedure.guide.splint_straps").getString();
+        return stage==0?Component.translatable("decaying_aftermath.procedure.guide.tourniquet_fit").getString():Component.translatable("decaying_aftermath.procedure.guide.tourniquet_tighten").getString();
     }
 
     @Override public boolean mouseClicked(MouseButtonEvent event,boolean doubleClick) {
@@ -178,7 +178,7 @@ public final class MedicalProcedureScreen extends Screen {
             }
             if(inserted) {
                 if(Math.abs(desiredX-syringeLockX)>24) {
-                    ThoughtTyper.enqueue("Careful...");holding=false;onClose();return true;
+                    ThoughtTyper.enqueue(Component.translatable("decaying_aftermath.thought.careful").getString());holding=false;onClose();return true;
                 }
                 objectX=syringeLockX;
             } else objectX=desiredX;

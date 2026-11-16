@@ -28,7 +28,7 @@ public abstract class PotionDrinkMixin {
         for (var effect:self.getAllEffects()) if (!effect.is(MobEffects.INSTANT_HEALTH)&&!effect.is(MobEffects.REGENERATION)) others.add(new MobEffectInstance(effect));
         if (!others.isEmpty()) new PotionContents(Optional.empty(),self.customColor(),others,self.customName())
                 .applyToLivingEntity(player,stack.getOrDefault(DataComponents.POTION_DURATION_SCALE,1f));
-        MedicalNetwork.thought(player,PotionPolicy.WASTED_HEALING_THOUGHT);
+        MedicalNetwork.thought(player,PotionPolicy.WASTED_HEALING_THOUGHT_KEY);
         ci.cancel();
     }
 }

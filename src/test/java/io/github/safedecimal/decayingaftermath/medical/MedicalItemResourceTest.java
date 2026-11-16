@@ -53,11 +53,11 @@ class MedicalItemResourceTest {
     }
 
     @Test
-    void medicalTranslationsPreserveTheUsersLiteralWastedPotionThought() throws IOException {
+    void medicalTranslationsKeepEnglishLiteralAndLocalizeRussianThought() throws IOException {
         for (String locale : List.of("en_us", "ru_ru")) {
             JsonObject language = json("assets/decaying_aftermath/lang/" + locale + ".json");
             for (String name : ITEMS) assertTrue(language.has("item.decaying_aftermath." + name));
-            assertEquals("It's seems didn't help..",
+            assertEquals(locale.equals("en_us")?"It's seems didn't help..":"Кажется, это не помогло...",
                     language.get("decaying_aftermath.thought.healing_potion_wasted").getAsString());
         }
     }

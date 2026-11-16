@@ -45,8 +45,12 @@ public final class MedicalPanelRenderer {
         graphics.pose().popMatrix();
     }
 
-    private static void text(GuiGraphicsExtractor graphics, String value, int x, int y) {
-        // Original I-pixel-u glyph pixels AND variable source advances, no vanilla font.
+    public static void text(GuiGraphicsExtractor graphics, String value, int x, int y) {
+        // CU's bitmap atlas is ASCII-only. Native Minecraft font renders Cyrillic without '?' glyphs.
+        if(value.chars().anyMatch(c->c<32||c>=127)) {
+            graphics.text(Minecraft.getInstance().font,value,x,y,TEXT_COLOR,false);return;
+        }
+        // Keep original I-pixel-u pixels and advances for supported ASCII text.
         for (int index = 0; index < value.length(); index++) {
             int glyph = MedicalPanelGlyphs.index(value.charAt(index));
             graphics.blit(RenderPipelines.GUI_TEXTURED, FONT, x, y,

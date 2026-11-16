@@ -113,7 +113,7 @@ public final class MedicalClient {
                 int frame = ((modeTicks-40)*8/20)%3+1;
                 blit(graphics, "last_standing_"+frame, 0, 0, graphics.guiWidth(), graphics.guiHeight(), 640, 360, 0xDDFFFFFF);
             }
-            graphics.centeredText(client.font, "Last Standing", graphics.guiWidth()/2, 18, 0xFFFF614A);
+            graphics.centeredText(client.font, Component.translatable("decaying_aftermath.last_standing").getString(), graphics.guiWidth()/2, 18, 0xFFFF614A);
         }
     }
 

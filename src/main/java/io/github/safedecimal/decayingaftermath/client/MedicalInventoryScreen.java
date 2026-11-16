@@ -36,7 +36,7 @@ public final class MedicalInventoryScreen extends AbstractContainerScreen<Invent
     private BodyPart selected=BodyPart.TORSO;
 
     public MedicalInventoryScreen(Player player) {
-        super(player.inventoryMenu,player.getInventory(),Component.literal("Medical inventory"),CANVAS_W,CANVAS_H);
+        super(player.inventoryMenu,player.getInventory(),Component.translatable("decaying_aftermath.inventory.title"),CANVAS_W,CANVAS_H);
         originalPositions=new int[menu.slots.size()][2];
         for(int i=0;i<menu.slots.size();i++) {
             originalPositions[i][0]=menu.slots.get(i).x;
@@ -67,10 +67,10 @@ public final class MedicalInventoryScreen extends AbstractContainerScreen<Invent
         validateMedicalCarry();
         MedicalPanelRenderer.extract(graphics,MedicalPanelLayout.topLeft());
         BodySnapshot body=ClientMedicalState.snapshot();
-        cuText(graphics,"BLOOD "+Math.round(body.blood()*100)+"%",7,34);
-        cuText(graphics,"OXYGEN "+Math.round(body.oxygen()*100)+"%",7,46);
-        cuText(graphics,"PAIN "+Math.round(body.pain()*100)+"%",7,58);
-        cuText(graphics,"DRUG "+Math.round(body.drug()*100),7,70);
+        cuText(graphics,Component.translatable("decaying_aftermath.stat.blood",Math.round(body.blood()*100)).getString(),7,34);
+        cuText(graphics,Component.translatable("decaying_aftermath.stat.oxygen",Math.round(body.oxygen()*100)).getString(),7,46);
+        cuText(graphics,Component.translatable("decaying_aftermath.stat.pain",Math.round(body.pain()*100)).getString(),7,58);
+        cuText(graphics,Component.translatable("decaying_aftermath.stat.drug",Math.round(body.drug()*100)).getString(),7,70);
         graphics.pose().pushMatrix(); graphics.pose().translate(originX,originY); graphics.pose().scale(scale,scale);
         super.extractRenderState(graphics,(int)virtualX(mouseX),(int)virtualY(mouseY),partialTick);
         graphics.pose().popMatrix();
@@ -120,16 +120,17 @@ public final class MedicalInventoryScreen extends AbstractContainerScreen<Invent
         graphics.item(item,0,0);graphics.pose().popMatrix();
     }
     @Override protected void extractLabels(GuiGraphicsExtractor graphics,int mouseX,int mouseY) {
-        graphics.text(font,"Crafting",215,19,0xFFFFFFFF,false);
-        graphics.text(font,"Inventory / "+pretty(selected),30,153,0xFFFFFFFF,false);
+        graphics.text(font,Component.translatable("container.crafting").getString(),215,19,0xFFFFFFFF,false);
+        graphics.text(font,Component.translatable("decaying_aftermath.inventory.selected",Component.translatable("container.inventory"),pretty(selected)).getString(),30,153,0xFFFFFFFF,false);
     }
     private void extractBodyTooltip(GuiGraphicsExtractor graphics,int mouseX,int mouseY) {
         BodyPart hover=partAt(virtualX(mouseX),virtualY(mouseY));
         if(hover!=null) {
             BodySnapshot.PartSnapshot part=ClientMedicalState.snapshot().part(hover);
-            String text=pretty(hover)+" "+Math.round(part.integrity()*100)+"%"
-                    +(part.fractured()?" / fractured":"")+(part.bleeding()>0?" / bleeding":"");
-            graphics.setTooltipForNextFrame(font,Component.literal(text),mouseX,mouseY);
+            Component text=Component.translatable("decaying_aftermath.body_status",pretty(hover),Math.round(part.integrity()*100),
+                    (part.fractured()?Component.translatable("decaying_aftermath.status.fractured").getString():"")
+                    +(part.bleeding()>0?Component.translatable("decaying_aftermath.status.bleeding").getString():""));
+            graphics.setTooltipForNextFrame(font,text,mouseX,mouseY);
         }
     }
     @Override protected void extractTooltip(GuiGraphicsExtractor graphics,int mouseX,int mouseY) {
@@ -140,14 +141,9 @@ public final class MedicalInventoryScreen extends AbstractContainerScreen<Invent
         // Only the cursor ghost is drawn; the server-owned source remains untouched until APPLY.
         if(slot.index!=pendingSlot) super.extractSlot(graphics,slot,mouseX,mouseY);
     }
-    private static String pretty(BodyPart part) { return part.name().toLowerCase().replace('_',' '); }
+    private static String pretty(BodyPart part) { return Component.translatable(part.translationKey()).getString(); }
     private static void cuText(GuiGraphicsExtractor graphics,String value,int x,int y) {
-        for(char c:value.toCharArray()) {
-            int glyph=MedicalPanelGlyphs.index(c);
-            graphics.blit(RenderPipelines.GUI_TEXTURED,MedicalClient.id("textures/font/monitor.png"),
-                    x,y,(glyph%16)*8f,(glyph/16)*10f,8,10,128,60,0xFF18B93B);
-            x+=MedicalPanelGlyphs.advance(c);
-        }
+        MedicalPanelRenderer.text(graphics,value,x,y);
     }
 
     private double virtualX(double x) { return (x-originX)/scale; }
@@ -227,7 +223,7 @@ public final class MedicalInventoryScreen extends AbstractContainerScreen<Invent
         if(kind==null) {clearMedicalCarry();return true;}
         if((kind==TreatmentKind.SPLINT||kind==TreatmentKind.TOURNIQUET)
                 &&(part==BodyPart.HEAD||part==BodyPart.TORSO)) {
-            ThoughtTyper.enqueue("This needs a limb.");return true;
+            ThoughtTyper.enqueue(Component.translatable("decaying_aftermath.thought.needs_limb").getString());return true;
         }
         int source=pendingSlot;selected=part;clearMedicalCarry();
         minecraft.gui.setScreen(new MedicalProcedureScreen(this,source,part,kind));return true;

@@ -36,6 +36,14 @@ final class ThoughtTyperTest {
         assertEquals("🙂x",ThoughtTyper.visible());
     }
 
+    @Test void localizedRussianThoughtStillTypesGraduallyWithCharacterSounds() {
+        ThoughtTyper.enqueue("Кажется, это не помогло...");
+        assertFalse(ThoughtTyper.tick());assertEquals("",ThoughtTyper.visible());
+        assertTrue(ThoughtTyper.tick());assertEquals("К",ThoughtTyper.visible());
+        for(int i=0;i<45;i++) ThoughtTyper.tick();
+        assertEquals("Кажется, это не помогло...",ThoughtTyper.visible());
+    }
+
     @Test void resetClearsActiveMessageAndPendingQueue() {
         ThoughtTyper.enqueue("first");ThoughtTyper.enqueue("second");
         for(int i=0;i<6;i++) ThoughtTyper.tick();
