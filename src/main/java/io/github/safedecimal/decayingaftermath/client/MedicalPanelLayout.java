@@ -2,16 +2,16 @@ package io.github.safedecimal.decayingaftermath.client;
 
 /** Keeps the monitor out of inventory slots and out of an open recipe book. */
 public final class MedicalPanelLayout {
-    public static final int WIDTH = 140;
-    public static final int HEIGHT = 88;
-    public static final int GAP = 8;
-    public static final int COMPACT_HEIGHT = 26;
+    public static final int WIDTH = 133;
+    public static final int HEIGHT = 196;
+    public static final int GAP = 4;
+    public static final int COMPACT_HEIGHT = 23;
 
     private MedicalPanelLayout() {
     }
 
     public static int inventoryLeft(int screenWidth, int inventoryWidth, int vanillaLeft, boolean recipesVisible) {
-        if (!recipesVisible && screenWidth >= WIDTH + GAP + inventoryWidth + 16) {
+        if (!recipesVisible && screenWidth >= WIDTH + GAP + inventoryWidth + 6) {
             // Center the medical monitor + inventory as a single group, monitor on the left.
             return (screenWidth + WIDTH + GAP - inventoryWidth) / 2;
         }
@@ -20,7 +20,7 @@ public final class MedicalPanelLayout {
 
     public static Box locate(int screenWidth, int screenHeight, int left, int top,
             int inventoryWidth, int inventoryHeight, boolean recipesVisible) {
-        if (!recipesVisible && left >= WIDTH + GAP + 4) {
+        if (!recipesVisible && left >= WIDTH + GAP + 3) {
             return new Box(left - WIDTH - GAP, Math.clamp(top, 4, Math.max(4, screenHeight - HEIGHT - 4)), WIDTH, HEIGHT, false);
         }
         int right = left + inventoryWidth + GAP;

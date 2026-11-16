@@ -23,9 +23,10 @@ class MedicalPanelLayoutTest {
     }
 
     @Test
-    void narrowScreensUsePulseStripWithoutMovingInventory() {
-        assertEquals(72, MedicalPanelLayout.inventoryLeft(320, 176, 72, false));
-        assertTrue(MedicalPanelLayout.locate(320,240,72,37,176,166,false).compact());
+    void originalTallMonitorFitsAtSmallestMinecraftGuiWidth() {
+        int left = MedicalPanelLayout.inventoryLeft(320,176,72,false);
+        assertEquals(140,left);
+        assertFalse(MedicalPanelLayout.locate(320,240,left,37,176,166,false).compact());
     }
 
     @Test

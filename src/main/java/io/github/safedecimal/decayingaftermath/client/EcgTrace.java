@@ -8,7 +8,9 @@ public final class EcgTrace {
     public static final int HEIGHT = 25;
     public static final double SAMPLE_SECONDS = 0.028;
     private final int[] samples = new int[WIDTH];
+    private final int[] alpha = new int[WIDTH * HEIGHT];
     private int writeIndex;
+    private int lastY = HEIGHT / 2;
     private double sampleAccumulator;
     private double phase;
 
@@ -26,7 +28,19 @@ public final class EcgTrace {
         while (sampleAccumulator >= SAMPLE_SECONDS) {
             phase = (phase + rate / 60.0 * SAMPLE_SECONDS) % 1.0;
             double value = rate == 0 ? 0 : waveform(phase);
-            samples[writeIndex] = (int) Math.round((0.5 - value * 0.44) * (HEIGHT - 1));
+            int y = (int) Math.round((0.5 - value * 0.44) * (HEIGHT - 1));
+            samples[writeIndex] = y;
+            for (int row = Math.min(lastY, y); row <= Math.max(lastY, y); row++) {
+                alpha[row * WIDTH + writeIndex] = 255;
+                glow(writeIndex, row - 1);
+                glow(writeIndex, row + 1);
+                glow(writeIndex - 1, row);
+                glow(writeIndex + 1, row);
+            }
+            for (int pixel = 0; pixel < alpha.length; pixel++) {
+                alpha[pixel] = (int) (alpha[pixel] * 0.985);
+            }
+            lastY = y;
             writeIndex = (writeIndex + 1) % WIDTH;
             sampleAccumulator -= SAMPLE_SECONDS;
         }
@@ -34,6 +48,16 @@ public final class EcgTrace {
 
     public int sample(int age) {
         return samples[Math.floorMod(writeIndex - 1 - Math.clamp(age, 0, WIDTH - 1), WIDTH)];
+    }
+
+    public int alpha(int x, int y) {
+        return alpha[Math.clamp(y, 0, HEIGHT - 1) * WIDTH + Math.clamp(x, 0, WIDTH - 1)];
+    }
+
+    private void glow(int x, int y) {
+        if (x >= 0 && x < WIDTH && y >= 0 && y < HEIGHT) {
+            alpha[y * WIDTH + x] = Math.max(50, alpha[y * WIDTH + x]);
+        }
     }
 
     public static double waveform(double phase) {

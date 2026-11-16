@@ -5,6 +5,17 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class EcgTraceTest {
     @Test
+    void originalSweepFadesBehindTheWriteHeadAndHasOnePixelHalo() {
+        EcgTrace trace = new EcgTrace();
+        trace.advance(0.028, 0);
+        assertEquals(251, trace.alpha(0, 12));
+        assertEquals(49, trace.alpha(0, 11));
+        trace.advance(0.028, 0);
+        assertTrue(trace.alpha(0, 12) < trace.alpha(1, 12));
+        assertEquals(0, trace.alpha(0, 0));
+    }
+
+    @Test
     void pulseCurveMovesAndStaysInsideNativePixelWindow() {
         EcgTrace trace = new EcgTrace();
         for (int tick = 0; tick < 600; tick++) {

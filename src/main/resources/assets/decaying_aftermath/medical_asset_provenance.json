@@ -4,34 +4,56 @@
   "analysis_tool": "dnSpyEx 6.6.0 / dnSpy.Console.exe",
   "source_assets": "sharedassets1.assets",
   "screen": {
-    "texture": "screenSmallStatic",
-    "texture_path_id": 94,
+    "texture": "screenStatic",
+    "source_file": "sharedassets1.assets",
+    "texture_path_id": 111,
     "dimensions": [
       128,
-      66
-    ]
+      164
+    ],
+    "crop": [
+      0,
+      129,
+      128,
+      164
+    ],
+    "removed_only": "Oxygen icon at source [116,132,128,143]; other medical rows excluded by crop."
   },
   "heart": {
-    "texture": "hearticon",
-    "texture_path_id": 102,
-    "dimensions": [
-      32,
-      32
-    ]
+    "texture": "screenStatic",
+    "texture_path_id": 111,
+    "crop": [
+      4,
+      132,
+      10,
+      138
+    ],
+    "usage": "Original hollow pulse icon. The separate hearticon texture is not rendered."
   },
   "frame": {
-    "texture": "UISprite",
-    "texture_path_id": 12,
+    "sprite": "computerBack",
+    "source_file": "sharedassets1.assets",
+    "sprite_path_id": 420,
+    "texture_path_id": 130,
     "dimensions": [
-      32,
-      32
-    ]
+      159,
+      271
+    ],
+    "crop": [
+      0,
+      0,
+      133,
+      196
+    ],
+    "enabled_image": "level1/WoundView/ComputerBack; m_Enabled=1",
+    "not_rendered": "StatMenu/uiBlock Image has m_Enabled=0",
+    "adaptation": "Exact source pixels; gray bevel, header plate and green CRT grid. No black fill, tint or new frame."
   },
   "font": {
     "font_asset": "I-pixel-u",
     "font_path_id": 603,
     "atlas_texture_path_id": 11,
-    "adaptation": "Original ASCII pixel glyph alpha/metrics reduced by 8; Minecraft bitmap provider. Non-ASCII falls back to Minecraft font."
+    "adaptation": "Original glyph alpha/metrics reduced by 8. Direct bitmap blits with original variable advances; valid Minecraft ASCII nicknames; unsupported characters use the original question-mark glyph, never the vanilla font."
   },
   "ecg_reference": {
     "type": "ECGVisualizer",
@@ -46,24 +68,57 @@
   "rights": "Third-party visual assets retain their original owners' rights; no redistribution license is claimed.",
   "outputs": [
     {
-      "file": "textures\\gui\\medical\\screen.png",
-      "sha256": "e8abf76a834452682938c93d0d7f20267b3e1b5d6d86963b5ae44636950593a7",
-      "size": 718
+      "file": "textures/gui/medical/panel.png",
+      "dimensions": [
+        133,
+        196
+      ],
+      "sha256": "7172ffab454c4c547eede8421cb2520058c19b60ec3354a5e6ad7596e95641a8"
     },
     {
-      "file": "textures\\gui\\medical\\heart.png",
-      "sha256": "b65476f99c7732c65b58e16198a428b3a6547c5fee67979b8470d2724c0fdb4d",
-      "size": 233
+      "file": "textures/gui/medical/compact.png",
+      "dimensions": [
+        133,
+        23
+      ],
+      "sha256": "f7ac44af60ab4eac9cf45f08bc340aebd7f9d03cc161bb89430361a895706e0a"
     },
     {
-      "file": "textures\\gui\\sprites\\medical\\frame.png",
-      "sha256": "ed8f09a99f1b67860351020af1d6eed114e3528039306006d730e29cc2343eaf",
-      "size": 710
-    },
-    {
-      "file": "textures\\font\\monitor.png",
-      "sha256": "a4452a4c19b1bbc6cd2ae581a7ef8c116bc6b0ed87080689a584dc0f07d0cb5d",
-      "size": 997
+      "file": "textures/font/monitor.png",
+      "sha256": "a4452a4c19b1bbc6cd2ae581a7ef8c116bc6b0ed87080689a584dc0f07d0cb5d"
     }
-  ]
+  ],
+  "layout": {
+    "source": "level1/WoundView: ComputerBack, ExperimentTitle/Species, StatMenu/Background/VITALS/BPMText/ECG",
+    "full_dimensions": [
+      133,
+      196
+    ],
+    "compact_dimensions": [
+      133,
+      23
+    ],
+    "nickname": [
+      6,
+      4
+    ],
+    "nickname_source": "Minecraft.getInstance().getUser().getName()",
+    "background": [
+      3,
+      152
+    ],
+    "bpm": [
+      16,
+      154
+    ],
+    "ecg": [
+      7,
+      165,
+      120,
+      25
+    ],
+    "heading": "UNI-HEALTH v2.08, centered as in the supplied reference, using original I-pixel-u glyphs",
+    "compact": "Original two-line header with live nickname and pulse; used only with recipe book open.",
+    "removed": "EXPERIMENT, body height/age/id, plus buttons, clothing/WEAR panel and all inactive medical icons/readouts."
+  }
 }
