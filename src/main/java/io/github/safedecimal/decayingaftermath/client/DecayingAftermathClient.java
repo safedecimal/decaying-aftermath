@@ -6,6 +6,8 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 public final class DecayingAftermathClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
+        ClientMedicalState.register();
+        MedicalClient.register();
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (client.player == null || client.level == null) {
                 PulseState.reset();

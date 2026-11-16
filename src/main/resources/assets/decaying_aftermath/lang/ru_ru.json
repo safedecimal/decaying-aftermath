@@ -2,5 +2,19 @@
   "decaying_aftermath.pulse": "ПУЛЬС",
   "decaying_aftermath.condition.stable": "Стабильное состояние",
   "decaying_aftermath.condition.strained": "Нагрузка",
-  "decaying_aftermath.condition.critical": "Критическое состояние"
+  "decaying_aftermath.condition.critical": "Критическое состояние",
+  "item.decaying_aftermath.bandage": "Бинт",
+  "item.decaying_aftermath.pressure_dressing": "Давящая повязка",
+  "item.decaying_aftermath.splint": "Шина",
+  "item.decaying_aftermath.tourniquet": "Жгут",
+  "item.decaying_aftermath.fentanyl": "Шприц с фентанилом",
+  "decaying_aftermath.body.head": "Голова",
+  "decaying_aftermath.body.torso": "Торс",
+  "decaying_aftermath.body.left_arm": "Левая рука",
+  "decaying_aftermath.body.right_arm": "Правая рука",
+  "decaying_aftermath.body.left_leg": "Левая нога",
+  "decaying_aftermath.body.right_leg": "Правая нога",
+  "decaying_aftermath.thought.healing_potion_wasted": "It's seems didn't help..",
+  "decaying_aftermath.medical.apply_hint": "Перетащите на часть тела для применения",
+  "decaying_aftermath.medical.game_units": "Игровые деления"
 }

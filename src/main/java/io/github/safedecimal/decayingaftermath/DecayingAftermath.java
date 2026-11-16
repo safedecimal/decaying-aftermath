@@ -10,6 +10,10 @@ public final class DecayingAftermath implements ModInitializer {
 
     @Override
     public void onInitialize() {
+        io.github.safedecimal.decayingaftermath.medical.MedicalItems.register();
+        io.github.safedecimal.decayingaftermath.medical.MedicalLoot.register();
+        io.github.safedecimal.decayingaftermath.server.ServerMedicalSystem.register();
+        io.github.safedecimal.decayingaftermath.network.MedicalNetwork.register();
         LOGGER.info("Decaying Aftermath initialized.");
     }
 }

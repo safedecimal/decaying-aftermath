@@ -1,0 +1,98 @@
+{
+  "heartbeat": {
+    "sounds": [
+      {
+        "name": "decaying_aftermath:heartbeat",
+        "stream": false
+      }
+    ]
+  },
+  "heartbeat_monitor": {
+    "sounds": [
+      {
+        "name": "decaying_aftermath:heartbeat_monitor",
+        "stream": false
+      }
+    ]
+  },
+  "thought_type": {
+    "sounds": [
+      {
+        "name": "decaying_aftermath:thought_type",
+        "stream": false
+      }
+    ]
+  },
+  "text_ping": {
+    "sounds": [
+      {
+        "name": "decaying_aftermath:text_ping",
+        "stream": false
+      }
+    ]
+  },
+  "procedure_bandage": {
+    "sounds": [
+      {
+        "name": "decaying_aftermath:procedure_bandage",
+        "stream": false
+      }
+    ]
+  },
+  "procedure_syringe": {
+    "sounds": [
+      {
+        "name": "decaying_aftermath:procedure_syringe",
+        "stream": false
+      }
+    ]
+  },
+  "procedure_syringe_loop": {
+    "sounds": [
+      {
+        "name": "decaying_aftermath:procedure_syringe_loop",
+        "stream": false
+      }
+    ]
+  },
+  "procedure_splint": {
+    "sounds": [
+      {
+        "name": "decaying_aftermath:procedure_splint",
+        "stream": false
+      }
+    ]
+  },
+  "procedure_tourniquet": {
+    "sounds": [
+      {
+        "name": "decaying_aftermath:procedure_tourniquet",
+        "stream": false
+      }
+    ]
+  },
+  "unconscious": {
+    "sounds": [
+      {
+        "name": "decaying_aftermath:unconscious",
+        "stream": true
+      }
+    ]
+  },
+  "last_standing": {
+    "sounds": [
+      {
+        "name": "decaying_aftermath:last_standing",
+        "stream": true
+      }
+    ]
+  },
+  "last_standing_drone": {
+    "sounds": [
+      {
+        "name": "decaying_aftermath:last_standing_drone",
+        "stream": true
+      }
+    ]
+  }
+}

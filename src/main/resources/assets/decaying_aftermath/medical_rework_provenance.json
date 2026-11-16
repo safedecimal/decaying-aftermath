@@ -1,0 +1,1388 @@
+{
+  "source_installation": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Casualties Unknown\\CasualtiesUnknown_Data",
+  "source_asset_sha256": {
+    "resources.assets": "81a5f55001875f37d450197151d7b0d3b349e70c47a5adeb0006f9dc4744df64",
+    "sharedassets1.assets": "befa3e57e3e7edcf40dd1b0108e7a69ab7961e9fe553fa17fdf43dbb747e3016"
+  },
+  "source_assembly_sha256": "48c7f2296fc4a659faae3b1822884ca5b7ff73d6767ef159e6a6c2bc0b2d38f1",
+  "reference_screenshot_used_as_sprite": false,
+  "original_monitor_artwork_modified": false,
+  "native_composites_are_original_segments_only": true,
+  "static_behavior_findings": {
+    "unconscious": "PlayerCamera.HandleUnconsciousScreen: blackout, sleepFill radial image from energy (brain health when dying), consciousnessECG and text visible after black-time fade; no real recovery countdown claim.",
+    "last_stand": "Body.TryLastStand is an original chance-based revival; PlayerCamera.LastStandSequence has a 6.7s intro, first 2s black, then 3 originals cycling at 8fps, original heartbeat+drone. Minecraft body model balance may differ and must not be claimed an exact port.",
+    "bandage": "BandageMinigame angle-wrap actions at 20-degree intervals; original bandage sound after complete wrap.",
+    "syringe": "SyringeMinigame drag, entry depth, position-dependent feed over time, fill consumption, excessive sideways movement failure.",
+    "splint_and_tourniquet": "Item.cs original useLimbAction directly applies these items; no original minigame exists for these procedures. New requested minigames use original item sprites/sounds but are new Minecraft interactions.",
+    "incremental_thought": "Talker.Update displays progressively at 18 characters/second, character-0 speech audio for changed alphanumeric characters. User requests this presentation in Minecraft actionbar."
+  },
+  "records": [
+    {
+      "output": "textures/gui/body/head.png",
+      "sha256": "7f24ff750ca28b1d5a8a40d9ec811edcb50179a9f0ad9f8337bdc5bd09097baa",
+      "dimensions": [
+        46,
+        44
+      ],
+      "transform": "none",
+      "sources": [
+        {
+          "kind": "Sprite",
+          "name": "headMiddle",
+          "source_file": "sharedassets1.assets",
+          "path_id": 332,
+          "dimensions": [
+            46,
+            44
+          ],
+          "original_png_sha256": "7f24ff750ca28b1d5a8a40d9ec811edcb50179a9f0ad9f8337bdc5bd09097baa",
+          "pixel_rgba_sha256": "806f1304adbf833834598c7dace826e3671151371c387894774c033fd2618fef"
+        }
+      ]
+    },
+    {
+      "output": "textures/gui/body/head_outline.png",
+      "sha256": "3c083c85b3290c284d3945b997893b804b61f53f8251e0fcf1125093533227c7",
+      "dimensions": [
+        46,
+        45
+      ],
+      "transform": "none",
+      "sources": [
+        {
+          "kind": "Sprite",
+          "name": "headoutline",
+          "source_file": "sharedassets1.assets",
+          "path_id": 336,
+          "dimensions": [
+            46,
+            45
+          ],
+          "original_png_sha256": "3c083c85b3290c284d3945b997893b804b61f53f8251e0fcf1125093533227c7",
+          "pixel_rgba_sha256": "0fe0fcd8c5ed603eb26555da2c2d79d8d32f7cc5d0f1ed4cf4801b0757c7ca57"
+        }
+      ]
+    },
+    {
+      "output": "textures/gui/body/torso.png",
+      "sha256": "61f4ccf31b1e75a60dc96f24d0d9ed5a6394885f5af8d914959a723546cf3c04",
+      "dimensions": [
+        40,
+        65
+      ],
+      "transform": "native-pixel alpha composition",
+      "sources": [
+        {
+          "kind": "Sprite",
+          "name": "thoraxMiddle",
+          "source_file": "sharedassets1.assets",
+          "path_id": 577,
+          "dimensions": [
+            38,
+            33
+          ],
+          "original_png_sha256": "720809c225c240020b789a425f0fc669264b0b84f41d31a577c6bdd643983447",
+          "pixel_rgba_sha256": "17c0bc2054599b7915af12b087feac05f89d74cc4e1dc9dc9dcb82354709c0f6",
+          "destination_xy": [
+            1,
+            0
+          ]
+        },
+        {
+          "kind": "Sprite",
+          "name": "abdomenMiddle",
+          "source_file": "sharedassets1.assets",
+          "path_id": 503,
+          "dimensions": [
+            40,
+            30
+          ],
+          "original_png_sha256": "e69990b769faa8c692960049bd1bcc9888ef1903c006aaf25aff22bbccdf9baa",
+          "pixel_rgba_sha256": "9cf5de34a70786a6142216d7bbe7944d773547809934fc8cb69defea186920ce",
+          "destination_xy": [
+            0,
+            35
+          ]
+        }
+      ]
+    },
+    {
+      "output": "textures/gui/body/left_arm.png",
+      "sha256": "444f6c7d4f21e4a61bdec68874bab81e82444f93f79ee7103b055a434e2e18df",
+      "dimensions": [
+        99,
+        27
+      ],
+      "transform": "native-pixel alpha composition; horizontal mirror",
+      "sources": [
+        {
+          "kind": "Sprite",
+          "name": "armMiddle",
+          "source_file": "sharedassets1.assets",
+          "path_id": 401,
+          "dimensions": [
+            36,
+            21
+          ],
+          "original_png_sha256": "3197f1b9f39bda3bb608f43b31383936b7f8563e8f798d047601eb3681cc5f42",
+          "pixel_rgba_sha256": "d74facdf9a35de1478a337cdcf58dd2ad60f531382315e1fc986872cd534ad6e",
+          "destination_xy": [
+            0,
+            3
+          ]
+        },
+        {
+          "kind": "Sprite",
+          "name": "forearmMiddle",
+          "source_file": "sharedassets1.assets",
+          "path_id": 399,
+          "dimensions": [
+            34,
+            17
+          ],
+          "original_png_sha256": "c7ac9c868ea887b3a85c3483fe3944ee9b9b4259397413f904e39c0e77fbb952",
+          "pixel_rgba_sha256": "da4b53f89ef214485d750b088d08e898d6c48d40719190db919401f5e0d98aff",
+          "destination_xy": [
+            36,
+            5
+          ]
+        },
+        {
+          "kind": "Sprite",
+          "name": "handMiddle",
+          "source_file": "sharedassets1.assets",
+          "path_id": 426,
+          "dimensions": [
+            29,
+            27
+          ],
+          "original_png_sha256": "40431e9f6a6723b92965e0fd4640243a93ce9b1447525b02a914b3f44026ee70",
+          "pixel_rgba_sha256": "b8a1c98b33b6761e41c1864753e929e43ac55fc92111d3935de007b06bacac6c",
+          "destination_xy": [
+            70,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "output": "textures/gui/body/left_leg.png",
+      "sha256": "b4c8591ad62746e3445a3cefaf142104b13f54119d6140be5bdaf7224ed5e26b",
+      "dimensions": [
+        31,
+        105
+      ],
+      "transform": "native-pixel alpha composition; horizontal mirror",
+      "sources": [
+        {
+          "kind": "Sprite",
+          "name": "thighMiddle",
+          "source_file": "sharedassets1.assets",
+          "path_id": 495,
+          "dimensions": [
+            31,
+            44
+          ],
+          "original_png_sha256": "2a1fcc8ed43c48f9ac4fb3791b833e46653f807905226a1c7da9d7728c671fac",
+          "pixel_rgba_sha256": "732be949a28fe0c21358a770c018aafee2b03fdf2e7fee665c8dab194e969323",
+          "destination_xy": [
+            0,
+            0
+          ]
+        },
+        {
+          "kind": "Sprite",
+          "name": "crusMiddle",
+          "source_file": "sharedassets1.assets",
+          "path_id": 488,
+          "dimensions": [
+            24,
+            25
+          ],
+          "original_png_sha256": "77415eca9241dbecda9614eed368417372cb5908f2485e479ec66a17090ce272",
+          "pixel_rgba_sha256": "a478f1b74b7015a774765cf959ced01b634d0e2731f9d0dc7766bcb0f1f9d4ad",
+          "destination_xy": [
+            3,
+            46
+          ]
+        },
+        {
+          "kind": "Sprite",
+          "name": "footMiddle",
+          "source_file": "sharedassets1.assets",
+          "path_id": 581,
+          "dimensions": [
+            24,
+            32
+          ],
+          "original_png_sha256": "0c84a7d143c5b756281e2ae9a42423990bb77d29ee7560bcd1635a5d3c2567b6",
+          "pixel_rgba_sha256": "03924dd8ef81501c780c12a56f0e5231215e8c224683499e65b805f1ba228178",
+          "destination_xy": [
+            3,
+            73
+          ]
+        }
+      ]
+    },
+    {
+      "output": "textures/gui/body/right_arm.png",
+      "sha256": "255c9ed7dde83c9ba6a1df8003cbaf013d80977f0d6273b2d832cb10de4ee639",
+      "dimensions": [
+        99,
+        27
+      ],
+      "transform": "native-pixel alpha composition",
+      "sources": [
+        {
+          "kind": "Sprite",
+          "name": "armMiddle",
+          "source_file": "sharedassets1.assets",
+          "path_id": 401,
+          "dimensions": [
+            36,
+            21
+          ],
+          "original_png_sha256": "3197f1b9f39bda3bb608f43b31383936b7f8563e8f798d047601eb3681cc5f42",
+          "pixel_rgba_sha256": "d74facdf9a35de1478a337cdcf58dd2ad60f531382315e1fc986872cd534ad6e",
+          "destination_xy": [
+            0,
+            3
+          ]
+        },
+        {
+          "kind": "Sprite",
+          "name": "forearmMiddle",
+          "source_file": "sharedassets1.assets",
+          "path_id": 399,
+          "dimensions": [
+            34,
+            17
+          ],
+          "original_png_sha256": "c7ac9c868ea887b3a85c3483fe3944ee9b9b4259397413f904e39c0e77fbb952",
+          "pixel_rgba_sha256": "da4b53f89ef214485d750b088d08e898d6c48d40719190db919401f5e0d98aff",
+          "destination_xy": [
+            36,
+            5
+          ]
+        },
+        {
+          "kind": "Sprite",
+          "name": "handMiddle",
+          "source_file": "sharedassets1.assets",
+          "path_id": 426,
+          "dimensions": [
+            29,
+            27
+          ],
+          "original_png_sha256": "40431e9f6a6723b92965e0fd4640243a93ce9b1447525b02a914b3f44026ee70",
+          "pixel_rgba_sha256": "b8a1c98b33b6761e41c1864753e929e43ac55fc92111d3935de007b06bacac6c",
+          "destination_xy": [
+            70,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "output": "textures/gui/body/right_leg.png",
+      "sha256": "a04e48a84a60ab9f336f9f8a5c900901aa98b93a498a735b49f563d395768807",
+      "dimensions": [
+        31,
+        105
+      ],
+      "transform": "native-pixel alpha composition",
+      "sources": [
+        {
+          "kind": "Sprite",
+          "name": "thighMiddle",
+          "source_file": "sharedassets1.assets",
+          "path_id": 495,
+          "dimensions": [
+            31,
+            44
+          ],
+          "original_png_sha256": "2a1fcc8ed43c48f9ac4fb3791b833e46653f807905226a1c7da9d7728c671fac",
+          "pixel_rgba_sha256": "732be949a28fe0c21358a770c018aafee2b03fdf2e7fee665c8dab194e969323",
+          "destination_xy": [
+            0,
+            0
+          ]
+        },
+        {
+          "kind": "Sprite",
+          "name": "crusMiddle",
+          "source_file": "sharedassets1.assets",
+          "path_id": 488,
+          "dimensions": [
+            24,
+            25
+          ],
+          "original_png_sha256": "77415eca9241dbecda9614eed368417372cb5908f2485e479ec66a17090ce272",
+          "pixel_rgba_sha256": "a478f1b74b7015a774765cf959ced01b634d0e2731f9d0dc7766bcb0f1f9d4ad",
+          "destination_xy": [
+            3,
+            46
+          ]
+        },
+        {
+          "kind": "Sprite",
+          "name": "footMiddle",
+          "source_file": "sharedassets1.assets",
+          "path_id": 581,
+          "dimensions": [
+            24,
+            32
+          ],
+          "original_png_sha256": "0c84a7d143c5b756281e2ae9a42423990bb77d29ee7560bcd1635a5d3c2567b6",
+          "pixel_rgba_sha256": "03924dd8ef81501c780c12a56f0e5231215e8c224683499e65b805f1ba228178",
+          "destination_xy": [
+            3,
+            73
+          ]
+        }
+      ]
+    },
+    {
+      "output": "textures/gui/body/torso_outline.png",
+      "sha256": "9707c998a495220d3652e9163b0bbbcefaeadfb1281102e31bba9e214e5a07e3",
+      "dimensions": [
+        40,
+        65
+      ],
+      "transform": "native-pixel alpha composition",
+      "sources": [
+        {
+          "kind": "Sprite",
+          "name": "thoraxOutline",
+          "source_file": "sharedassets1.assets",
+          "path_id": 574,
+          "dimensions": [
+            38,
+            33
+          ],
+          "original_png_sha256": "2be905e815285f0a3e6413b6c459778e03f71c12ec929417feea0d5c84eff406",
+          "pixel_rgba_sha256": "c63c0c6d3fac74fb12df4b705be608bef2441a8ed8ffa5eab592160dca1b889e",
+          "destination_xy": [
+            1,
+            0
+          ]
+        },
+        {
+          "kind": "Sprite",
+          "name": "abdomenOutline",
+          "source_file": "sharedassets1.assets",
+          "path_id": 344,
+          "dimensions": [
+            40,
+            30
+          ],
+          "original_png_sha256": "308809594862f2e105319969ab8d0a0b5a7ca7242e640f1bdc81f84b98d44bc8",
+          "pixel_rgba_sha256": "6a1b24b7140d3c3f55bfadc553a6e219c692179d063c161c7e472f3d9abcb826",
+          "destination_xy": [
+            0,
+            35
+          ]
+        }
+      ]
+    },
+    {
+      "output": "textures/gui/body/left_arm_outline.png",
+      "sha256": "40ee3ffdc4894b88abe58bb48a8e3a963deabd7613259d3185a05f15e0adc1d2",
+      "dimensions": [
+        99,
+        27
+      ],
+      "transform": "native-pixel alpha composition; horizontal mirror",
+      "sources": [
+        {
+          "kind": "Sprite",
+          "name": "armOutline",
+          "source_file": "sharedassets1.assets",
+          "path_id": 565,
+          "dimensions": [
+            36,
+            21
+          ],
+          "original_png_sha256": "399cd19dccdd026cde9275ee8867a89ee86729136d2dea64712532e74c95a3bd",
+          "pixel_rgba_sha256": "13fe53168cd84ec704b8321198a8ac80bbec1854cf58ef25951778b2731a720a",
+          "destination_xy": [
+            0,
+            3
+          ]
+        },
+        {
+          "kind": "Sprite",
+          "name": "forearmOutline",
+          "source_file": "sharedassets1.assets",
+          "path_id": 548,
+          "dimensions": [
+            34,
+            17
+          ],
+          "original_png_sha256": "b0eb43f73288249e4ead6501d5032fe078bded73bfd629ce7de7ad5c0eb6ca1a",
+          "pixel_rgba_sha256": "2ca098598baf042157323635e2b002b8ffae3867c127dbadf485197898697f8e",
+          "destination_xy": [
+            36,
+            5
+          ]
+        },
+        {
+          "kind": "Sprite",
+          "name": "handOutline",
+          "source_file": "sharedassets1.assets",
+          "path_id": 345,
+          "dimensions": [
+            29,
+            27
+          ],
+          "original_png_sha256": "8f24e406f5d63c7d91f209f2f756fc821c1fe4d122dbc32a34b6316a9d6447a9",
+          "pixel_rgba_sha256": "2d37e6190e897ba58508f6cbc6050b15481160be6d753697bbd7bf8ab82e3619",
+          "destination_xy": [
+            70,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "output": "textures/gui/body/left_leg_outline.png",
+      "sha256": "d81688c025b9cb68883be9683d7666b80526d752b2bcccd6c4498a9046e62611",
+      "dimensions": [
+        31,
+        105
+      ],
+      "transform": "native-pixel alpha composition; horizontal mirror",
+      "sources": [
+        {
+          "kind": "Sprite",
+          "name": "thighOutline",
+          "source_file": "sharedassets1.assets",
+          "path_id": 354,
+          "dimensions": [
+            31,
+            44
+          ],
+          "original_png_sha256": "2dfa01d5fc378f5393af70d4a096998dae4d85c7f87daf78ec29749a900be4a8",
+          "pixel_rgba_sha256": "ad954d61e6e097f5884b4feb577b75515efed26e01fde565b019399b0cd0c7e7",
+          "destination_xy": [
+            0,
+            0
+          ]
+        },
+        {
+          "kind": "Sprite",
+          "name": "crusOutline",
+          "source_file": "sharedassets1.assets",
+          "path_id": 388,
+          "dimensions": [
+            24,
+            25
+          ],
+          "original_png_sha256": "1a37a0fafa2ab321f194fbb55e058e972dfaf40e3dbb5179003ee2092a08ab04",
+          "pixel_rgba_sha256": "5daea48fa528d7161a004effaf3e75d740ebe09195826ba378cedb27baffd9ed",
+          "destination_xy": [
+            3,
+            46
+          ]
+        },
+        {
+          "kind": "Sprite",
+          "name": "footOutline",
+          "source_file": "sharedassets1.assets",
+          "path_id": 516,
+          "dimensions": [
+            24,
+            32
+          ],
+          "original_png_sha256": "ae1e495b81cc13659ddeea3009cab2bd83724fb239ef0d801237415fe0932ea6",
+          "pixel_rgba_sha256": "727a3684a0bd90f04f3231bf1ff6e0b3e73b0fe538e2c93e29979e8dc22f8793",
+          "destination_xy": [
+            3,
+            73
+          ]
+        }
+      ]
+    },
+    {
+      "output": "textures/gui/body/right_arm_outline.png",
+      "sha256": "5c6f2eed66bfcd67dc2ae9f803d3913443b71aedce485e96eb7c823059bb1a9e",
+      "dimensions": [
+        99,
+        27
+      ],
+      "transform": "native-pixel alpha composition",
+      "sources": [
+        {
+          "kind": "Sprite",
+          "name": "armOutline",
+          "source_file": "sharedassets1.assets",
+          "path_id": 565,
+          "dimensions": [
+            36,
+            21
+          ],
+          "original_png_sha256": "399cd19dccdd026cde9275ee8867a89ee86729136d2dea64712532e74c95a3bd",
+          "pixel_rgba_sha256": "13fe53168cd84ec704b8321198a8ac80bbec1854cf58ef25951778b2731a720a",
+          "destination_xy": [
+            0,
+            3
+          ]
+        },
+        {
+          "kind": "Sprite",
+          "name": "forearmOutline",
+          "source_file": "sharedassets1.assets",
+          "path_id": 548,
+          "dimensions": [
+            34,
+            17
+          ],
+          "original_png_sha256": "b0eb43f73288249e4ead6501d5032fe078bded73bfd629ce7de7ad5c0eb6ca1a",
+          "pixel_rgba_sha256": "2ca098598baf042157323635e2b002b8ffae3867c127dbadf485197898697f8e",
+          "destination_xy": [
+            36,
+            5
+          ]
+        },
+        {
+          "kind": "Sprite",
+          "name": "handOutline",
+          "source_file": "sharedassets1.assets",
+          "path_id": 345,
+          "dimensions": [
+            29,
+            27
+          ],
+          "original_png_sha256": "8f24e406f5d63c7d91f209f2f756fc821c1fe4d122dbc32a34b6316a9d6447a9",
+          "pixel_rgba_sha256": "2d37e6190e897ba58508f6cbc6050b15481160be6d753697bbd7bf8ab82e3619",
+          "destination_xy": [
+            70,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "output": "textures/gui/body/right_leg_outline.png",
+      "sha256": "7860d12206cc3ebf723794b4bbfb47f347fd62bb2a35919736e52fb5680ae259",
+      "dimensions": [
+        31,
+        105
+      ],
+      "transform": "native-pixel alpha composition",
+      "sources": [
+        {
+          "kind": "Sprite",
+          "name": "thighOutline",
+          "source_file": "sharedassets1.assets",
+          "path_id": 354,
+          "dimensions": [
+            31,
+            44
+          ],
+          "original_png_sha256": "2dfa01d5fc378f5393af70d4a096998dae4d85c7f87daf78ec29749a900be4a8",
+          "pixel_rgba_sha256": "ad954d61e6e097f5884b4feb577b75515efed26e01fde565b019399b0cd0c7e7",
+          "destination_xy": [
+            0,
+            0
+          ]
+        },
+        {
+          "kind": "Sprite",
+          "name": "crusOutline",
+          "source_file": "sharedassets1.assets",
+          "path_id": 388,
+          "dimensions": [
+            24,
+            25
+          ],
+          "original_png_sha256": "1a37a0fafa2ab321f194fbb55e058e972dfaf40e3dbb5179003ee2092a08ab04",
+          "pixel_rgba_sha256": "5daea48fa528d7161a004effaf3e75d740ebe09195826ba378cedb27baffd9ed",
+          "destination_xy": [
+            3,
+            46
+          ]
+        },
+        {
+          "kind": "Sprite",
+          "name": "footOutline",
+          "source_file": "sharedassets1.assets",
+          "path_id": 516,
+          "dimensions": [
+            24,
+            32
+          ],
+          "original_png_sha256": "ae1e495b81cc13659ddeea3009cab2bd83724fb239ef0d801237415fe0932ea6",
+          "pixel_rgba_sha256": "727a3684a0bd90f04f3231bf1ff6e0b3e73b0fe538e2c93e29979e8dc22f8793",
+          "destination_xy": [
+            3,
+            73
+          ]
+        }
+      ]
+    },
+    {
+      "output": "textures/gui/procedures/syringe.png",
+      "sha256": "272f11486597881daa647b593b55864728a8cdc435794448da8d4b8dbdf64095",
+      "dimensions": [
+        30,
+        164
+      ],
+      "transform": "none",
+      "sources": [
+        {
+          "kind": "Sprite",
+          "name": "minigameSyringe",
+          "source_file": "resources.assets",
+          "path_id": 2945,
+          "dimensions": [
+            30,
+            164
+          ],
+          "original_png_sha256": "272f11486597881daa647b593b55864728a8cdc435794448da8d4b8dbdf64095",
+          "pixel_rgba_sha256": "542a851afbef376bbbc3e982835ef8b2b715d8b444fae45d47d0c4846ce9d838"
+        }
+      ]
+    },
+    {
+      "output": "textures/gui/procedures/syringe_fill.png",
+      "sha256": "b41c8ec133fd39e767358b35fcdbd97b6c78221c5f44d7ff2b7a73447499e5c0",
+      "dimensions": [
+        20,
+        78
+      ],
+      "transform": "none",
+      "sources": [
+        {
+          "kind": "Sprite",
+          "name": "minigameSyringeFill",
+          "source_file": "resources.assets",
+          "path_id": 3064,
+          "dimensions": [
+            20,
+            78
+          ],
+          "original_png_sha256": "b41c8ec133fd39e767358b35fcdbd97b6c78221c5f44d7ff2b7a73447499e5c0",
+          "pixel_rgba_sha256": "cef41867af7b7e3ed697d8e398d6a4dc2e9b9b5068fdcdf31ee7b357abc3c595"
+        }
+      ]
+    },
+    {
+      "output": "textures/gui/procedures/syringe_ground.png",
+      "sha256": "99571d8ae27d740ba1bdca4fddc252054f0d39134ee776922e3767f1c7ba4254",
+      "dimensions": [
+        200,
+        29
+      ],
+      "transform": "none",
+      "sources": [
+        {
+          "kind": "Sprite",
+          "name": "minigameSyringeGround",
+          "source_file": "resources.assets",
+          "path_id": 2849,
+          "dimensions": [
+            200,
+            29
+          ],
+          "original_png_sha256": "99571d8ae27d740ba1bdca4fddc252054f0d39134ee776922e3767f1c7ba4254",
+          "pixel_rgba_sha256": "82d10f6c90faf708ea3410a609f34ed13054078abfef5ecfa57075a5589863ea"
+        }
+      ]
+    },
+    {
+      "output": "textures/gui/procedures/bandage.png",
+      "sha256": "68d2609f7d4505e6fc4af8136519991e35f32964b399b7ce2eb9b41d83d0aae3",
+      "dimensions": [
+        192,
+        192
+      ],
+      "transform": "none",
+      "sources": [
+        {
+          "kind": "Sprite",
+          "name": "bandageOuter",
+          "source_file": "resources.assets",
+          "path_id": 2859,
+          "dimensions": [
+            192,
+            192
+          ],
+          "original_png_sha256": "68d2609f7d4505e6fc4af8136519991e35f32964b399b7ce2eb9b41d83d0aae3",
+          "pixel_rgba_sha256": "fa849df90fe7444fdb6b7582ca7fbb972723515037b9ba3217a4951b393095c4"
+        }
+      ]
+    },
+    {
+      "output": "textures/gui/procedures/bandage_outer.png",
+      "sha256": "68d2609f7d4505e6fc4af8136519991e35f32964b399b7ce2eb9b41d83d0aae3",
+      "dimensions": [
+        192,
+        192
+      ],
+      "transform": "none",
+      "sources": [
+        {
+          "kind": "Sprite",
+          "name": "bandageOuter",
+          "source_file": "resources.assets",
+          "path_id": 2859,
+          "dimensions": [
+            192,
+            192
+          ],
+          "original_png_sha256": "68d2609f7d4505e6fc4af8136519991e35f32964b399b7ce2eb9b41d83d0aae3",
+          "pixel_rgba_sha256": "fa849df90fe7444fdb6b7582ca7fbb972723515037b9ba3217a4951b393095c4"
+        }
+      ]
+    },
+    {
+      "output": "textures/gui/procedures/bandage_roll.png",
+      "sha256": "472851ac3efbd84bc1c6ca98456d611c3fb4767f98fd8ad955318c7972bfb950",
+      "dimensions": [
+        104,
+        104
+      ],
+      "transform": "none",
+      "sources": [
+        {
+          "kind": "Sprite",
+          "name": "bandageRoll",
+          "source_file": "resources.assets",
+          "path_id": 2739,
+          "dimensions": [
+            104,
+            104
+          ],
+          "original_png_sha256": "472851ac3efbd84bc1c6ca98456d611c3fb4767f98fd8ad955318c7972bfb950",
+          "pixel_rgba_sha256": "900f22967606aef40026d2f02db6048a8b1fd80062b163a8c3fdb3dc53927812"
+        }
+      ]
+    },
+    {
+      "output": "textures/gui/procedures/bandage_inner.png",
+      "sha256": "af31ddb556981e5220d9e1f6125cbe3a4f1a45081b78bec0abdb3ebd2c3d09b2",
+      "dimensions": [
+        164,
+        164
+      ],
+      "transform": "none",
+      "sources": [
+        {
+          "kind": "Sprite",
+          "name": "bandageCircleInner",
+          "source_file": "resources.assets",
+          "path_id": 2312,
+          "dimensions": [
+            164,
+            164
+          ],
+          "original_png_sha256": "af31ddb556981e5220d9e1f6125cbe3a4f1a45081b78bec0abdb3ebd2c3d09b2",
+          "pixel_rgba_sha256": "5c8e6fe32d8da1e557dfe1277d9a963629261a536d0e54a12cecd55e3b499862"
+        }
+      ]
+    },
+    {
+      "output": "textures/gui/procedures/bandage_pointer.png",
+      "sha256": "73b40f63d6ceef9f3d35259babba2ba335ab0e8e2dd9ab71a44fb386317b3f9d",
+      "dimensions": [
+        54,
+        25
+      ],
+      "transform": "none",
+      "sources": [
+        {
+          "kind": "Sprite",
+          "name": "bandageStick",
+          "source_file": "resources.assets",
+          "path_id": 2251,
+          "dimensions": [
+            54,
+            25
+          ],
+          "original_png_sha256": "73b40f63d6ceef9f3d35259babba2ba335ab0e8e2dd9ab71a44fb386317b3f9d",
+          "pixel_rgba_sha256": "670c5016cc9b0c297b955da577bf7b1652c5e5cf86a6db54f51afbba7f3d1fec"
+        }
+      ]
+    },
+    {
+      "output": "textures/gui/procedures/splint.png",
+      "sha256": "8913a2757417e7fadf61fb5a61b8fb0f7e23bffb4dac0b178a3f3b8b736c0462",
+      "dimensions": [
+        16,
+        29
+      ],
+      "transform": "none",
+      "sources": [
+        {
+          "kind": "Sprite",
+          "name": "splinticon",
+          "source_file": "resources.assets",
+          "path_id": 3072,
+          "dimensions": [
+            16,
+            29
+          ],
+          "original_png_sha256": "8913a2757417e7fadf61fb5a61b8fb0f7e23bffb4dac0b178a3f3b8b736c0462",
+          "pixel_rgba_sha256": "419d0aa0291b8a5782afcf06b9b352fa8b6d93f23b7ade5efe7d4f9b850d5189"
+        }
+      ]
+    },
+    {
+      "output": "textures/gui/procedures/tourniquet.png",
+      "sha256": "7812615d698535fb0e70314b48e9f5801ab72b3efc53b17db3204bfc9d5832d3",
+      "dimensions": [
+        36,
+        39
+      ],
+      "transform": "none",
+      "sources": [
+        {
+          "kind": "Sprite",
+          "name": "tourniquetIcon",
+          "source_file": "resources.assets",
+          "path_id": 2915,
+          "dimensions": [
+            36,
+            39
+          ],
+          "original_png_sha256": "7812615d698535fb0e70314b48e9f5801ab72b3efc53b17db3204bfc9d5832d3",
+          "pixel_rgba_sha256": "0ff5a311a978603e798f14d7b018cf2efa39f8d42a6388f7e34cfd6716b59a99"
+        }
+      ]
+    },
+    {
+      "output": "textures/gui/procedures/pulse.png",
+      "sha256": "8e5fa07fdf71d763216ff1f8cda671d5319fc7225bf19752465a157f1732885a",
+      "dimensions": [
+        32,
+        32
+      ],
+      "transform": "none",
+      "sources": [
+        {
+          "kind": "Sprite",
+          "name": "hearticon",
+          "source_file": "sharedassets1.assets",
+          "path_id": 394,
+          "dimensions": [
+            32,
+            32
+          ],
+          "original_png_sha256": "8e5fa07fdf71d763216ff1f8cda671d5319fc7225bf19752465a157f1732885a",
+          "pixel_rgba_sha256": "c4ea6210e47d8ffaec146174fade9f549e3cebb8251fe275189a61760857b6b0"
+        }
+      ]
+    },
+    {
+      "output": "textures/gui/procedures/unconscious_ring.png",
+      "sha256": "5a485f347dd84e8c180bad38f77bd9f4c32f0c9d2e1da6c55938b291eb7f2b26",
+      "dimensions": [
+        149,
+        149
+      ],
+      "transform": "none",
+      "sources": [
+        {
+          "kind": "Sprite",
+          "name": "sleepcircle",
+          "source_file": "sharedassets1.assets",
+          "path_id": 443,
+          "dimensions": [
+            149,
+            149
+          ],
+          "original_png_sha256": "5a485f347dd84e8c180bad38f77bd9f4c32f0c9d2e1da6c55938b291eb7f2b26",
+          "pixel_rgba_sha256": "9f8ccfe0212a251a6367f0ec1bea65f22328b5174115d4190941beef4c4dcf36"
+        }
+      ]
+    },
+    {
+      "output": "textures/gui/procedures/unconscious_fill.png",
+      "sha256": "11eb5071e8dbdecf586d8b90629438745cd58f748b2eff4fe240c70d701dab39",
+      "dimensions": [
+        256,
+        256
+      ],
+      "transform": "none",
+      "sources": [
+        {
+          "kind": "Sprite",
+          "name": "Circle",
+          "source_file": "sharedassets1.assets",
+          "path_id": 308,
+          "dimensions": [
+            256,
+            256
+          ],
+          "original_png_sha256": "11eb5071e8dbdecf586d8b90629438745cd58f748b2eff4fe240c70d701dab39",
+          "pixel_rgba_sha256": "fbef7020fff44ede8dde03a079a20b150bd1282f1fe859719e28a0748ab684a0"
+        }
+      ]
+    },
+    {
+      "output": "textures/gui/procedures/unconscious_vignette.png",
+      "sha256": "2cd86e052fb1340290fa15d435aed4867e633b9909d43e7fcac6e611c9f2607a",
+      "dimensions": [
+        256,
+        256
+      ],
+      "transform": "none",
+      "sources": [
+        {
+          "kind": "Sprite",
+          "name": "unconsciousVignette",
+          "source_file": "sharedassets1.assets",
+          "path_id": 494,
+          "dimensions": [
+            256,
+            256
+          ],
+          "original_png_sha256": "2cd86e052fb1340290fa15d435aed4867e633b9909d43e7fcac6e611c9f2607a",
+          "pixel_rgba_sha256": "c4cf4929e7d0df54e5f574ec23ef14f5506b3691cd2388bbf4dd6714e1874c77"
+        }
+      ]
+    },
+    {
+      "output": "textures/gui/procedures/last_standing_1.png",
+      "sha256": "e4976fdc7281048a55c0876c30252d69ca2c52fc8b79796fc13286c59f88628a",
+      "dimensions": [
+        640,
+        360
+      ],
+      "transform": "none",
+      "sources": [
+        {
+          "kind": "Sprite",
+          "name": "laststand1",
+          "source_file": "sharedassets1.assets",
+          "path_id": 316,
+          "dimensions": [
+            640,
+            360
+          ],
+          "original_png_sha256": "e4976fdc7281048a55c0876c30252d69ca2c52fc8b79796fc13286c59f88628a",
+          "pixel_rgba_sha256": "d073e4528537a87de1293b90547d49d19ba8924a4d85ed4db9fcc8869ac6902f"
+        }
+      ]
+    },
+    {
+      "output": "textures/gui/procedures/last_standing_2.png",
+      "sha256": "389091461bbb402f1f7ed82ef89252f9a09c6eeeb788c0b9a0a9a88c32466495",
+      "dimensions": [
+        640,
+        360
+      ],
+      "transform": "none",
+      "sources": [
+        {
+          "kind": "Sprite",
+          "name": "laststand2",
+          "source_file": "sharedassets1.assets",
+          "path_id": 521,
+          "dimensions": [
+            640,
+            360
+          ],
+          "original_png_sha256": "389091461bbb402f1f7ed82ef89252f9a09c6eeeb788c0b9a0a9a88c32466495",
+          "pixel_rgba_sha256": "0313b44f92540541da35f7253e100873b9a4b82b4be61f509800ebe88372a7d0"
+        }
+      ]
+    },
+    {
+      "output": "textures/gui/procedures/last_standing_3.png",
+      "sha256": "dd67683b7a51a88f341e2495c88cabfc06696f178456d8297ce5fcfd95088968",
+      "dimensions": [
+        640,
+        360
+      ],
+      "transform": "none",
+      "sources": [
+        {
+          "kind": "Sprite",
+          "name": "laststand3",
+          "source_file": "sharedassets1.assets",
+          "path_id": 523,
+          "dimensions": [
+            640,
+            360
+          ],
+          "original_png_sha256": "dd67683b7a51a88f341e2495c88cabfc06696f178456d8297ce5fcfd95088968",
+          "pixel_rgba_sha256": "1af6e132cffe175a8f296613ab16dbe5536a3ef15faa12ff88a9e51040f1a21b"
+        }
+      ]
+    },
+    {
+      "output": "textures/item/bandage.png",
+      "sha256": "d85ead3c39a48df59ce37d1508d022fb2579424fec36469ddf80de53b847c734",
+      "dimensions": [
+        16,
+        16
+      ],
+      "transform": "integer nearest-neighbour x2; centered transparent padding",
+      "note": "original CU item icon",
+      "sources": [
+        {
+          "kind": "Sprite",
+          "name": "bandage",
+          "source_file": "resources.assets",
+          "path_id": 2413,
+          "dimensions": [
+            8,
+            8
+          ],
+          "original_png_sha256": "0472f296bc3796e93b355816d89ecbac5126de3b02e62a4192a2548ba7ed2dee",
+          "pixel_rgba_sha256": "ddb1cfb927c93e9ae44c28e59ec26cbfa161960d53f803b11d7d3b9e31e885e6"
+        }
+      ]
+    },
+    {
+      "output": "textures/item/pressure_dressing.png",
+      "sha256": "a34ef874aa8a1530ce933b3b2e040b0b349dbe91caaea9133aa30af3000901ef",
+      "dimensions": [
+        16,
+        16
+      ],
+      "transform": "integer nearest-neighbour x2; centered transparent padding",
+      "note": "original sterile-bandage artwork reused visually for the new game's pressure dressing; no claim the original item is a pressure dressing",
+      "sources": [
+        {
+          "kind": "Sprite",
+          "name": "sterilizedbandage",
+          "source_file": "resources.assets",
+          "path_id": 2751,
+          "dimensions": [
+            8,
+            8
+          ],
+          "original_png_sha256": "23aafb58b30e0984c4a6a40dc283368cbbbe977547efcb1cd069c9617c6beda7",
+          "pixel_rgba_sha256": "283a8aabf31c19ff9af19e5a8d0c677fe807791a5fdca67c8054b1e9eff94d55"
+        }
+      ]
+    },
+    {
+      "output": "textures/item/splint.png",
+      "sha256": "add49bf51dec2023da5ff8ebe6e5cf0ac2a078c1c477770d864cf7bea752a9bc",
+      "dimensions": [
+        16,
+        16
+      ],
+      "transform": "integer nearest-neighbour x1; centered transparent padding",
+      "note": "original CU item icon",
+      "sources": [
+        {
+          "kind": "Sprite",
+          "name": "splint",
+          "source_file": "resources.assets",
+          "path_id": 2598,
+          "dimensions": [
+            12,
+            6
+          ],
+          "original_png_sha256": "0792eb1ec17c735940ae55bfcbac90db60a868f8b92837bc802913070555f16f",
+          "pixel_rgba_sha256": "81c9ae374c1088c211d83f0b803e09a724534bd23a499cc3ec36fbaf61c2053f"
+        }
+      ]
+    },
+    {
+      "output": "textures/item/tourniquet.png",
+      "sha256": "8c0d4486a90fbd43c59b0d7fa4354811530078b54740be0872733f6757ef992e",
+      "dimensions": [
+        16,
+        16
+      ],
+      "transform": "integer nearest-neighbour x2; centered transparent padding",
+      "note": "original CU item icon",
+      "sources": [
+        {
+          "kind": "Sprite",
+          "name": "tourniquet",
+          "source_file": "resources.assets",
+          "path_id": 2089,
+          "dimensions": [
+            8,
+            8
+          ],
+          "original_png_sha256": "29641de48a2a3276d8497f2d0cb1f4df682a08ce511266daaea644adfff584fb",
+          "pixel_rgba_sha256": "2a3b8da9850bf5238932eca5a5b15a0981475f912b337ed5064ecde1d0c14c50"
+        }
+      ]
+    },
+    {
+      "output": "textures/item/fentanyl.png",
+      "sha256": "699825b2a462117b69734ffdcedb934f8a0d10858754724d45a4d562dbc32a46",
+      "dimensions": [
+        16,
+        16
+      ],
+      "transform": "integer nearest-neighbour x2; centered transparent padding",
+      "note": "original CU item icon",
+      "sources": [
+        {
+          "kind": "Sprite",
+          "name": "fentanyl",
+          "source_file": "resources.assets",
+          "path_id": 2174,
+          "dimensions": [
+            4,
+            7
+          ],
+          "original_png_sha256": "9b1baeffd90c902b95cd40899a778efd9efa6bc4142dc6e73b69bdf51084df84",
+          "pixel_rgba_sha256": "6f66c0d42dfa302648f0d3e49ea0a83c5badbc37ebe2dc3508d5a1b99fcd295c"
+        }
+      ]
+    },
+    {
+      "output": "sounds/heartbeat.ogg",
+      "sha256": "263314f7b210b613f9423d32d752d38be2603bbc767bcd560bb2ec82b0b23694",
+      "transform": "UnityPy/fmod_toolkit decode original FSB to WAV; libsndfile Vorbis encode; no waveform synthesis, trimming or resampling",
+      "sample_rate": 44100,
+      "channels": 2,
+      "samples": 13151,
+      "duration_seconds": 0.29820861678004534,
+      "sources": [
+        {
+          "kind": "AudioClip",
+          "name": "heartthump",
+          "source_file": "resources.assets",
+          "path_id": 1669,
+          "original_fsb_sha256": "c7ff1fb245ed2429de075db683471249bcac6fada5611b58f3db66b2fded7753",
+          "decoded_wav_sha256": "8fe9862ebc761743c6ab930dce1bc6fb27f3ca69f8029f77c5cf4e9fa1b161ba",
+          "unity_length_seconds": 0.298208624124527
+        }
+      ],
+      "note": "original CU audio"
+    },
+    {
+      "output": "sounds/heartbeat_monitor.ogg",
+      "sha256": "c8c48815b45c7ef70e6c430757df7ff901a1aabf9ca48447c39769ad4ab80af9",
+      "transform": "UnityPy/fmod_toolkit decode original FSB to WAV; libsndfile Vorbis encode; no waveform synthesis, trimming or resampling",
+      "sample_rate": 44100,
+      "channels": 2,
+      "samples": 33899,
+      "duration_seconds": 0.7686848072562358,
+      "sources": [
+        {
+          "kind": "AudioClip",
+          "name": "heartthump-heavy-monitor",
+          "source_file": "resources.assets",
+          "path_id": 1934,
+          "original_fsb_sha256": "4283cd5e97f6664ddd557bd6f1bb488b53a65725cd67f58d4615b646f229ff0d",
+          "decoded_wav_sha256": "9728d63c05e59f57581474e0d6d72cfc7ab7369439eb5f29db551ddeb2a65d3b",
+          "unity_length_seconds": 0.7686848044395447
+        }
+      ],
+      "note": "original CU audio"
+    },
+    {
+      "output": "sounds/thought_type.ogg",
+      "sha256": "cef7ae43b4474a891488d595a81cdd89d79879beadf1ec2064fd5ba11fc9b09f",
+      "transform": "UnityPy/fmod_toolkit decode original FSB to WAV; libsndfile Vorbis encode; no waveform synthesis, trimming or resampling",
+      "sample_rate": 44100,
+      "channels": 2,
+      "samples": 974,
+      "duration_seconds": 0.022086167800453516,
+      "sources": [
+        {
+          "kind": "AudioClip",
+          "name": "speech",
+          "source_file": "resources.assets",
+          "path_id": 2047,
+          "original_fsb_sha256": "ed6e627c40297063160908effa54b2be7a9e484b3e71e93fffd902ec48791e84",
+          "decoded_wav_sha256": "93409b5c92f667d91d1e5ec0b54c438b6a720717464a30528bfa912ecd96cbf0",
+          "unity_length_seconds": 0.022086167708039284
+        }
+      ],
+      "note": "original character-0 incremental-letter speech click from Talker.Update"
+    },
+    {
+      "output": "sounds/text_ping.ogg",
+      "sha256": "b137ee6aabe19c97b75111696e295a5bfea6e961904c1a6068764920297c0ef5",
+      "transform": "UnityPy/fmod_toolkit decode original FSB to WAV; libsndfile Vorbis encode; no waveform synthesis, trimming or resampling",
+      "sample_rate": 44100,
+      "channels": 2,
+      "samples": 471,
+      "duration_seconds": 0.010680272108843538,
+      "sources": [
+        {
+          "kind": "AudioClip",
+          "name": "textping",
+          "source_file": "resources.assets",
+          "path_id": 1990,
+          "original_fsb_sha256": "30432b2dc4ad4645315b662d25eab7b9eae35662213cc1f76a5dcb47e712a307",
+          "decoded_wav_sha256": "65067e958918513b0cb515b8ec2892a69b1b50b919aed2d0b9d7753ec23e5c3d",
+          "unity_length_seconds": 0.010680272243916988
+        }
+      ],
+      "note": "original CU audio"
+    },
+    {
+      "output": "sounds/procedure_bandage.ogg",
+      "sha256": "f7e8b045bfb49925f7cffa23dcbc9468acde22e0c28dde59c4de20c639bc0da4",
+      "transform": "UnityPy/fmod_toolkit decode original FSB to WAV; libsndfile Vorbis encode; no waveform synthesis, trimming or resampling",
+      "sample_rate": 48000,
+      "channels": 1,
+      "samples": 56123,
+      "duration_seconds": 1.1692291666666668,
+      "sources": [
+        {
+          "kind": "AudioClip",
+          "name": "bandage",
+          "source_file": "resources.assets",
+          "path_id": 1961,
+          "original_fsb_sha256": "27a840f3d421c77ca03975108e15710a176154c21b3317917e240022b2956d9f",
+          "decoded_wav_sha256": "cf290162ece466767a34040943bcde47cc09f510da45b35d1233f7bfea1303f6",
+          "unity_length_seconds": 1.1692291498184204
+        }
+      ],
+      "note": "original CU audio"
+    },
+    {
+      "output": "sounds/procedure_syringe.ogg",
+      "sha256": "3bee15890e8160fe616f1dcae963c0030f26453c49dfcb8b3024eb7c0b98ed69",
+      "transform": "UnityPy/fmod_toolkit decode original FSB to WAV; libsndfile Vorbis encode; no waveform synthesis, trimming or resampling",
+      "sample_rate": 44100,
+      "channels": 1,
+      "samples": 31793,
+      "duration_seconds": 0.7209297052154195,
+      "sources": [
+        {
+          "kind": "AudioClip",
+          "name": "syringe",
+          "source_file": "resources.assets",
+          "path_id": 2025,
+          "original_fsb_sha256": "1d05b60b20d0a793038a8946b87510b996812f3eec09743bbec560921acc9755",
+          "decoded_wav_sha256": "a740c379a3eb4a04b1a4fe63beeb3cb8277fa3a91edb698b5e765c827dc0211d",
+          "unity_length_seconds": 0.7209296822547913
+        }
+      ],
+      "note": "original CU audio"
+    },
+    {
+      "output": "sounds/procedure_syringe_loop.ogg",
+      "sha256": "4e2462245eeacb3aeef6d17dd64399028b0f57d95af4fab7c26cd9455ccaa72e",
+      "transform": "UnityPy/fmod_toolkit decode original FSB to WAV; libsndfile Vorbis encode; no waveform synthesis, trimming or resampling",
+      "sample_rate": 48000,
+      "channels": 2,
+      "samples": 22684,
+      "duration_seconds": 0.47258333333333336,
+      "sources": [
+        {
+          "kind": "AudioClip",
+          "name": "syringeLoop",
+          "source_file": "resources.assets",
+          "path_id": 1767,
+          "original_fsb_sha256": "869fc092a8fbe535d7295fa18b384e0e7a662f167076140ae9c2007fe1bb0c39",
+          "decoded_wav_sha256": "fe87ee01717cfa0446ed82f24300c0de0915c45d930fb689db746740753e08ae",
+          "unity_length_seconds": 0.4725833237171173
+        }
+      ],
+      "note": "original CU audio"
+    },
+    {
+      "output": "sounds/procedure_splint.ogg",
+      "sha256": "64bf5318b9b142ce1145fbd06e129100c27385b538a6ac2a78d9640bcd396362",
+      "transform": "UnityPy/fmod_toolkit decode original FSB to WAV; libsndfile Vorbis encode; no waveform synthesis, trimming or resampling",
+      "sample_rate": 48000,
+      "channels": 2,
+      "samples": 40493,
+      "duration_seconds": 0.8436041666666667,
+      "sources": [
+        {
+          "kind": "AudioClip",
+          "name": "splint",
+          "source_file": "resources.assets",
+          "path_id": 2000,
+          "original_fsb_sha256": "5842fb7e6916a25b7e5460099eda9dfe5a593c00a8ff1bc115f8d3ae5cf28e1e",
+          "decoded_wav_sha256": "51fe8b6c5a70db12a0e4641f3e2c53cf4c1dd504ed56a8f8874e4ec401a36f4a",
+          "unity_length_seconds": 0.8436041474342346
+        }
+      ],
+      "note": "original CU audio"
+    },
+    {
+      "output": "sounds/procedure_tourniquet.ogg",
+      "sha256": "900cc0983765aff0c1699b407fe95d488cd04e9e235fadaa41bb25a039b5e47b",
+      "transform": "UnityPy/fmod_toolkit decode original FSB to WAV; libsndfile Vorbis encode; no waveform synthesis, trimming or resampling",
+      "sample_rate": 48000,
+      "channels": 2,
+      "samples": 40493,
+      "duration_seconds": 0.8436041666666667,
+      "sources": [
+        {
+          "kind": "AudioClip",
+          "name": "splint",
+          "source_file": "resources.assets",
+          "path_id": 2000,
+          "original_fsb_sha256": "5842fb7e6916a25b7e5460099eda9dfe5a593c00a8ff1bc115f8d3ae5cf28e1e",
+          "decoded_wav_sha256": "51fe8b6c5a70db12a0e4641f3e2c53cf4c1dd504ed56a8f8874e4ec401a36f4a",
+          "unity_length_seconds": 0.8436041474342346
+        }
+      ],
+      "note": "original splint fastening sound reused for new tourniquet procedure; source CU tourniquet has no minigame"
+    },
+    {
+      "output": "sounds/unconscious.ogg",
+      "sha256": "4ec967e826c6461e416c599f2d1f4bc39a4c1606d879f7308132100377d77aa1",
+      "transform": "UnityPy/fmod_toolkit decode original FSB to WAV; libsndfile Vorbis encode; no waveform synthesis, trimming or resampling",
+      "sample_rate": 44100,
+      "channels": 1,
+      "samples": 1811012,
+      "duration_seconds": 41.06603174603175,
+      "sources": [
+        {
+          "kind": "AudioClip",
+          "name": "criticalloop-unconscious",
+          "source_file": "resources.assets",
+          "path_id": 1753,
+          "original_fsb_sha256": "31e4453599efa68a09da833701800e283c53c8c76d2aeb7f00f82489fe2289ae",
+          "decoded_wav_sha256": "0fce75e91b3e1866fc438b224ab36074ff148683d33e6c03c1191681a7659ae2",
+          "unity_length_seconds": 41.06603240966797
+        }
+      ],
+      "note": "original CU audio"
+    },
+    {
+      "output": "sounds/last_standing.ogg",
+      "sha256": "354a5abf332d3d11bc2fa575d1602a5e8abe90029df7b620c8b766ac1beac7a1",
+      "transform": "UnityPy/fmod_toolkit decode original FSB to WAV; libsndfile Vorbis encode; no waveform synthesis, trimming or resampling",
+      "sample_rate": 44100,
+      "channels": 2,
+      "samples": 659203,
+      "duration_seconds": 14.947913832199546,
+      "sources": [
+        {
+          "kind": "AudioClip",
+          "name": "laststandheartbeat",
+          "source_file": "resources.assets",
+          "path_id": 1968,
+          "original_fsb_sha256": "8e67d8c4c672b1b9c9efd49d0049f2917f79cb4b16d864792999028ce0298046",
+          "decoded_wav_sha256": "e6a8f9f8804f391a5ffd7ce025b0fa3e95ccbc61e87a16e0a7dabce77306a714",
+          "unity_length_seconds": 14.947914123535156
+        }
+      ],
+      "note": "original CU audio"
+    },
+    {
+      "output": "sounds/last_standing_drone.ogg",
+      "sha256": "c5e071ddd2105d036671cc22fe2a70b6d73f2cf5d305ad7e871333187f1df81c",
+      "transform": "UnityPy/fmod_toolkit decode original FSB to WAV; libsndfile Vorbis encode; no waveform synthesis, trimming or resampling",
+      "sample_rate": 44100,
+      "channels": 2,
+      "samples": 793800,
+      "duration_seconds": 18.0,
+      "sources": [
+        {
+          "kind": "AudioClip",
+          "name": "laststanddrone",
+          "source_file": "resources.assets",
+          "path_id": 1697,
+          "original_fsb_sha256": "afe682f778e1fa8d513463e4f483b28b8ff260498c9fef9fbdd961a2d4ebfe43",
+          "decoded_wav_sha256": "9fc3f33314dd10d46581be87fd2fad6f2a7fd2efd7ad3e4191a91885c230f55a",
+          "unity_length_seconds": 18.0
+        }
+      ],
+      "note": "original CU audio"
+    }
+  ]
+}

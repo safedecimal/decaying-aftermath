@@ -6,6 +6,7 @@ import net.minecraft.client.player.LocalPlayer;
 public final class PulseState {
     private static final PulseModel MODEL = new PulseModel();
     private static LocalPlayer trackedPlayer;
+    private static double serverBeatPhase;
     private static volatile Snapshot snapshot = new Snapshot(PulseModel.RESTING_BPM, 1.0, 0.0);
 
     private PulseState() {
@@ -23,10 +24,18 @@ public final class PulseState {
         }
         double movement = player.getDeltaMovement().horizontalDistance() / 0.10;
         MODEL.tick(movement, player.isSprinting(), player.isInWater(), player.isAlive());
-        snapshot = new Snapshot(MODEL.bpmExact(), MODEL.condition(), MODEL.beatPhase());
+        if (ClientMedicalState.received()) {
+            var body = ClientMedicalState.snapshot();
+            serverBeatPhase = body.bpm() <= 0 ? 0 : (serverBeatPhase + body.bpm() / 60.0 / 20.0) % 1.0;
+            snapshot = new Snapshot(body.bpm(), body.condition(), serverBeatPhase);
+        } else {
+            snapshot = new Snapshot(MODEL.bpmExact(), MODEL.condition(), MODEL.beatPhase());
+        }
     }
 
     public static void reset() {
+        ClientMedicalState.reset();
+        serverBeatPhase = 0;
         trackedPlayer = null;
         MODEL.reset();
         snapshot = new Snapshot(PulseModel.RESTING_BPM, 1.0, 0.0);

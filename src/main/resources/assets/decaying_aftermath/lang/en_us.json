@@ -2,5 +2,19 @@
   "decaying_aftermath.pulse": "PULSE",
   "decaying_aftermath.condition.stable": "Stable",
   "decaying_aftermath.condition.strained": "Strained",
-  "decaying_aftermath.condition.critical": "Critical"
+  "decaying_aftermath.condition.critical": "Critical",
+  "item.decaying_aftermath.bandage": "Bandage",
+  "item.decaying_aftermath.pressure_dressing": "Pressure Dressing",
+  "item.decaying_aftermath.splint": "Splint",
+  "item.decaying_aftermath.tourniquet": "Tourniquet",
+  "item.decaying_aftermath.fentanyl": "Fentanyl Syringe",
+  "decaying_aftermath.body.head": "Head",
+  "decaying_aftermath.body.torso": "Torso",
+  "decaying_aftermath.body.left_arm": "Left arm",
+  "decaying_aftermath.body.right_arm": "Right arm",
+  "decaying_aftermath.body.left_leg": "Left leg",
+  "decaying_aftermath.body.right_leg": "Right leg",
+  "decaying_aftermath.thought.healing_potion_wasted": "It's seems didn't help..",
+  "decaying_aftermath.medical.apply_hint": "Drag onto a body part to apply",
+  "decaying_aftermath.medical.game_units": "Game units"
 }

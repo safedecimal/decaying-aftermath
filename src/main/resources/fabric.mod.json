@@ -11,7 +11,7 @@
     "main": ["io.github.safedecimal.decayingaftermath.DecayingAftermath"],
     "client": ["io.github.safedecimal.decayingaftermath.client.DecayingAftermathClient"]
   },
-  "mixins": ["decaying-aftermath.client.mixins.json"],
+  "mixins": ["decaying-aftermath.mixins.json", "decaying-aftermath.client.mixins.json"],
   "depends": {
     "fabricloader": ">=0.20.1",
     "minecraft": "26.3",
