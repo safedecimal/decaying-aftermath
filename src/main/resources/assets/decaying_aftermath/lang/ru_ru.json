@@ -1,0 +1,6 @@
+{
+  "decaying_aftermath.pulse": "ПУЛЬС",
+  "decaying_aftermath.condition.stable": "Стабильное состояние",
+  "decaying_aftermath.condition.strained": "Нагрузка",
+  "decaying_aftermath.condition.critical": "Критическое состояние"
+}

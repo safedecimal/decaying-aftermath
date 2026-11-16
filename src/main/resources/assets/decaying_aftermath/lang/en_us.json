@@ -1,0 +1,6 @@
+{
+  "decaying_aftermath.pulse": "PULSE",
+  "decaying_aftermath.condition.stable": "Stable",
+  "decaying_aftermath.condition.strained": "Strained",
+  "decaying_aftermath.condition.critical": "Critical"
+}
