@@ -21,14 +21,15 @@ class MinecraftBodyLayoutTest {
         assertEquals(32,MinecraftBodyLayout.box(BodyPart.HEAD,false).width());
         assertEquals(32,MinecraftBodyLayout.box(BodyPart.HEAD,false).height());
         assertEquals(48,MinecraftBodyLayout.box(BodyPart.TORSO,false).height());
-        assertEquals(16,MinecraftBodyLayout.box(BodyPart.LEFT_ARM,false).width());
+        assertEquals(48,MinecraftBodyLayout.box(BodyPart.LEFT_ARM,false).width());
+        assertEquals(16,MinecraftBodyLayout.box(BodyPart.LEFT_ARM,false).height());
         assertEquals(48,MinecraftBodyLayout.box(BodyPart.LEFT_LEG,false).height());
     }
     @Test void slimArmHitBoxesMatchTheirThreePixelSkinFaces() {
-        assertEquals(12,MinecraftBodyLayout.box(BodyPart.LEFT_ARM,true).width());
+        assertEquals(12,MinecraftBodyLayout.box(BodyPart.LEFT_ARM,true).height());
         assertEquals(3,MinecraftBodyLayout.face(BodyPart.LEFT_ARM,true).width());
-        assertNull(MinecraftBodyLayout.partAt(79,70,true));
-        assertEquals(BodyPart.RIGHT_ARM,MinecraftBodyLayout.partAt(83,70,true));
+        assertNull(MinecraftBodyLayout.partAt(79,65,true));
+        assertEquals(BodyPart.RIGHT_ARM,MinecraftBodyLayout.partAt(83,58,true));
     }
     @Test void allBaseAndOuterSkinUvsRemainInsideNative64PixelAtlas() {
         for (boolean slim : new boolean[]{false,true}) for (BodyPart part : BodyPart.values()) {

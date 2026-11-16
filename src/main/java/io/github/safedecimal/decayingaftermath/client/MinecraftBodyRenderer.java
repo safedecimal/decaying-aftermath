@@ -21,10 +21,22 @@ public final class MinecraftBodyRenderer {
         if (player == null) return;
         var face = MinecraftBodyLayout.face(part, slim());
         var texture = player.getSkin().body().texturePath();
+        boolean rotated=(part==BodyPart.LEFT_ARM||part==BodyPart.RIGHT_ARM)&&w>h;
+        if(rotated) {
+            // Rotate native vertical skin faces; stretching the UV would distort the player's arms.
+            graphics.pose().pushMatrix();
+            if(part==BodyPart.LEFT_ARM) {
+                graphics.pose().translate(x,y+h);graphics.pose().rotate((float)(-Math.PI/2));
+            } else {
+                graphics.pose().translate(x+w,y);graphics.pose().rotate((float)(Math.PI/2));
+            }
+            int originalWidth=h;h=w;w=originalWidth;x=y=0;
+        }
         graphics.blit(RenderPipelines.GUI_TEXTURED, texture, x, y, (float) face.u(), (float) face.v(),
                 w, h, face.width(), face.height(), 64, 64, tint);
         graphics.blit(RenderPipelines.GUI_TEXTURED, texture, x, y, (float) face.outerU(), (float) face.outerV(),
                 w, h, face.width(), face.height(), 64, 64, tint);
+        if(rotated) graphics.pose().popMatrix();
     }
     public static void outline(GuiGraphicsExtractor g, MinecraftBodyLayout.Box b, int color) {
         g.fill(b.x(), b.y(), b.x()+b.width(), b.y()+1, color);

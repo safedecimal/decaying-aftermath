@@ -2,7 +2,7 @@ package io.github.safedecimal.decayingaftermath.client;
 
 import io.github.safedecimal.decayingaftermath.medical.BodyPart;
 
-/** Fixed front-view Minecraft proportions: head 8x8, body 8x12, limbs 4x12 (3-wide slim arms). */
+/** Minecraft front-view T-pose: native proportions, with arms rotated out at the shoulders. */
 public final class MinecraftBodyLayout {
     public record Box(int x, int y, int width, int height) {
         public boolean contains(double px, double py) {
@@ -16,8 +16,8 @@ public final class MinecraftBodyLayout {
         return switch (part) {
             case HEAD -> new Box(94, 20, 32, 32);
             case TORSO -> new Box(94, 52, 32, 48);
-            case LEFT_ARM -> new Box(126, 52, slim ? 12 : 16, 48);
-            case RIGHT_ARM -> new Box(slim ? 82 : 78, 52, slim ? 12 : 16, 48);
+            case LEFT_ARM -> new Box(126, 52, 48, slim ? 12 : 16);
+            case RIGHT_ARM -> new Box(46, 52, 48, slim ? 12 : 16);
             case LEFT_LEG -> new Box(110, 100, 16, 48);
             case RIGHT_LEG -> new Box(94, 100, 16, 48);
         };

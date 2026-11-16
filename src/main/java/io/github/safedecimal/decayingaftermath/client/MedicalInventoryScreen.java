@@ -22,7 +22,7 @@ import net.minecraft.world.item.crafting.display.RecipeDisplay;
 
 /** Real InventoryMenu slots around a front-view cubic Minecraft player using their skin. */
 public final class MedicalInventoryScreen extends AbstractContainerScreen<InventoryMenu> implements RecipeUpdateListener {
-    private static final int CANVAS_W=220, CANVAS_H=250;
+    private static final int CANVAS_W=MedicalInventoryLayout.WIDTH, CANVAS_H=MedicalInventoryLayout.HEIGHT;
     private final int[][] originalPositions;
     private final CraftingRecipeBookComponent recipeBook;
     private float scale=1;
@@ -30,6 +30,8 @@ public final class MedicalInventoryScreen extends AbstractContainerScreen<Invent
     private int pendingSlot=-1;
     private double pressX,pressY;
     private boolean moved;
+    private boolean clickCarry;
+    private boolean consumeMedicalRelease;
     private ItemStack dragged=ItemStack.EMPTY;
     private BodyPart selected=BodyPart.TORSO;
 
@@ -50,13 +52,9 @@ public final class MedicalInventoryScreen extends AbstractContainerScreen<Invent
         scale=Math.max(0.15f,scale);
         originX+=(int)Math.max(0,(width-originX-CANVAS_W*scale)/2);
         originY=Math.max(4,(int)((height-CANVAS_H*scale)/2));
-        for(int i=9;i<36;i++) position(i,28+(i-9)%9*18,164+(i-9)/9*18);
-        // The HUD hotbar source has twenty-pixel spacing, unlike the inventory's eighteen-pixel grid.
-        for(int i=36;i<45;i++) position(i,21+(i-36)*20,226);
-        position(5,102,1); position(6,164,84); position(7,73,118);
-        position(8,138,136); position(45,12,82);
-        position(1,182,25); position(2,200,25); position(3,182,43);
-        position(4,200,43); position(0,191,70);
+        for(int i=0;i<menu.slots.size();i++) {
+            var p=MedicalInventoryLayout.slot(i);position(i,p.x(),p.y());
+        }
         recipeBook.init(width,height,minecraft,true);
     }
 
@@ -66,6 +64,7 @@ public final class MedicalInventoryScreen extends AbstractContainerScreen<Invent
     }
 
     @Override public void extractRenderState(GuiGraphicsExtractor graphics,int mouseX,int mouseY,float partialTick) {
+        validateMedicalCarry();
         MedicalPanelRenderer.extract(graphics,MedicalPanelLayout.topLeft());
         BodySnapshot body=ClientMedicalState.snapshot();
         cuText(graphics,"BLOOD "+Math.round(body.blood()*100)+"%",7,34);
@@ -99,7 +98,7 @@ public final class MedicalInventoryScreen extends AbstractContainerScreen<Invent
             graphics.blit(RenderPipelines.GUI_TEXTURED,INVENTORY_LOCATION,
                     slot.x-1,slot.y-1,7f,83f,18,18,256,256);
         graphics.blitSprite(RenderPipelines.GUI_TEXTURED,Identifier.withDefaultNamespace("hud/hotbar"),
-                18,223,182,22);
+                MedicalInventoryLayout.HOTBAR_X,MedicalInventoryLayout.HOTBAR_Y,182,22);
         BodySnapshot.PartSnapshot[] states=ClientMedicalState.snapshot().parts();
         for(BodyPart part:BodyPart.values()) {
             int i=part.ordinal();
@@ -113,7 +112,7 @@ public final class MedicalInventoryScreen extends AbstractContainerScreen<Invent
             if(states[i].splinted()) overlayItem(graphics,MedicalItems.SPLINT.getDefaultInstance(),b.x(),b.y()+b.height()/2+5);
             if(states[i].tourniquet()) overlayItem(graphics,MedicalItems.TOURNIQUET.getDefaultInstance(),b.x(),b.y());
         }
-        graphics.item(Items.KNOWLEDGE_BOOK.getDefaultInstance(),191,98);
+        graphics.item(Items.KNOWLEDGE_BOOK.getDefaultInstance(),MedicalInventoryLayout.RECIPE_X,MedicalInventoryLayout.RECIPE_Y);
         graphics.pose().popMatrix();
     }
     private static void overlayItem(GuiGraphicsExtractor graphics,ItemStack item,int x,int y) {
@@ -121,8 +120,8 @@ public final class MedicalInventoryScreen extends AbstractContainerScreen<Invent
         graphics.item(item,0,0);graphics.pose().popMatrix();
     }
     @Override protected void extractLabels(GuiGraphicsExtractor graphics,int mouseX,int mouseY) {
-        graphics.text(font,"Crafting",177,12,0xFFFFFFFF,false);
-        graphics.text(font,"Inventory / "+pretty(selected),28,153,0xFFFFFFFF,false);
+        graphics.text(font,"Crafting",215,19,0xFFFFFFFF,false);
+        graphics.text(font,"Inventory / "+pretty(selected),30,153,0xFFFFFFFF,false);
     }
     private void extractBodyTooltip(GuiGraphicsExtractor graphics,int mouseX,int mouseY) {
         BodyPart hover=partAt(virtualX(mouseX),virtualY(mouseY));
@@ -135,7 +134,11 @@ public final class MedicalInventoryScreen extends AbstractContainerScreen<Invent
     }
     @Override protected void extractTooltip(GuiGraphicsExtractor graphics,int mouseX,int mouseY) {
         // Deferred vanilla tooltips require screen coordinates, not the transformed canvas pointer.
-        super.extractTooltip(graphics,originX+Math.round(mouseX*scale),originY+Math.round(mouseY*scale));
+        if(pendingSlot<0) super.extractTooltip(graphics,originX+Math.round(mouseX*scale),originY+Math.round(mouseY*scale));
+    }
+    @Override protected void extractSlot(GuiGraphicsExtractor graphics,Slot slot,int mouseX,int mouseY) {
+        // Only the cursor ghost is drawn; the server-owned source remains untouched until APPLY.
+        if(slot.index!=pendingSlot) super.extractSlot(graphics,slot,mouseX,mouseY);
     }
     private static String pretty(BodyPart part) { return part.name().toLowerCase().replace('_',' '); }
     private static void cuText(GuiGraphicsExtractor graphics,String value,int x,int y) {
@@ -161,45 +164,86 @@ public final class MedicalInventoryScreen extends AbstractContainerScreen<Invent
     }
 
     @Override public boolean mouseClicked(MouseButtonEvent event,boolean doubleClick) {
+        validateMedicalCarry();
         if(ClientMedicalState.snapshot().mode()==BodySnapshot.Mode.UNCONSCIOUS) return true;
         if(recipeBook.isVisible()&&recipeBook.mouseClicked(event,doubleClick)) return true;
         MouseButtonEvent e=virtual(event);
-        if(e.x()>=189&&e.x()<211&&e.y()>=95&&e.y()<118) {recipeBook.toggleVisibility();return true;}
+        if(e.x()>=MedicalInventoryLayout.RECIPE_X-2&&e.x()<MedicalInventoryLayout.RECIPE_X+18
+                &&e.y()>=MedicalInventoryLayout.RECIPE_Y-2&&e.y()<MedicalInventoryLayout.RECIPE_Y+18) {
+            clearMedicalCarry();recipeBook.toggleVisibility();return true;
+        }
         BodyPart part=partAt(e.x(),e.y());
+        if(clickCarry&&(event.button()==1||event.button()==3)&&event.modifiers()==0) {
+            if(part!=null) return startProcedure(part);
+            Slot target=slotAt(e.x(),e.y());
+            if(target!=null||hasClickedOutside(e.x(),e.y(),0,0)) {
+                transferMedicalCarry(target,event.button()==3?1:0);consumeMedicalRelease=true;return true;
+            }
+            return true;
+        }
+        if(clickCarry) clearMedicalCarry();
         if(part!=null&&menu.getCarried().isEmpty()) {selected=part;return true;}
         Slot slot=slotAt(e.x(),e.y());
         // MouseButtonEvent uses SDL button IDs in 26.3: primary=1, NOT GLFW's 0.
         if(event.button()==1 && event.modifiers()==0 && menu.getCarried().isEmpty()
                 &&slot!=null&&slot.index>=9&&slot.hasItem()&&MedicalItems.treatment(slot.getItem())!=null) {
-            pendingSlot=slot.index;dragged=slot.getItem().copy();pressX=e.x();pressY=e.y();moved=false;return true;
+            pendingSlot=slot.index;dragged=slot.getItem().copy();pressX=e.x();pressY=e.y();moved=false;clickCarry=false;return true;
         }
         return super.mouseClicked(e,doubleClick);
     }
     @Override public boolean mouseDragged(MouseButtonEvent event,double dx,double dy) {
-        if(pendingSlot>=0) {MouseButtonEvent e=virtual(event);moved|=Math.hypot(e.x()-pressX,e.y()-pressY)>3;return true;}
+        validateMedicalCarry();
+        if(pendingSlot>=0) {if(!clickCarry) {MouseButtonEvent e=virtual(event);moved|=Math.hypot(e.x()-pressX,e.y()-pressY)>3;}return true;}
         return super.mouseDragged(virtual(event),dx/scale,dy/scale);
     }
     @Override public boolean mouseReleased(MouseButtonEvent event) {
+        if(consumeMedicalRelease) {consumeMedicalRelease=false;return true;}
+        validateMedicalCarry();
         if(pendingSlot>=0) {
+            if(clickCarry) return true;
             if(event.button()!=1) return true;
-            MouseButtonEvent e=virtual(event);int source=pendingSlot;pendingSlot=-1;
+            MouseButtonEvent e=virtual(event);
             moved|=Math.hypot(e.x()-pressX,e.y()-pressY)>3;
-            BodyPart part=partAt(e.x(),e.y());TreatmentKind kind=MedicalItems.treatment(dragged);dragged=ItemStack.EMPTY;
-            if(moved&&part!=null&&kind!=null) {
-                if((kind==TreatmentKind.SPLINT||kind==TreatmentKind.TOURNIQUET)
-                        &&(part==BodyPart.HEAD||part==BodyPart.TORSO)) {
-                    ThoughtTyper.enqueue("This needs a limb.");return true;
-                }
-                selected=part; minecraft.gui.setScreen(new MedicalProcedureScreen(this,source,part,kind)); return true;
-            }
-            slotClicked(menu.getSlot(source),source,0,ContainerInput.PICKUP);
+            clickCarry=true;
+            BodyPart part=partAt(e.x(),e.y());
+            if(moved&&part!=null) return startProcedure(part);
             if(moved) {Slot target=slotAt(e.x(),e.y());
-                if(target!=null&&target.index!=source) slotClicked(target,target.index,0,ContainerInput.PICKUP);
-                else if(hasClickedOutside(e.x(),e.y(),0,0)) slotClicked(null,-999,0,ContainerInput.PICKUP);
+                if(target!=null||hasClickedOutside(e.x(),e.y(),0,0)) transferMedicalCarry(target,0);
             }
             return true;
         }
         return super.mouseReleased(virtual(event));
+    }
+    private void clearMedicalCarry() {pendingSlot=-1;dragged=ItemStack.EMPTY;clickCarry=false;moved=false;}
+    private void validateMedicalCarry() {
+        if(pendingSlot<0) return;
+        ItemStack source=menu.getSlot(pendingSlot).getItem();
+        if(!menu.getCarried().isEmpty()||source.isEmpty()||source.getCount()!=dragged.getCount()
+                ||!ItemStack.isSameItemSameComponents(source,dragged)
+                ||ClientMedicalState.snapshot().mode()==BodySnapshot.Mode.UNCONSCIOUS) clearMedicalCarry();
+    }
+    private boolean startProcedure(BodyPart part) {
+        TreatmentKind kind=MedicalItems.treatment(dragged);
+        if(kind==null) {clearMedicalCarry();return true;}
+        if((kind==TreatmentKind.SPLINT||kind==TreatmentKind.TOURNIQUET)
+                &&(part==BodyPart.HEAD||part==BodyPart.TORSO)) {
+            ThoughtTyper.enqueue("This needs a limb.");return true;
+        }
+        int source=pendingSlot;selected=part;clearMedicalCarry();
+        minecraft.gui.setScreen(new MedicalProcedureScreen(this,source,part,kind));return true;
+    }
+    private void transferMedicalCarry(Slot target,int button) {
+        int source=pendingSlot;ItemStack selectedStack=dragged;clearMedicalCarry();
+        if(target!=null&&target.index==source) return;
+        // ContainerInput uses left=0/right=1, unlike SDL MouseButtonEvent's left=1/right=3.
+        slotClicked(menu.getSlot(source),source,0,ContainerInput.PICKUP);
+        slotClicked(target,target==null?-999:target.index,button,ContainerInput.PICKUP);
+        if(!menu.getCarried().isEmpty()&&ItemStack.isSameItemSameComponents(menu.getCarried(),selectedStack)) {
+            slotClicked(menu.getSlot(source),source,0,ContainerInput.PICKUP);
+            if(menu.getCarried().isEmpty()&&menu.getSlot(source).hasItem()) {
+                pendingSlot=source;dragged=menu.getSlot(source).getItem().copy();clickCarry=true;
+            }
+        }
     }
     @Override protected boolean hasClickedOutside(double x,double y,int left,int top) {
         return x<0||y<0||x>=CANVAS_W||y>=CANVAS_H;
@@ -208,6 +252,7 @@ public final class MedicalInventoryScreen extends AbstractContainerScreen<Invent
         return super.mouseScrolled(virtualX(x),virtualY(y),horizontal,vertical);
     }
     @Override public boolean keyPressed(KeyEvent event) {
+        if(pendingSlot>=0) {clearMedicalCarry();if(event.key()==256) return true;}
         if(ClientMedicalState.snapshot().mode()==BodySnapshot.Mode.UNCONSCIOUS&&event.key()!=256) return true;
         return recipeBook.isVisible()&&recipeBook.keyPressed(event)||super.keyPressed(event);
     }
@@ -215,10 +260,11 @@ public final class MedicalInventoryScreen extends AbstractContainerScreen<Invent
     @Override protected void slotClicked(Slot slot,int id,int button,ContainerInput input) {
         super.slotClicked(slot,id,button,input);recipeBook.slotClicked(slot);
     }
-    @Override protected void containerTick() {super.containerTick();recipeBook.tick();}
+    @Override protected void containerTick() {super.containerTick();validateMedicalCarry();recipeBook.tick();}
     @Override public void recipesUpdated() {recipeBook.recipesUpdated();}
     @Override public void fillGhostRecipe(RecipeDisplay display) {recipeBook.fillGhostRecipe(display);}
     @Override public void removed() {
+        clearMedicalCarry();consumeMedicalRelease=false;
         for(int i=0;i<originalPositions.length;i++) position(i,originalPositions[i][0],originalPositions[i][1]);
         super.removed();
     }
