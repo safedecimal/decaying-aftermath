@@ -118,7 +118,13 @@
       25
     ],
     "heading": "UNI-HEALTH v2.08, centered as in the supplied reference, using original I-pixel-u glyphs",
-    "compact": "Original two-line header with live nickname and pulse; used only with recipe book open.",
-    "removed": "EXPERIMENT, body height/age/id, plus buttons, clothing/WEAR panel and all inactive medical icons/readouts."
+    "compact": "Historical header asset retained; not selected by the fixed full-size screen-corner layout.",
+    "removed": "EXPERIMENT, body height/age/id, plus buttons, clothing/WEAR panel and all inactive medical icons/readouts.",
+    "screen_anchor": [
+      0,
+      0
+    ],
+    "inventory_position": "Vanilla position; no leftPos writes or recipe-book button offset",
+    "recipe_book": "No repositioning, re-centering or shrinking of the medical panel."
   }
 }
