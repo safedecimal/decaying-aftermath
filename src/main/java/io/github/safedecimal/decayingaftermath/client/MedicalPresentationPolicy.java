@@ -8,6 +8,10 @@ public final class MedicalPresentationPolicy {
 
     private MedicalPresentationPolicy() {}
 
+    public static boolean inventoryPulse(boolean inventoryOpen, BodySnapshot body) {
+        return inventoryOpen && body.mode() != BodySnapshot.Mode.DEAD && body.bpm() > 0;
+    }
+
     public static boolean criticalAlarm(BodySnapshot body) {
         return body.mode() != BodySnapshot.Mode.DEAD && body.bpm() > 0
                 && (body.condition() <= CRITICAL_CONDITION

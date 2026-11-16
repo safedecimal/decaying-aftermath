@@ -119,15 +119,10 @@ public final class MedicalProcedureScreen extends Screen {
     }
 
     private void drawSelectedPart(GuiGraphicsExtractor graphics,int x,int y,int w,int h) {
-        String[] names={"head","torso","left_arm","right_arm","left_leg","right_leg"};
-        int[][] sizes={{46,44},{40,65},{99,27},{99,27},{31,105},{31,105}};
-        int[] size=sizes[part.ordinal()];
-        // Preserve each source part's aspect ratio inside the available skin area.
-        float ratio=Math.min(w/(float)size[0],h/(float)size[1]);
-        int dw=Math.max(1,Math.round(size[0]*ratio)),dh=Math.max(1,Math.round(size[1]*ratio));
-        graphics.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED,
-                MedicalClient.id("textures/gui/body/"+names[part.ordinal()]+".png"),x+(w-dw)/2,y+(h-dh)/2,
-                0f,0f,dw,dh,size[0],size[1],size[0],size[1],0xFFE7C5AD);
+        var face=MinecraftBodyLayout.face(part,MinecraftBodyRenderer.slim());
+        float ratio=Math.min(w/(float)face.width(),h/(float)face.height());
+        int dw=Math.max(1,Math.round(face.width()*ratio)),dh=Math.max(1,Math.round(face.height()*ratio));
+        MinecraftBodyRenderer.part(graphics,part,x+(w-dw)/2,y+(h-dh)/2,dw,dh,0xFFFFFFFF);
     }
 
     private String guide() {
@@ -139,7 +134,7 @@ public final class MedicalProcedureScreen extends Screen {
     }
 
     @Override public boolean mouseClicked(MouseButtonEvent event,boolean doubleClick) {
-        if(event.button()!=0||ended) return false;
+        if(event.button()!=1||ended) return false;
         pointerX=(event.x()-ox)/scale;pointerY=(event.y()-oy)/scale;
         if(isWrap()) {
             double a=polar(pointerX,pointerY),difference=normalize(a-angle);
@@ -202,7 +197,7 @@ public final class MedicalProcedureScreen extends Screen {
     }
 
     @Override public boolean mouseReleased(MouseButtonEvent event) {
-        if(event.button()!=0) return false;
+        if(event.button()!=1) return false;
         if(holding&&stage==0&&(kind==TreatmentKind.SPLINT||kind==TreatmentKind.TOURNIQUET)
                 &&Math.abs(objectX-116)<35&&Math.abs(objectY-105)<50) {
             objectX=116;objectY=105;stage=1;

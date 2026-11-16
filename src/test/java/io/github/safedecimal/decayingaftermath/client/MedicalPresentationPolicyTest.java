@@ -32,4 +32,17 @@ class MedicalPresentationPolicyTest {
         assertTrue(MedicalPresentationPolicy.criticalAlarm(body(BodySnapshot.Mode.CONSCIOUS, .3f, 72)));
         assertFalse(MedicalPresentationPolicy.criticalAlarm(body(BodySnapshot.Mode.CONSCIOUS, .5f, 72)));
     }
+    @Test void healthyInventoryHasPhysicalPulseWithoutEcgAlarm() {
+        var healthy=body(BodySnapshot.Mode.CONSCIOUS,1,72);
+        assertTrue(MedicalPresentationPolicy.inventoryPulse(true,healthy));
+        assertFalse(MedicalPresentationPolicy.criticalAlarm(healthy));
+    }
+    @Test void physicalPulseIsNeverEnabledOutsideInventory() {
+        assertFalse(MedicalPresentationPolicy.inventoryPulse(false,body(BodySnapshot.Mode.CONSCIOUS,1,72)));
+        assertFalse(MedicalPresentationPolicy.inventoryPulse(false,body(BodySnapshot.Mode.UNCONSCIOUS,.2f,72)));
+    }
+    @Test void deadOrZeroBpmInventoryRemainsSilent() {
+        assertFalse(MedicalPresentationPolicy.inventoryPulse(true,body(BodySnapshot.Mode.DEAD,0,72)));
+        assertFalse(MedicalPresentationPolicy.inventoryPulse(true,body(BodySnapshot.Mode.CONSCIOUS,1,0)));
+    }
 }

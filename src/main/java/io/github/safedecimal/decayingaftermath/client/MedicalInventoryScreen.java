@@ -20,13 +20,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.display.RecipeDisplay;
 
-/** Real InventoryMenu slots, merely repositioned around the CU anatomy reference. */
+/** Real InventoryMenu slots around a front-view cubic Minecraft player using their skin. */
 public final class MedicalInventoryScreen extends AbstractContainerScreen<InventoryMenu> implements RecipeUpdateListener {
     private static final int CANVAS_W=220, CANVAS_H=250;
-    private static final int[][] PART_BOXES={{99,21,23,23},{96,45,31,50},{127,48,54,15},
-            {42,48,54,15},{115,96,16,54},{97,96,16,54}};
-    private static final String[] PART_NAMES={"head","torso","left_arm","right_arm","left_leg","right_leg"};
-    private static final int[][] PART_SOURCES={{46,44},{40,65},{99,27},{99,27},{31,105},{31,105}};
     private final int[][] originalPositions;
     private final CraftingRecipeBookComponent recipeBook;
     private float scale=1;
@@ -79,6 +75,7 @@ public final class MedicalInventoryScreen extends AbstractContainerScreen<Invent
         graphics.pose().pushMatrix(); graphics.pose().translate(originX,originY); graphics.pose().scale(scale,scale);
         super.extractRenderState(graphics,(int)virtualX(mouseX),(int)virtualY(mouseY),partialTick);
         graphics.pose().popMatrix();
+        extractBodyTooltip(graphics,mouseX,mouseY);
         if(pendingSlot>=0) {
             graphics.item(dragged,mouseX-8,mouseY-8);
             graphics.itemDecorations(font,dragged,mouseX-8,mouseY-8);
@@ -104,18 +101,17 @@ public final class MedicalInventoryScreen extends AbstractContainerScreen<Invent
         graphics.blitSprite(RenderPipelines.GUI_TEXTURED,Identifier.withDefaultNamespace("hud/hotbar"),
                 18,223,182,22);
         BodySnapshot.PartSnapshot[] states=ClientMedicalState.snapshot().parts();
-        for(int i=0;i<PART_BOXES.length;i++) {
-            int[] b=PART_BOXES[i], src=PART_SOURCES[i];
+        for(BodyPart part:BodyPart.values()) {
+            int i=part.ordinal();
+            var b=MinecraftBodyRenderer.box(part);
             float health=states[i].integrity();
-            int red=Math.round(225-145*health),green=Math.round(65+150*health);
-            int tint=0xFF000000|red<<16|green<<8|70;
-            bodyTexture(graphics,PART_NAMES[i],b,src,tint);
-            int[] outlineSrc={src[0],i==0?45:src[1]};
-            bodyTexture(graphics,PART_NAMES[i]+"_outline",b,outlineSrc,
-                    selected.ordinal()==i?0xFF2BEE91:0xFFDADADA);
-            if(states[i].bandaged()) overlayItem(graphics,MedicalItems.BANDAGE.getDefaultInstance(),b[0],b[1]+b[3]/2);
-            if(states[i].splinted()) overlayItem(graphics,MedicalItems.SPLINT.getDefaultInstance(),b[0],b[1]+b[3]/2+5);
-            if(states[i].tourniquet()) overlayItem(graphics,MedicalItems.TOURNIQUET.getDefaultInstance(),b[0],b[1]);
+            int channel=Math.round(150+105*health);
+            int tint=0xFFFF0000|channel<<8|channel;
+            MinecraftBodyRenderer.part(graphics,part,b.x(),b.y(),b.width(),b.height(),tint);
+            MinecraftBodyRenderer.outline(graphics,b,selected==part?0xFF2BEE91:0xFFB8B8B8);
+            if(states[i].bandaged()) overlayItem(graphics,MedicalItems.BANDAGE.getDefaultInstance(),b.x(),b.y()+b.height()/2);
+            if(states[i].splinted()) overlayItem(graphics,MedicalItems.SPLINT.getDefaultInstance(),b.x(),b.y()+b.height()/2+5);
+            if(states[i].tourniquet()) overlayItem(graphics,MedicalItems.TOURNIQUET.getDefaultInstance(),b.x(),b.y());
         }
         graphics.item(Items.KNOWLEDGE_BOOK.getDefaultInstance(),191,98);
         graphics.pose().popMatrix();
@@ -124,20 +120,22 @@ public final class MedicalInventoryScreen extends AbstractContainerScreen<Invent
         graphics.pose().pushMatrix();graphics.pose().translate(x,y);graphics.pose().scale(0.6f,0.6f);
         graphics.item(item,0,0);graphics.pose().popMatrix();
     }
-    private static void bodyTexture(GuiGraphicsExtractor graphics,String name,int[] b,int[] src,int color) {
-        graphics.blit(RenderPipelines.GUI_TEXTURED,MedicalClient.id("textures/gui/body/"+name+".png"),
-                b[0],b[1],0f,0f,b[2],b[3],src[0],src[1],src[0],src[1],color);
-    }
     @Override protected void extractLabels(GuiGraphicsExtractor graphics,int mouseX,int mouseY) {
         graphics.text(font,"Crafting",177,12,0xFFFFFFFF,false);
         graphics.text(font,"Inventory / "+pretty(selected),28,153,0xFFFFFFFF,false);
-        BodyPart hover=partAt(mouseX,mouseY);
+    }
+    private void extractBodyTooltip(GuiGraphicsExtractor graphics,int mouseX,int mouseY) {
+        BodyPart hover=partAt(virtualX(mouseX),virtualY(mouseY));
         if(hover!=null) {
             BodySnapshot.PartSnapshot part=ClientMedicalState.snapshot().part(hover);
             String text=pretty(hover)+" "+Math.round(part.integrity()*100)+"%"
                     +(part.fractured()?" / fractured":"")+(part.bleeding()>0?" / bleeding":"");
             graphics.setTooltipForNextFrame(font,Component.literal(text),mouseX,mouseY);
         }
+    }
+    @Override protected void extractTooltip(GuiGraphicsExtractor graphics,int mouseX,int mouseY) {
+        // Deferred vanilla tooltips require screen coordinates, not the transformed canvas pointer.
+        super.extractTooltip(graphics,originX+Math.round(mouseX*scale),originY+Math.round(mouseY*scale));
     }
     private static String pretty(BodyPart part) { return part.name().toLowerCase().replace('_',' '); }
     private static void cuText(GuiGraphicsExtractor graphics,String value,int x,int y) {
@@ -159,8 +157,7 @@ public final class MedicalInventoryScreen extends AbstractContainerScreen<Invent
         return null;
     }
     private BodyPart partAt(double x,double y) {
-        for(int i=0;i<PART_BOXES.length;i++) {int[] b=PART_BOXES[i];if(x>=b[0]&&x<b[0]+b[2]&&y>=b[1]&&y<b[1]+b[3]) return BodyPart.values()[i];}
-        return null;
+        return MinecraftBodyLayout.partAt(x,y,MinecraftBodyRenderer.slim());
     }
 
     @Override public boolean mouseClicked(MouseButtonEvent event,boolean doubleClick) {
@@ -171,7 +168,8 @@ public final class MedicalInventoryScreen extends AbstractContainerScreen<Invent
         BodyPart part=partAt(e.x(),e.y());
         if(part!=null&&menu.getCarried().isEmpty()) {selected=part;return true;}
         Slot slot=slotAt(e.x(),e.y());
-        if(event.button()==0 && event.modifiers()==0 && menu.getCarried().isEmpty()
+        // MouseButtonEvent uses SDL button IDs in 26.3: primary=1, NOT GLFW's 0.
+        if(event.button()==1 && event.modifiers()==0 && menu.getCarried().isEmpty()
                 &&slot!=null&&slot.index>=9&&slot.hasItem()&&MedicalItems.treatment(slot.getItem())!=null) {
             pendingSlot=slot.index;dragged=slot.getItem().copy();pressX=e.x();pressY=e.y();moved=false;return true;
         }
@@ -183,7 +181,9 @@ public final class MedicalInventoryScreen extends AbstractContainerScreen<Invent
     }
     @Override public boolean mouseReleased(MouseButtonEvent event) {
         if(pendingSlot>=0) {
+            if(event.button()!=1) return true;
             MouseButtonEvent e=virtual(event);int source=pendingSlot;pendingSlot=-1;
+            moved|=Math.hypot(e.x()-pressX,e.y()-pressY)>3;
             BodyPart part=partAt(e.x(),e.y());TreatmentKind kind=MedicalItems.treatment(dragged);dragged=ItemStack.EMPTY;
             if(moved&&part!=null&&kind!=null) {
                 if((kind==TreatmentKind.SPLINT||kind==TreatmentKind.TOURNIQUET)

@@ -19,6 +19,7 @@ public final class MedicalClient {
     private static boolean registered;
     private static float beatPhase;
     private static boolean alarmEnabled;
+    private static boolean pulseEnabled;
     private static BodySnapshot.Mode previousMode = BodySnapshot.Mode.CONSCIOUS;
     private static int modeTicks;
     private static final EcgTrace CONSCIOUSNESS_ECG = new EcgTrace();
@@ -42,7 +43,7 @@ public final class MedicalClient {
 
     private static void tick(Minecraft client) {
         if (client.player == null || client.level == null) {
-            stop("heartbeat"); stop("heartbeat_monitor"); alarmEnabled = false;
+            stop("heartbeat"); stop("heartbeat_monitor"); alarmEnabled = pulseEnabled = false;
             stop("unconscious"); stop("last_standing"); stop("last_standing_drone");
             ThoughtTyper.reset(); beatPhase = 0; modeTicks = 0;
             previousMode = BodySnapshot.Mode.CONSCIOUS;
@@ -65,17 +66,20 @@ public final class MedicalClient {
         }
         modeTicks++;
         boolean critical = ClientMedicalState.received() && MedicalPresentationPolicy.criticalAlarm(body);
-        if (!critical) {
-            if (alarmEnabled) { stop("heartbeat"); stop("heartbeat_monitor"); }
-            beatPhase = 0;
-        }
+        boolean pulse = ClientMedicalState.received()
+                && MedicalPresentationPolicy.inventoryPulse(isInventoryOpen(client),body);
+        if (pulseEnabled && !pulse) stop("heartbeat");
+        if (alarmEnabled && !critical) stop("heartbeat_monitor");
+        if (!pulse && !critical) beatPhase = 0;
+        pulseEnabled = pulse;
         alarmEnabled = critical;
-        if (critical) {
+        if (pulse || critical) {
             beatPhase += body.bpm() / 1200f;
             if (beatPhase >= 1) {
                 beatPhase %= 1;
-                sound(isInventoryOpen(client)
-                        ? "heartbeat_monitor" : "heartbeat", 0.4f, 1f);
+                // Physical pulse is inventory-only; the ECG alarm is a separate critical-only recording.
+                if (pulse) sound("heartbeat", 0.55f, 1f);
+                if (critical) sound("heartbeat_monitor", 0.4f, 1f);
             }
         }
     }
