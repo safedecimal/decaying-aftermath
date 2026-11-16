@@ -18,6 +18,7 @@ import net.minecraft.sounds.SoundEvent;
 public final class MedicalClient {
     private static boolean registered;
     private static float beatPhase;
+    private static boolean alarmEnabled;
     private static BodySnapshot.Mode previousMode = BodySnapshot.Mode.CONSCIOUS;
     private static int modeTicks;
     private static final EcgTrace CONSCIOUSNESS_ECG = new EcgTrace();
@@ -41,6 +42,7 @@ public final class MedicalClient {
 
     private static void tick(Minecraft client) {
         if (client.player == null || client.level == null) {
+            stop("heartbeat"); stop("heartbeat_monitor"); alarmEnabled = false;
             stop("unconscious"); stop("last_standing"); stop("last_standing_drone");
             ThoughtTyper.reset(); beatPhase = 0; modeTicks = 0;
             previousMode = BodySnapshot.Mode.CONSCIOUS;
@@ -62,11 +64,17 @@ public final class MedicalClient {
             }
         }
         modeTicks++;
-        if (body.mode() != BodySnapshot.Mode.DEAD && body.bpm() > 0) {
+        boolean critical = ClientMedicalState.received() && MedicalPresentationPolicy.criticalAlarm(body);
+        if (!critical) {
+            if (alarmEnabled) { stop("heartbeat"); stop("heartbeat_monitor"); }
+            beatPhase = 0;
+        }
+        alarmEnabled = critical;
+        if (critical) {
             beatPhase += body.bpm() / 1200f;
             if (beatPhase >= 1) {
                 beatPhase %= 1;
-                sound(client.gui.screen() instanceof MedicalInventoryScreen
+                sound(isInventoryOpen(client)
                         ? "heartbeat_monitor" : "heartbeat", 0.4f, 1f);
             }
         }
@@ -82,15 +90,18 @@ public final class MedicalClient {
             int cx = graphics.guiWidth()/2, cy = graphics.guiHeight()/2;
             radialFill(graphics, cx - 35, cy - 35, 70, body.consciousnessProgress());
             blit(graphics, "unconscious_ring", cx - 39, cy - 39, 78, 78, 149, 149, 0xFFFFFFFF);
-            // CU's consciousnessECG is a waveform, not a replacement decorative heart icon.
-            for (int column=0; column<EcgTrace.WIDTH; column++) for (int row=0; row<EcgTrace.HEIGHT; row++) {
-                int alpha=CONSCIOUSNESS_ECG.alpha(column,row);
-                if (alpha!=0) {
-                    int x=cx-30+column/2, y=cy-7+row/2;
-                    graphics.fill(x,y,x+1,y+1,(alpha<<24)|0x002BE080);
+            // Pulse/BPM belongs to the inventory, including during unconsciousness.
+            // Keep only the blackout and original recovery circle on the world HUD.
+            if (isInventoryOpen(client)) {
+                for (int column=0; column<EcgTrace.WIDTH; column++) for (int row=0; row<EcgTrace.HEIGHT; row++) {
+                    int alpha=CONSCIOUSNESS_ECG.alpha(column,row);
+                    if (alpha!=0) {
+                        int x=cx-30+column/2, y=cy-7+row/2;
+                        graphics.fill(x,y,x+1,y+1,(alpha<<24)|0x002BE080);
+                    }
                 }
+                graphics.centeredText(client.font, Integer.toString(Math.round(body.bpm())), cx, cy+11, 0xFF2BD881);
             }
-            graphics.centeredText(client.font, Integer.toString(Math.round(body.bpm())), cx, cy+11, 0xFF2BD881);
         } else if (body.mode() == BodySnapshot.Mode.LAST_STANDING) {
             // Source CU intro: two black seconds, then three original frames at 8 fps.
             if (modeTicks < 40) graphics.fill(0, 0, graphics.guiWidth(), graphics.guiHeight(), 0xFF000000);
@@ -126,6 +137,10 @@ public final class MedicalClient {
     public static void sound(String name, float volume, float pitch) {
         Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(
                 SoundEvent.createVariableRangeEvent(id(name)), pitch, volume));
+    }
+    public static boolean isInventoryOpen(Minecraft client) {
+        return client.player != null && (client.gui.screen() instanceof MedicalInventoryScreen
+                || client.gui.screen() instanceof InventoryScreen);
     }
     private static void stop(String name) { Minecraft.getInstance().getSoundManager().stop(id(name), null); }
     static Identifier id(String path) { return Identifier.fromNamespaceAndPath(DecayingAftermath.MOD_ID,path); }

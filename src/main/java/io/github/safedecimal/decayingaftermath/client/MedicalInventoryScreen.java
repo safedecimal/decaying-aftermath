@@ -70,7 +70,6 @@ public final class MedicalInventoryScreen extends AbstractContainerScreen<Invent
     }
 
     @Override public void extractRenderState(GuiGraphicsExtractor graphics,int mouseX,int mouseY,float partialTick) {
-        extractTransparentBackground(graphics);
         MedicalPanelRenderer.extract(graphics,MedicalPanelLayout.topLeft());
         BodySnapshot body=ClientMedicalState.snapshot();
         cuText(graphics,"BLOOD "+Math.round(body.blood()*100)+"%",7,34);
@@ -94,6 +93,10 @@ public final class MedicalInventoryScreen extends AbstractContainerScreen<Invent
     }
 
     @Override public void extractBackground(GuiGraphicsExtractor graphics,int mouseX,int mouseY,float partialTick) {
+        extractTransparentBackground(graphics);
+        // 26.3 extracts the background separately, BEFORE extractRenderState.
+        // Use precisely the contents' canvas transform here too, not raw screen (0,0).
+        graphics.pose().pushMatrix(); graphics.pose().translate(originX,originY); graphics.pose().scale(scale,scale);
         // Every slot background is a crop of Minecraft's original inventory texture.
         for(Slot slot:menu.slots) if(slot.index<36||slot.index>=45)
             graphics.blit(RenderPipelines.GUI_TEXTURED,INVENTORY_LOCATION,
@@ -115,6 +118,7 @@ public final class MedicalInventoryScreen extends AbstractContainerScreen<Invent
             if(states[i].tourniquet()) overlayItem(graphics,MedicalItems.TOURNIQUET.getDefaultInstance(),b[0],b[1]);
         }
         graphics.item(Items.KNOWLEDGE_BOOK.getDefaultInstance(),191,98);
+        graphics.pose().popMatrix();
     }
     private static void overlayItem(GuiGraphicsExtractor graphics,ItemStack item,int x,int y) {
         graphics.pose().pushMatrix();graphics.pose().translate(x,y);graphics.pose().scale(0.6f,0.6f);

@@ -20,6 +20,10 @@ public final class MedicalPanelRenderer {
     }
 
     public static void extract(GuiGraphicsExtractor graphics, MedicalPanelLayout.Box box) {
+        if (!MedicalClient.isInventoryOpen(Minecraft.getInstance())) {
+            lastDrawNanos = 0;
+            return;
+        }
         long now = System.nanoTime();
         if (lastDrawNanos != 0) {
             TRACE.advance((now - lastDrawNanos) / 1_000_000_000.0, PulseState.bpmExact());
