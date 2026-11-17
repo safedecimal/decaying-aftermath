@@ -46,6 +46,24 @@ processResources {
     }
 }
 
+tasks.register('verifyMedicalProcedures', Test) {
+    description = 'Verify CU status icons, resource percentages, continuous wrapping and inertial hand mechanics.'
+    group = 'verification'
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+    useJUnitPlatform()
+    filter {
+        includeTestsMatching 'io.github.safedecimal.decayingaftermath.client.BandageWrapMotionTest'
+        includeTestsMatching 'io.github.safedecimal.decayingaftermath.client.CuHandMotionTest'
+        includeTestsMatching 'io.github.safedecimal.decayingaftermath.client.CuProcedureGeometryTest'
+        includeTestsMatching 'io.github.safedecimal.decayingaftermath.client.MedicalStatusIconsTest'
+        includeTestsMatching 'io.github.safedecimal.decayingaftermath.client.SupplyOverlayLayoutTest'
+        includeTestsMatching 'io.github.safedecimal.decayingaftermath.client.FastenerMotionTest'
+        includeTestsMatching 'io.github.safedecimal.decayingaftermath.medical.MedicalSupplyPolicyTest'
+        includeTestsMatching 'io.github.safedecimal.decayingaftermath.medical.MedicalSupplyNbtTest'
+    }
+}
+
 java {
     toolchain.languageVersion = JavaLanguageVersion.of(25)
     withSourcesJar()

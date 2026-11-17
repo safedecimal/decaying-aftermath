@@ -77,7 +77,7 @@ public final class MedicalInventoryScreen extends AbstractContainerScreen<Invent
         extractBodyTooltip(graphics,mouseX,mouseY);
         if(pendingSlot>=0) {
             graphics.item(dragged,mouseX-8,mouseY-8);
-            graphics.itemDecorations(font,dragged,mouseX-8,mouseY-8);
+            MedicalSupplyOverlay.extract(graphics,dragged,mouseX-8,mouseY-8);
         }
         if(recipeBook.isVisible()) {
             recipeBook.extractRenderState(graphics,mouseX,mouseY,partialTick);
@@ -108,16 +108,10 @@ public final class MedicalInventoryScreen extends AbstractContainerScreen<Invent
             int tint=0xFFFF0000|channel<<8|channel;
             MinecraftBodyRenderer.part(graphics,part,b.x(),b.y(),b.width(),b.height(),tint);
             MinecraftBodyRenderer.outline(graphics,b,selected==part?0xFF2BEE91:0xFFB8B8B8);
-            if(states[i].bandaged()) overlayItem(graphics,MedicalItems.BANDAGE.getDefaultInstance(),b.x(),b.y()+b.height()/2);
-            if(states[i].splinted()) overlayItem(graphics,MedicalItems.SPLINT.getDefaultInstance(),b.x(),b.y()+b.height()/2+5);
-            if(states[i].tourniquet()) overlayItem(graphics,MedicalItems.TOURNIQUET.getDefaultInstance(),b.x(),b.y());
+            MedicalStatusIcons.body(graphics,states[i],b);
         }
         graphics.item(Items.KNOWLEDGE_BOOK.getDefaultInstance(),MedicalInventoryLayout.RECIPE_X,MedicalInventoryLayout.RECIPE_Y);
         graphics.pose().popMatrix();
-    }
-    private static void overlayItem(GuiGraphicsExtractor graphics,ItemStack item,int x,int y) {
-        graphics.pose().pushMatrix();graphics.pose().translate(x,y);graphics.pose().scale(0.6f,0.6f);
-        graphics.item(item,0,0);graphics.pose().popMatrix();
     }
     @Override protected void extractLabels(GuiGraphicsExtractor graphics,int mouseX,int mouseY) {
         graphics.text(font,Component.translatable("container.crafting").getString(),215,19,0xFFFFFFFF,false);
@@ -127,7 +121,7 @@ public final class MedicalInventoryScreen extends AbstractContainerScreen<Invent
         BodyPart hover=partAt(virtualX(mouseX),virtualY(mouseY));
         if(hover!=null) {
             BodySnapshot.PartSnapshot part=ClientMedicalState.snapshot().part(hover);
-            Component text=Component.translatable("decaying_aftermath.body_status",pretty(hover),Math.round(part.integrity()*100),
+            Component text=Component.translatable("decaying_aftermath.body_status",pretty(hover),
                     (part.fractured()?Component.translatable("decaying_aftermath.status.fractured").getString():"")
                     +(part.bleeding()>0?Component.translatable("decaying_aftermath.status.bleeding").getString():""));
             graphics.setTooltipForNextFrame(font,text,mouseX,mouseY);
@@ -139,7 +133,11 @@ public final class MedicalInventoryScreen extends AbstractContainerScreen<Invent
     }
     @Override protected void extractSlot(GuiGraphicsExtractor graphics,Slot slot,int mouseX,int mouseY) {
         // Only the cursor ghost is drawn; the server-owned source remains untouched until APPLY.
-        if(slot.index!=pendingSlot) super.extractSlot(graphics,slot,mouseX,mouseY);
+        if(slot.index==pendingSlot) return;
+        if(MedicalItems.treatment(slot.getItem())!=null) {
+            graphics.item(slot.getItem(),slot.x,slot.y);
+            MedicalSupplyOverlay.extract(graphics,slot.getItem(),slot.x,slot.y);
+        } else super.extractSlot(graphics,slot,mouseX,mouseY);
     }
     private static String pretty(BodyPart part) { return Component.translatable(part.translationKey()).getString(); }
     private static void cuText(GuiGraphicsExtractor graphics,String value,int x,int y) {

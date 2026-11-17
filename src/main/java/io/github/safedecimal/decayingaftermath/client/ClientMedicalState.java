@@ -18,6 +18,7 @@ public final class ClientMedicalState {
     }
     public static void beginProcedure(int slot,BodyPart part,TreatmentKind kind) { send(MedicalActionPayload.BEGIN,slot,part,kind,0); }
     public static void sendTreatment(int slot,BodyPart part,TreatmentKind kind,float amount) { send(MedicalActionPayload.APPLY,slot,part,kind,amount); }
+    public static void finishProcedure(int slot,BodyPart part,TreatmentKind kind) { send(MedicalActionPayload.FINISH,slot,part,kind,0); }
     public static void endProcedure() {
         if (ClientPlayNetworking.canSend(MedicalActionPayload.TYPE)) ClientPlayNetworking.send(new MedicalActionPayload(MedicalActionPayload.END,0,0,0,0));
     }

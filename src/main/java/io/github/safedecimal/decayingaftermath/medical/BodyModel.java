@@ -78,13 +78,13 @@ public final class BodyModel {
                 bleeding[i] = Math.max(0, bleeding[i] - .14f * amount);
                 localPain[i] = Math.max(0, localPain[i] - .08f * amount);
                 bandaged[i] = true;
-                careTicks[i] = Math.max(careTicks[i], Math.round(amount * 2400));
+                careTicks[i] = Math.min(2400, careTicks[i] + Math.round(amount * 2400));
             }
             case PRESSURE_DRESSING -> {
                 if (bleeding[i] <= 0 && integrity[i] >= 1) return false;
                 bleeding[i] = Math.max(0, bleeding[i] - .7f * amount);
                 bandaged[i] = true;
-                careTicks[i] = Math.max(careTicks[i], Math.round(amount * 2400));
+                careTicks[i] = Math.min(2400, careTicks[i] + Math.round(amount * 2400));
             }
             case SPLINT -> {
                 if (!fractured[i]) return false;
@@ -104,7 +104,7 @@ public final class BodyModel {
             }
             case REGENERATION_POTION -> {
                 if (integrity[i] >= 1) return false;
-                regenerationTicks[i] = Math.max(regenerationTicks[i], Math.round(amount * 1200));
+                regenerationTicks[i] = Math.min(1200, regenerationTicks[i] + Math.round(amount * 1200));
             }
         }
         evaluate(false);

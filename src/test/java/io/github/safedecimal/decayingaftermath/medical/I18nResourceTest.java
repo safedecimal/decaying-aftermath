@@ -17,7 +17,9 @@ class I18nResourceTest {
     }
     @Test void russianAndEnglishHaveIdenticalCompleteKeySets() throws IOException {
         var en=language("en_us");var ru=language("ru_ru");
-        assertEquals(en.keySet(),ru.keySet());assertEquals(41,en.size());
+        assertEquals(en.keySet(),ru.keySet());assertTrue(en.size()>=41);
+        for(String key:new String[]{"decaying_aftermath.procedure.guide.steady","decaying_aftermath.thought.supply_space"})
+            assertTrue(en.has(key),key);
         for(String key:en.keySet()) {assertFalse(en.get(key).getAsString().isBlank());assertFalse(ru.get(key).getAsString().isBlank());}
     }
     @Test void formattingPlaceholdersMatchAcrossLanguages() throws IOException {

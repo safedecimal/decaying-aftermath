@@ -1,0 +1,35 @@
+package io.github.safedecimal.decayingaftermath.client;
+
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
+class CuHandMotionTest {
+    @Test void painAddsCoherentBoundedMotionInsteadOfTeleporting() {
+        var quiet=new CuHandMotion();var painful=new CuHandMotion();var replay=new CuHandMotion();
+        boolean moved=false;
+        for(int i=0;i<600;i++) {
+            quiet.step(128,128,false,0);painful.step(128,128,false,1);replay.step(128,128,false,1);
+            moved|=Math.abs(painful.x()-128)>.1;
+            assertTrue(Math.abs(painful.x()-128)<8&&Math.abs(painful.y()-128)<8);
+            assertEquals(painful.x(),replay.x(),.000001);
+        }
+        assertTrue(moved);assertEquals(128,quiet.x());assertEquals(128,quiet.y());
+    }
+    @Test void handDoesNotTeleportToCursor() {
+        var hand=new CuHandMotion();hand.step(228,128,false);assertTrue(hand.x()>128);assertTrue(hand.x()<140);
+    }
+    @Test void sourceVelocityAndWindowLimitsStayFinite() {
+        var hand=new CuHandMotion();for(int i=0;i<600;i++)hand.step(100000,-100000,false);
+        assertTrue(Double.isFinite(hand.x()));assertTrue(Double.isFinite(hand.y()));assertTrue(hand.x()<=259.1);assertTrue(hand.y()>=-3.1);
+    }
+    @Test void threeFixedStepsEqualOneClientTick() {
+        var first=new CuHandMotion();var second=new CuHandMotion();
+        for(int tick=0;tick<20;tick++){first.beginTick();for(int i=0;i<3;i++)first.step(200,80,false);}
+        for(int i=0;i<60;i++)second.step(200,80,false);
+        assertEquals(first.x(),second.x(),.000001);assertEquals(first.y(),second.y(),.000001);
+    }
+    @Test void visualsInterpolateAcrossTheWholeClientTick() {
+        var hand=new CuHandMotion();hand.beginTick();double old=hand.x();for(int i=0;i<3;i++)hand.step(220,128,false);
+        assertEquals(old,hand.visualX(0));assertEquals(hand.x(),hand.visualX(1));assertTrue(hand.visualX(.5f)>old&&hand.visualX(.5f)<hand.x());
+    }
+}

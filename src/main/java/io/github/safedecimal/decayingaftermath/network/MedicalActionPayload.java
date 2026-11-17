@@ -6,7 +6,7 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
 
 public record MedicalActionPayload(int action,int slot,int part,int kind,float amount) implements CustomPacketPayload {
-    public static final int BEGIN=0, APPLY=1, END=2;
+    public static final int BEGIN=0, APPLY=1, END=2, FINISH=3;
     public static final Type<MedicalActionPayload> TYPE = new Type<>(Identifier.fromNamespaceAndPath("decaying_aftermath","medical_action"));
     public static final StreamCodec<RegistryFriendlyByteBuf,MedicalActionPayload> CODEC = CustomPacketPayload.codec(MedicalActionPayload::write,MedicalActionPayload::read);
     @Override public Type<MedicalActionPayload> type() { return TYPE; }

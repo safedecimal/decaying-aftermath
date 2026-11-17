@@ -1,0 +1,180 @@
+{
+  "source_assembly_sha256": "48c7f2296fc4a659faae3b1822884ca5b7ff73d6767ef159e6a6c2bc0b2d38f1",
+  "source_asset_sha256": {
+    "resources.assets": "81a5f55001875f37d450197151d7b0d3b349e70c47a5adeb0006f9dc4744df64",
+    "sharedassets0.assets": "eaba5973b39543d5d5539c76695008cfdfff50ed588fb7cff345a15a3b4eaa75",
+    "sharedassets1.assets": "befa3e57e3e7edcf40dd1b0108e7a69ab7961e9fe553fa17fdf43dbb747e3016",
+    "globalgamemanagers.assets": "b5d703000e77d787527b6ebf01528cf5e5961d4beacf9a5f0e346be10e71c141",
+    "level1": "f8c2ea53cab0acb7b333c2165ceba3c36c3963a8ded0196771b8d4d9cc8462b3"
+  },
+  "wound_component": {
+    "source_file": "level1",
+    "path_id": 1596
+  },
+  "code_sites": [
+    "WoundView.UpdateView icons list",
+    "WoundView.BleedImageFromLimb",
+    "BandageMinigame.Update bleedSprite",
+    "MinigameBase.UpdateHandPhysics/GetMousePos",
+    "BandageMinigame.PhysicsUpdate",
+    "SyringeMinigame.Update/HandRotOffset"
+  ],
+  "records": [
+    {
+      "alias": "bleeding_light",
+      "index": 7,
+      "source_file": "sharedassets1.assets",
+      "path_id": 486,
+      "source_name": "smallbleeding",
+      "dimensions": [
+        13,
+        17
+      ],
+      "sha256": "1846474fe0f9233972240a808f2e5e31659b95cefb0d99642dc9a5442f288519",
+      "transform": "Original full Sprite rect and transparent trim offsets restored"
+    },
+    {
+      "alias": "bleeding_medium",
+      "index": 9,
+      "source_file": "sharedassets1.assets",
+      "path_id": 411,
+      "source_name": "midBleeding",
+      "dimensions": [
+        15,
+        22
+      ],
+      "sha256": "ef52288b134d1e81abce06d0f3dc6f703f2ea39d57aac93e90ce0c7c330af9a0",
+      "transform": "Original full Sprite rect and transparent trim offsets restored"
+    },
+    {
+      "alias": "bleeding_heavy",
+      "index": 0,
+      "source_file": "resources.assets",
+      "path_id": 2520,
+      "source_name": "bleeding",
+      "dimensions": [
+        23,
+        32
+      ],
+      "sha256": "2b2893c3a8cf3db962c4f8302b8b4012332e094c967f51031fd792cfea00653d",
+      "transform": "Original full Sprite rect and transparent trim offsets restored"
+    },
+    {
+      "alias": "bleeding_arterial",
+      "index": 8,
+      "source_file": "sharedassets1.assets",
+      "path_id": 445,
+      "source_name": "strongbleed",
+      "dimensions": [
+        25,
+        40
+      ],
+      "sha256": "65e6838c56b01890e1dd680cac729f4d61e3b40ca159548ac17994b34ca25b02",
+      "transform": "Original full Sprite rect and transparent trim offsets restored"
+    },
+    {
+      "alias": "bleeding_covered_light",
+      "index": 12,
+      "source_file": "sharedassets1.assets",
+      "path_id": 464,
+      "source_name": "smallbleedingbandaged",
+      "dimensions": [
+        13,
+        17
+      ],
+      "sha256": "30cdcbc3d1b10073e4e9e77d9684d4c9bc0e7851510596cf223aa7bf499e5c37",
+      "transform": "Original full Sprite rect and transparent trim offsets restored"
+    },
+    {
+      "alias": "bleeding_covered_medium",
+      "index": 13,
+      "source_file": "sharedassets1.assets",
+      "path_id": 554,
+      "source_name": "midBleedingbandaged",
+      "dimensions": [
+        15,
+        22
+      ],
+      "sha256": "e95a82d589e550389022d48b7e07bcdee4fce2eb7791fceceb7ce494d3179d21",
+      "transform": "Original full Sprite rect and transparent trim offsets restored"
+    },
+    {
+      "alias": "bleeding_covered_heavy",
+      "index": 14,
+      "source_file": "sharedassets1.assets",
+      "path_id": 580,
+      "source_name": "bleedingbandaged",
+      "dimensions": [
+        23,
+        32
+      ],
+      "sha256": "a89ae14ba43412494088e6ba9c1031569223ca3f95d342afa642bd641c179c23",
+      "transform": "Original full Sprite rect and transparent trim offsets restored"
+    },
+    {
+      "alias": "bleeding_covered_arterial",
+      "index": 15,
+      "source_file": "sharedassets1.assets",
+      "path_id": 453,
+      "source_name": "strongbleedbandaged",
+      "dimensions": [
+        25,
+        40
+      ],
+      "sha256": "1ab1e31eaadb323cd392fe7bfc9345dbb2b443f8b9472ffb45db601acddf39e9",
+      "transform": "Original full Sprite rect and transparent trim offsets restored"
+    },
+    {
+      "alias": "fracture",
+      "index": 2,
+      "source_file": "sharedassets1.assets",
+      "path_id": 504,
+      "source_name": "brokenbone",
+      "dimensions": [
+        21,
+        32
+      ],
+      "sha256": "dfd92c9fdab03889a6ee66b8f30d152ec2e37ae1e252e6f6a2c4484815da5a83",
+      "transform": "Original full Sprite rect and transparent trim offsets restored"
+    }
+  ],
+  "derived_frame": {
+    "path": "textures/gui/procedures/procedure_frame.png",
+    "source": "textures/gui/medical/panel.png",
+    "source_sha256": "7172ffab454c4c547eede8421cb2520058c19b60ec3354a5e6ad7596e95641a8",
+    "sha256": "7b9190e4903062b2fc5ca07e5fadec0057344e29363726f782fca8f702880c85",
+    "dimensions": [
+      280,
+      286
+    ],
+    "transform": "Native CU border pixels re-tiled; transparent black work surface; no player skin or unrelated assets"
+  },
+  "adaptations": [
+    "Only bleeding and fracture have represented body-model fields; infection, shrapnel, dislocation and chills are not fabricated.",
+    "Normalized bleeding maps to original CU thresholds /100.",
+    "Procedural hand is new code-native cubic geometry, with CU MinigameBase hand physics; no paw or player skin texture.",
+    "Splint align/thread/tension, tourniquet fit/thread/windlass, potion neck/tilt and RMB syringe plunger are Minecraft adaptations; original CU splint/tourniquet install directly.",
+    "Pain tremor uses deterministic bounded harmonics on existing BodySnapshot.pain, not a claim of exact Perlin or fabricated CU skills.",
+    "Per-slot remaining percentages read server CUSTOM_DATA; installed device completion is separate from fractional supply."
+  ],
+  "games_started": false,
+  "version": "0.3.6",
+  "hand_geometry": {
+    "shape": "one Steve arm cuboid",
+    "front_dimensions": [
+      24,
+      72
+    ],
+    "Minecraft_ratio": [
+      4,
+      12
+    ],
+    "faces": "black",
+    "edges": "white",
+    "fingers": 0,
+    "palm": 0,
+    "thumb": 0,
+    "player_skin": false,
+    "inertial_motion": "unchanged"
+  }
+}
