@@ -22,6 +22,22 @@ test {
     useJUnitPlatform()
 }
 
+// Reproducible CU presentation and packaged-resource checks, without launching either game.
+tasks.register('verifyMedicalPresentation', Test) {
+    description = 'Verify CU asset bindings, pulse selection, native ECG and presentation timing.'
+    group = 'verification'
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+    useJUnitPlatform()
+    filter {
+        includeTestsMatching 'io.github.safedecimal.decayingaftermath.client.MedicalPresentationPolicyTest'
+        includeTestsMatching 'io.github.safedecimal.decayingaftermath.client.MedicalPresentationTimelineTest'
+        includeTestsMatching 'io.github.safedecimal.decayingaftermath.client.ConsciousnessLayoutTest'
+        includeTestsMatching 'io.github.safedecimal.decayingaftermath.client.EcgTraceTest'
+        includeTestsMatching 'io.github.safedecimal.decayingaftermath.medical.CuAssetBindingTest'
+    }
+}
+
 processResources {
     def modVersion = project.version
     inputs.property 'version', modVersion

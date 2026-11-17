@@ -27,12 +27,16 @@ public final class MedicalProcedureScreen extends Screen {
     private boolean syringeInserted;
     private double syringeLockX;
     private float remaining=1,delivered,pourProgress;
-    private int soundTicks;
+    private MedicalLoopSound syringeLoop;
+    private static final int SYRINGE_HEIGHT = 123;
+    // Source prefab is uniformly 1/4 size: pivot at needle tip; entry -219, end -345.
+    private static final double SYRINGE_ENTRY_Y = 128 + 219 * .25;
+    private static final double SYRINGE_END_Y = 128 + 345 * .25;
 
     public MedicalProcedureScreen(MedicalInventoryScreen previous,int slot,BodyPart part,TreatmentKind kind) {
         super(Component.translatable("decaying_aftermath.procedure.title"));
         this.previous=previous;this.slot=slot;this.part=part;this.kind=kind;
-        if(kind==TreatmentKind.FENTANYL) {objectX=116;objectY=25;}
+        if(kind==TreatmentKind.FENTANYL) {objectX=116;objectY=128 + 168 * .25 - SYRINGE_HEIGHT;}
     }
 
     @Override protected void init() {
@@ -52,14 +56,17 @@ public final class MedicalProcedureScreen extends Screen {
         BodySnapshot.Mode mode=ClientMedicalState.snapshot().mode();
         if(mode==BodySnapshot.Mode.UNCONSCIOUS||mode==BodySnapshot.Mode.DEAD) {onClose();return;}
         if(kind==TreatmentKind.FENTANYL&&holding&&syringeInserted&&remaining>0) {
-            float depth=(float)Math.clamp((objectY+123-175)/55,0,1);
+            float depth=(float)Math.clamp((objectY+SYRINGE_HEIGHT-SYRINGE_ENTRY_Y)
+                    /(SYRINGE_END_Y-SYRINGE_ENTRY_Y),0,1);
             float amount=Math.min(remaining,depth/120f);
             if(amount>0) {
                 ClientMedicalState.sendTreatment(slot,part,kind,amount);
                 remaining=Math.max(0,remaining-amount);delivered+=amount;
-                if(++soundTicks>=10) {MedicalClient.sound("procedure_syringe_loop",0.35f,1f);soundTicks=0;}
+                if(syringeLoop==null) syringeLoop=MedicalLoopSound.start("procedure_syringe_loop",0,1);
+                // SyringeMinigame.injectSource: a loop, volume=depth, pitch=1.6-item.condition.
+                syringeLoop.set(depth*.35f,1.6f-remaining);
             }
-        }
+        } else stopSyringeLoop();
         if(isPotion()&&holding&&stage==1&&pointerX>=90&&pointerX<=170&&pointerY>=85&&pointerY<=185) {
             pourProgress=Math.min(1,pourProgress+1f/40);
             if(pourProgress>=1&&elapsed>=50) finish();
@@ -76,21 +83,27 @@ public final class MedicalProcedureScreen extends Screen {
         graphics.pose().pushMatrix();graphics.pose().translate(ox,oy);graphics.pose().scale(scale,scale);
         if(isWrap()) {
             MedicalClient.blit(graphics,"bandage_inner",65,65,126,126,164,164,0xFFFFFFFF);
-            MedicalClient.radialTexture(graphics,"bandage",32,32,192,192,
+            // Source Outer: 600 * sizeMultiplier(.9) * .25 = 135; full 200x200 Sprite rect.
+            MedicalClient.radialTexture(graphics,"bandage",60,60,135,200,
                     (float)Math.min(angle/360,1),0xFFFFFFFF);
             double radians=Math.toRadians(angle);
-            int x=128+(int)(Math.sin(radians)*91),y=128-(int)(Math.cos(radians)*91);
-            MedicalClient.blit(graphics,"bandage_roll",x-18,y-18,36,36,104,104,0xFFFFFFFF);
+            int x=128+(int)(Math.sin(radians)*97.5),y=128-(int)(Math.cos(radians)*97.5);
+            graphics.pose().pushMatrix();graphics.pose().translate(128,128);graphics.pose().rotate((float)radians);
+            MedicalClient.blit(graphics,"bandage_pointer",-101,-101,202,202,300,300,0xFFFFFFFF);
+            graphics.pose().popMatrix();
+            graphics.pose().pushMatrix();graphics.pose().translate(x,y);graphics.pose().rotate((float)(radians*3));
+            MedicalClient.blit(graphics,"bandage_roll",-39,-39,78,78,104,104,0xFFFFFFFF);
+            graphics.pose().popMatrix();
             graphics.centeredText(font,Math.round(Math.min(1,angle/360)*100)+"%",128,122,0xFFFFFFFF);
         } else if(kind==TreatmentKind.FENTANYL) {
-            MedicalClient.blit(graphics,"syringe_ground",28,175,200,29,200,29,0xFFFFFFFF);
+            MedicalClient.blit(graphics,"syringe_ground",-22,(int)Math.round(SYRINGE_ENTRY_Y),300,44,200,29,0xFFFFFFFF);
             MedicalClient.blit(graphics,"syringe",(int)objectX,(int)objectY,23,123,30,164,0xFFFFFFFF);
             // Original fill pixels, clipped to the actual amount left in this syringe.
             int fillHeight=Math.round(59*remaining);
             if(fillHeight>0) {
-                graphics.enableScissor(ox+(int)((objectX+3)*scale),oy+(int)((objectY+20+59-fillHeight)*scale),
-                        ox+(int)((objectX+18)*scale),oy+(int)((objectY+79)*scale));
-                MedicalClient.blit(graphics,"syringe_fill",(int)objectX+3,(int)objectY+20,15,59,20,78,0xFF63C9D6);
+                graphics.enableScissor(ox+(int)((objectX+3)*scale),oy+(int)((objectY+24+59-fillHeight)*scale),
+                        ox+(int)((objectX+18)*scale),oy+(int)((objectY+83)*scale));
+                MedicalClient.blit(graphics,"syringe_fill",(int)objectX+3,(int)objectY+24,15,59,20,78,0xFF0084AD);
                 graphics.disableScissor();
             }
             graphics.centeredText(font,Component.translatable("decaying_aftermath.procedure.remaining",Math.round(remaining*100)).getString(),128,220,0xFFFFFFFF);
@@ -102,12 +115,21 @@ public final class MedicalProcedureScreen extends Screen {
             graphics.centeredText(font,Component.translatable("decaying_aftermath.procedure.applied",Math.round(pourProgress*100)).getString(),128,210,0xFFFFFFFF);
         } else {
             drawSelectedPart(graphics,117,75,27,116);
-            String texture=kind==TreatmentKind.SPLINT?"splint":"tourniquet";
-            int sw=kind==TreatmentKind.SPLINT?16:36,sh=kind==TreatmentKind.SPLINT?29:39;
-            MedicalClient.blit(graphics,texture,(int)objectX,(int)objectY,27,49,sw,sh,0xFFFFFFFF);
+            if(stage==0) {
+                // Drag the real item; splinticon/tourniquetIcon are applied-limb overlays in CU.
+                ItemStack item=minecraft.player==null?ItemStack.EMPTY:minecraft.player.inventoryMenu.getSlot(slot).getItem();
+                graphics.pose().pushMatrix();graphics.pose().translate((float)objectX,(float)objectY);graphics.pose().scale(2,2);
+                graphics.item(item,0,0);graphics.pose().popMatrix();
+            } else {
+                String texture=kind==TreatmentKind.SPLINT?"splint":"tourniquet";
+                int sw=kind==TreatmentKind.SPLINT?16:36,sh=kind==TreatmentKind.SPLINT?29:39;
+                int dw=kind==TreatmentKind.SPLINT?27:45;
+                MedicalClient.blit(graphics,texture,(int)objectX,(int)objectY,dw,49,sw,sh,0xFFFFFFFF);
+            }
             if(stage>0&&kind==TreatmentKind.SPLINT) {
-                MedicalClient.blit(graphics,"bandage_pointer",94,104,54,25,54,25,stage>=2?0xFF2BD881:0xFFFFFFFF);
-                MedicalClient.blit(graphics,"bandage_pointer",94,153,54,25,54,25,stage>=3?0xFF2BD881:0xFFFFFFFF);
+                // Minecraft fastening widgets, not CU's bandage reticle repurposed as straps.
+                graphics.fill(94,112,148,121,stage>=2?0xFF2BD881:0xFFB8B8B8);
+                graphics.fill(94,161,148,170,stage>=3?0xFF2BD881:0xFFB8B8B8);
             }
             if(kind==TreatmentKind.TOURNIQUET&&stage>0)
                 graphics.centeredText(font,Math.round(Math.min(1,angle/360)*100)+"%",128,205,0xFFFFFFFF);
@@ -166,18 +188,20 @@ public final class MedicalProcedureScreen extends Screen {
             previousAngle=next;
             if(angle>=360) {
                 completed=true;holding=false;
-                MedicalClient.sound(isWrap()?"procedure_bandage":"procedure_tourniquet",0.65f,1f);
+                if(isWrap()) MedicalClient.sound("procedure_bandage",0.65f,1f);
+                // Item.useLimbAction + TourniquetScript have no splint/fastening Sound.Play call.
                 if(elapsed>=50) finish();
             }
         } else if(kind==TreatmentKind.FENTANYL) {
             double desiredX=Math.clamp(pointerX+offsetX,40,190);
-            objectY=Math.clamp(pointerY+offsetY,10,125);
-            boolean inserted=objectY+123>=175;
+            objectY=Math.clamp(pointerY+offsetY,10,SYRINGE_END_Y-SYRINGE_HEIGHT);
+            boolean inserted=objectY+SYRINGE_HEIGHT>SYRINGE_ENTRY_Y;
             if(inserted&&!syringeInserted) {
                 syringeLockX=desiredX;MedicalClient.sound("procedure_syringe",0.6f,1f);
             }
             if(inserted) {
-                if(Math.abs(desiredX-syringeLockX)>24) {
+                if(Math.abs(desiredX-syringeLockX)>80*.25) {
+                    MedicalClient.sound("procedure_syringe_fail",.6f,1f);
                     ThoughtTyper.enqueue(Component.translatable("decaying_aftermath.thought.careful").getString());holding=false;onClose();return true;
                 }
                 objectX=syringeLockX;
@@ -190,8 +214,8 @@ public final class MedicalProcedureScreen extends Screen {
         } else if(stage==0) {
             objectX=Math.clamp(pointerX+offsetX,15,215);objectY=Math.clamp(pointerY+offsetY,15,205);
         } else if(kind==TreatmentKind.SPLINT&&pointerX-strapStart>=35) {
-            stage++;holding=false;MedicalClient.sound("procedure_splint",0.6f,1f);
-            if(stage>=3) {completed=true;if(elapsed>=50) finish();}
+            stage++;holding=false;
+            if(stage>=3) {completed=true;MedicalClient.sound("procedure_splint",0.6f,1f);if(elapsed>=50) finish();}
         }
         return true;
     }
@@ -202,7 +226,7 @@ public final class MedicalProcedureScreen extends Screen {
                 &&Math.abs(objectX-116)<35&&Math.abs(objectY-105)<50) {
             objectX=116;objectY=105;stage=1;
         }
-        holding=false;return true;
+        holding=false;stopSyringeLoop();return true;
     }
 
     private static double polar(double x,double y) {return (Math.toDegrees(Math.atan2(x-128,128-y))+360)%360;}
@@ -213,7 +237,8 @@ public final class MedicalProcedureScreen extends Screen {
         if(kind!=TreatmentKind.FENTANYL) ClientMedicalState.sendTreatment(slot,part,kind,1f);
         end();minecraft.gui.setScreen(previous);
     }
-    private void end() {if(!ended) {ended=true;ClientMedicalState.endProcedure();}}
+    private void stopSyringeLoop() {if(syringeLoop!=null) {syringeLoop.close();syringeLoop=null;}}
+    private void end() {stopSyringeLoop();if(!ended) {ended=true;ClientMedicalState.endProcedure();}}
     @Override public void onClose() {end();if(minecraft.player!=null) minecraft.gui.setScreen(previous);}
     @Override public void removed() {end();super.removed();}
     @Override public boolean isPauseScreen() {return false;}

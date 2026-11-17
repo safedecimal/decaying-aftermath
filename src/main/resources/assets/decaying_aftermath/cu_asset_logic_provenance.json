@@ -1,0 +1,215 @@
+{
+  "source_installation": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Casualties Unknown\\CasualtiesUnknown_Data",
+  "source_assembly_sha256": "48c7f2296fc4a659faae3b1822884ca5b7ff73d6767ef159e6a6c2bc0b2d38f1",
+  "source_asset_sha256": {
+    "resources.assets": "81a5f55001875f37d450197151d7b0d3b349e70c47a5adeb0006f9dc4744df64",
+    "sharedassets0.assets": "eaba5973b39543d5d5539c76695008cfdfff50ed588fb7cff345a15a3b4eaa75",
+    "sharedassets1.assets": "befa3e57e3e7edcf40dd1b0108e7a69ab7961e9fe553fa17fdf43dbb747e3016",
+    "level1": "f8c2ea53cab0acb7b333c2165ceba3c36c3963a8ded0196771b8d4d9cc8462b3"
+  },
+  "evidence": "fresh dnSpy C# + REA PE/CLI identity + Unity scene/prefab references",
+  "runtime_bindings": {
+    "sleepFill": {
+      "sprite": "sleepcircle",
+      "source_file": "sharedassets1.assets",
+      "path_id": 443,
+      "dimensions": [
+        149,
+        149
+      ],
+      "image_type": "Filled",
+      "fill_method": "Radial360",
+      "fill_origin": "Top",
+      "clockwise": true,
+      "reference_height": 1080,
+      "reference_diameter": 447
+    },
+    "consciousnessECG": {
+      "grid": [
+        139,
+        23
+      ],
+      "display_rect": [
+        417,
+        69
+      ],
+      "sample_seconds": 0.028,
+      "color": "white; follows sleepFill alpha"
+    },
+    "lastStandPanel": {
+      "frames": [
+        "laststand1",
+        "laststand2",
+        "laststand3"
+      ],
+      "text_children": 0,
+      "black_seconds": 2,
+      "intro_seconds": 6.7,
+      "fade_seconds": 4,
+      "fps": 8,
+      "drone_start": "after 2 seconds"
+    },
+    "heartbeat": {
+      "normal_inventory": "heartthump",
+      "critical_inventory": "heartthump-heavy-monitor",
+      "critical_world": "heartthump-heavy",
+      "simultaneous_beat_recordings": 1
+    },
+    "criticalAmbience": {
+      "conscious": "criticalloop",
+      "unconscious": "criticalloop-unconscious",
+      "loop": true,
+      "fade_per_second": 0.5,
+      "not_on_every_unconscious_entry": true
+    },
+    "syringe": {
+      "loop": "syringeLoop",
+      "entry_sound": "syringe",
+      "failure_sound": "bullethit",
+      "pitch": "1.6 - remaining",
+      "volume": "insertion depth",
+      "source_entry_y": -219,
+      "source_end_y": -345
+    },
+    "splint": {
+      "overlay": "splinticon",
+      "completion_sound": "splint",
+      "sound_count_per_application": 1
+    },
+    "tourniquet": {
+      "overlay": "tourniquetIcon",
+      "completion_sound": null,
+      "bandage_reticle_used_as_strap": false
+    }
+  },
+  "adaptations": [
+    "Minecraft body model and procedure budgets remain server-authoritative; missing CU physiology is not fabricated from condition.",
+    "User-requested inventory-only ECG/BPM preserved; center BPM text is Minecraft-specific, source CU text was Zzz...",
+    "Splint/tourniquet interactions are Minecraft adaptations; source CU directly applies those items.",
+    "Procedure canvas uses uniform 1/4 source units; item icons are draggable tools, source limb overlays only after fitting.",
+    "Original normal ECG curve retained; fibrillation/brain-dying effects are not claimed without corresponding model fields.",
+    "The original game was not executed; these are static binding and headless execution checks."
+  ],
+  "records": [
+    {
+      "output": "textures/gui/procedures/bandage.png",
+      "sha256": "6fa37e5b8f9e6c1ae28536f966dbfdd4f57bb369f20d0e1d066f1e7dea32f5ab",
+      "dimensions": [
+        200,
+        200
+      ],
+      "source_file": "resources.assets",
+      "path_id": 2859,
+      "source_name": "bandageOuter",
+      "packed_size": [
+        192,
+        192
+      ],
+      "texture_rect_offset": [
+        4.04290771484375,
+        4.076120376586914
+      ],
+      "destination_xy": [
+        4,
+        4
+      ],
+      "original_pixel_sha256": "fa849df90fe7444fdb6b7582ca7fbb972723515037b9ba3217a4951b393095c4",
+      "transform": "restore original Sprite.m_Rect with transparent trim offsets; no painted pixels"
+    },
+    {
+      "output": "textures/gui/procedures/bandage_outer.png",
+      "sha256": "6fa37e5b8f9e6c1ae28536f966dbfdd4f57bb369f20d0e1d066f1e7dea32f5ab",
+      "dimensions": [
+        200,
+        200
+      ],
+      "source_file": "resources.assets",
+      "path_id": 2859,
+      "source_name": "bandageOuter",
+      "packed_size": [
+        192,
+        192
+      ],
+      "texture_rect_offset": [
+        4.04290771484375,
+        4.076120376586914
+      ],
+      "destination_xy": [
+        4,
+        4
+      ],
+      "original_pixel_sha256": "fa849df90fe7444fdb6b7582ca7fbb972723515037b9ba3217a4951b393095c4",
+      "transform": "restore original Sprite.m_Rect with transparent trim offsets; no painted pixels"
+    },
+    {
+      "output": "textures/gui/procedures/bandage_pointer.png",
+      "sha256": "bf6bcfa055b9d02359e719d93c4cc4a5adc4379abde0700c01456e9f333193ed",
+      "dimensions": [
+        300,
+        300
+      ],
+      "source_file": "resources.assets",
+      "path_id": 2251,
+      "source_name": "bandageStick",
+      "packed_size": [
+        54,
+        25
+      ],
+      "texture_rect_offset": [
+        125.07611846923828,
+        195.0761260986328
+      ],
+      "destination_xy": [
+        125,
+        80
+      ],
+      "original_pixel_sha256": "670c5016cc9b0c297b955da577bf7b1652c5e5cf86a6db54f51afbba7f3d1fec",
+      "transform": "restore original Sprite.m_Rect with transparent trim offsets; no painted pixels"
+    },
+    {
+      "output": "sounds/heartbeat_heavy.ogg",
+      "sha256": "b50c53da631cdd9bcd9cb262a78f87bc6039a17ed70d57310c6e5f8216e059c8",
+      "source_file": "resources.assets",
+      "path_id": 1633,
+      "source_name": "heartthump-heavy",
+      "code_site": "Body.Update: critical dying, wound view closed",
+      "sample_rate": 44100,
+      "channels": 2,
+      "samples": 33899,
+      "duration_seconds": 0.7686848072562358,
+      "fsb_sha256": "418f86aeef00636846864688cfe6fc4def67c36e07e1f451fa4b1db8b5d488ac",
+      "decoded_wav_sha256": "a850935e4fbea85c76c41beceaca452fdff64265e2474a85aa7117e0cfda33d5",
+      "transform": "original FSB decoded and encoded as Vorbis; no synthesis, trimming, or resampling"
+    },
+    {
+      "output": "sounds/critical.ogg",
+      "sha256": "2e6f6f68236747affebf3265330817c6ab7fe248577638ba50b6aa0c29ae8d9e",
+      "source_file": "resources.assets",
+      "path_id": 1520,
+      "source_name": "criticalloop",
+      "code_site": "MusicManager.critSource: conscious critical loop",
+      "sample_rate": 44100,
+      "channels": 1,
+      "samples": 1811012,
+      "duration_seconds": 41.06603174603175,
+      "fsb_sha256": "4601c02b450063207c6f8b3f3b8437ae90386953603b0554113791f0e114a208",
+      "decoded_wav_sha256": "ce5fdacbd2ac2fb6e9fdf78b8295e9379ad76e04993b09fe51cbe86970c69538",
+      "transform": "original FSB decoded and encoded as Vorbis; no synthesis, trimming, or resampling"
+    },
+    {
+      "output": "sounds/procedure_syringe_fail.ogg",
+      "sha256": "a6d9544b1a0fcd3ae242a654e4a704b4dd53a608e303ecbc8306963af0c6c20a",
+      "source_file": "resources.assets",
+      "path_id": 1525,
+      "source_name": "bullethit",
+      "code_site": "SyringeMinigame.Update: excessive sideways needle displacement",
+      "sample_rate": 44100,
+      "channels": 2,
+      "samples": 30371,
+      "duration_seconds": 0.6886848072562358,
+      "fsb_sha256": "b2a396ffbb8bd3f7c907a64a5d2035fc12a318899d0ce7f0c80a4e2cf139e4be",
+      "decoded_wav_sha256": "ba75217deff08090c90ee2923a7dbfaf7954531a04744a339b712b289de33f05",
+      "transform": "original FSB decoded and encoded as Vorbis; no synthesis, trimming, or resampling"
+    }
+  ]
+}

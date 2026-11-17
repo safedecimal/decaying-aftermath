@@ -26,7 +26,8 @@ public final class MedicalPanelRenderer {
         }
         long now = System.nanoTime();
         if (lastDrawNanos != 0) {
-            TRACE.advance((now - lastDrawNanos) / 1_000_000_000.0, PulseState.bpmExact());
+            TRACE.follow((now - lastDrawNanos) / 1_000_000_000.0,
+                    PulseState.bpmExact(), MedicalClient.beatPhase());
         }
         lastDrawNanos = now;
         graphics.pose().pushMatrix();

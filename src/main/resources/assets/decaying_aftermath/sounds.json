@@ -63,14 +63,6 @@
       }
     ]
   },
-  "procedure_tourniquet": {
-    "sounds": [
-      {
-        "name": "decaying_aftermath:procedure_tourniquet",
-        "stream": false
-      }
-    ]
-  },
   "unconscious": {
     "sounds": [
       {
@@ -92,6 +84,30 @@
       {
         "name": "decaying_aftermath:last_standing_drone",
         "stream": true
+      }
+    ]
+  },
+  "heartbeat_heavy": {
+    "sounds": [
+      {
+        "name": "decaying_aftermath:heartbeat_heavy",
+        "stream": false
+      }
+    ]
+  },
+  "critical": {
+    "sounds": [
+      {
+        "name": "decaying_aftermath:critical",
+        "stream": true
+      }
+    ]
+  },
+  "procedure_syringe_fail": {
+    "sounds": [
+      {
+        "name": "decaying_aftermath:procedure_syringe_fail",
+        "stream": false
       }
     ]
   }

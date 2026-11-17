@@ -4,6 +4,15 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 class EcgTraceTest {
+    @Test void consciousnessHasItsOwnGridAndUsesOriginalHermiteKeys() {
+        var trace = new EcgTrace(139,23);
+        assertEquals(139,trace.width()); assertEquals(23,trace.height());
+        assertEquals(.9987809062004089,EcgTrace.waveform(.28535962104797363),1e-9);
+        assertEquals(-.6998956203460693,EcgTrace.waveform(.3720250725746155),1e-9);
+        for(int i=0;i<600;i++)trace.follow(.05,220,(i*.05*220/60)%1);
+        for(int age=0;age<trace.width();age++)assertTrue(trace.sample(age)>=0&&trace.sample(age)<23);
+        trace.reset();assertEquals(0,trace.alpha(0,11));assertEquals(11,trace.sample(0));
+    }
     @Test
     void originalSweepFadesBehindTheWriteHeadAndHasOnePixelHalo() {
         EcgTrace trace = new EcgTrace();

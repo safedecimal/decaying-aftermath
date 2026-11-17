@@ -9,7 +9,7 @@
   "original_monitor_artwork_modified": false,
   "native_composites_are_original_segments_only": true,
   "static_behavior_findings": {
-    "unconscious": "PlayerCamera.HandleUnconsciousScreen: blackout, sleepFill radial image from energy (brain health when dying), consciousnessECG and text visible after black-time fade; no real recovery countdown claim.",
+    "unconscious": "PlayerCamera.HandleUnconsciousScreen sleepFill references sleepcircle, not generic Circle; original 447x447 height-matched UI and 139x23 ECG. See current runtime manifest.",
     "last_stand": "Body.TryLastStand is an original chance-based revival; PlayerCamera.LastStandSequence has a 6.7s intro, first 2s black, then 3 originals cycling at 8fps, original heartbeat+drone. Minecraft body model balance may differ and must not be claimed an exact port.",
     "bandage": "BandageMinigame angle-wrap actions at 20-degree intervals; original bandage sound after complete wrap.",
     "syringe": "SyringeMinigame drag, entry depth, position-dependent feed over time, fill consumption, excessive sideways movement failure.",
@@ -692,12 +692,12 @@
     },
     {
       "output": "textures/gui/procedures/bandage.png",
-      "sha256": "68d2609f7d4505e6fc4af8136519991e35f32964b399b7ce2eb9b41d83d0aae3",
+      "sha256": "6fa37e5b8f9e6c1ae28536f966dbfdd4f57bb369f20d0e1d066f1e7dea32f5ab",
       "dimensions": [
-        192,
-        192
+        200,
+        200
       ],
-      "transform": "none",
+      "transform": "restore original Sprite.m_Rect with transparent trim offsets; no painted pixels",
       "sources": [
         {
           "kind": "Sprite",
@@ -709,18 +709,34 @@
             192
           ],
           "original_png_sha256": "68d2609f7d4505e6fc4af8136519991e35f32964b399b7ce2eb9b41d83d0aae3",
-          "pixel_rgba_sha256": "fa849df90fe7444fdb6b7582ca7fbb972723515037b9ba3217a4951b393095c4"
+          "pixel_rgba_sha256": "fa849df90fe7444fdb6b7582ca7fbb972723515037b9ba3217a4951b393095c4",
+          "packed_dimensions": [
+            192,
+            192
+          ],
+          "native_sprite_rect": [
+            200,
+            200
+          ]
         }
+      ],
+      "texture_rect_offset": [
+        4.04290771484375,
+        4.076120376586914
+      ],
+      "destination_xy": [
+        4,
+        4
       ]
     },
     {
       "output": "textures/gui/procedures/bandage_outer.png",
-      "sha256": "68d2609f7d4505e6fc4af8136519991e35f32964b399b7ce2eb9b41d83d0aae3",
+      "sha256": "6fa37e5b8f9e6c1ae28536f966dbfdd4f57bb369f20d0e1d066f1e7dea32f5ab",
       "dimensions": [
-        192,
-        192
+        200,
+        200
       ],
-      "transform": "none",
+      "transform": "restore original Sprite.m_Rect with transparent trim offsets; no painted pixels",
       "sources": [
         {
           "kind": "Sprite",
@@ -732,8 +748,24 @@
             192
           ],
           "original_png_sha256": "68d2609f7d4505e6fc4af8136519991e35f32964b399b7ce2eb9b41d83d0aae3",
-          "pixel_rgba_sha256": "fa849df90fe7444fdb6b7582ca7fbb972723515037b9ba3217a4951b393095c4"
+          "pixel_rgba_sha256": "fa849df90fe7444fdb6b7582ca7fbb972723515037b9ba3217a4951b393095c4",
+          "packed_dimensions": [
+            192,
+            192
+          ],
+          "native_sprite_rect": [
+            200,
+            200
+          ]
         }
+      ],
+      "texture_rect_offset": [
+        4.04290771484375,
+        4.076120376586914
+      ],
+      "destination_xy": [
+        4,
+        4
       ]
     },
     {
@@ -784,12 +816,12 @@
     },
     {
       "output": "textures/gui/procedures/bandage_pointer.png",
-      "sha256": "73b40f63d6ceef9f3d35259babba2ba335ab0e8e2dd9ab71a44fb386317b3f9d",
+      "sha256": "bf6bcfa055b9d02359e719d93c4cc4a5adc4379abde0700c01456e9f333193ed",
       "dimensions": [
-        54,
-        25
+        300,
+        300
       ],
-      "transform": "none",
+      "transform": "restore original Sprite.m_Rect with transparent trim offsets; no painted pixels",
       "sources": [
         {
           "kind": "Sprite",
@@ -801,8 +833,24 @@
             25
           ],
           "original_png_sha256": "73b40f63d6ceef9f3d35259babba2ba335ab0e8e2dd9ab71a44fb386317b3f9d",
-          "pixel_rgba_sha256": "670c5016cc9b0c297b955da577bf7b1652c5e5cf86a6db54f51afbba7f3d1fec"
+          "pixel_rgba_sha256": "670c5016cc9b0c297b955da577bf7b1652c5e5cf86a6db54f51afbba7f3d1fec",
+          "packed_dimensions": [
+            54,
+            25
+          ],
+          "native_sprite_rect": [
+            300,
+            300
+          ]
         }
+      ],
+      "texture_rect_offset": [
+        125.07611846923828,
+        195.0761260986328
+      ],
+      "destination_xy": [
+        125,
+        80
       ]
     },
     {
@@ -1319,7 +1367,7 @@
           "unity_length_seconds": 0.8436041474342346
         }
       ],
-      "note": "original splint fastening sound reused for new tourniquet procedure; source CU tourniquet has no minigame"
+      "note": "Historical export only; no runtime sound alias/call. CU tourniquet useLimbAction and TourniquetScript have no Sound.Play."
     },
     {
       "output": "sounds/unconscious.ogg",
@@ -1384,5 +1432,6 @@
       ],
       "note": "original CU audio"
     }
-  ]
+  ],
+  "current_runtime_binding_manifest": "cu_asset_logic_provenance.json"
 }
