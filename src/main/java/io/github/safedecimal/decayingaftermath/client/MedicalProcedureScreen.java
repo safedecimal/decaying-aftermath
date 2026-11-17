@@ -17,6 +17,7 @@ public final class MedicalProcedureScreen extends Screen {
     private final BodyPart part;
     private final TreatmentKind kind;
     private final CuHandMotion hand=new CuHandMotion();
+    private final ProcedureCursor cursor=new ProcedureCursor();
     private final BandageWrapMotion wrap=new BandageWrapMotion();
     private final FastenerMotion fasteners=new FastenerMotion();
     private ProcedureBudget budget;
@@ -25,6 +26,7 @@ public final class MedicalProcedureScreen extends Screen {
     private float scale=1,remaining=1,initialFill=1,lastFill=1,pendingUse,outstanding;
     private int ox,oy;
     private double pointerX=128,pointerY=225,offsetX,offsetY,objectX=47,objectY=90;
+    private double previousObjectX=47,previousObjectY=90,gripLocalX,gripLocalY;
     private double angle,deviceAngle=-18,potionTilt,syringeAngle;
     private boolean syringeInserted;
     private double syringeLockX;
@@ -38,6 +40,8 @@ public final class MedicalProcedureScreen extends Screen {
         this.previous=previous;this.slot=slot;this.part=part;this.kind=kind;
         budget=new ProcedureBudget(0,MedicalSupplyPolicy.ticksPerFill(kind));
         if(kind==TreatmentKind.FENTANYL) {objectX=116;objectY=128+168*.25-SYRINGE_HEIGHT;}
+        if(isWrap()) {objectX=128;objectY=31;}
+        previousObjectX=objectX;previousObjectY=objectY;
     }
     @Override protected void init() {
         scale=Math.max(.25f,Math.min(1f,Math.min((width-32f)/280,(height-64f)/286)));
@@ -54,6 +58,15 @@ public final class MedicalProcedureScreen extends Screen {
     private ItemStack source() {return minecraft.player==null?ItemStack.EMPTY:minecraft.player.inventoryMenu.getSlot(slot).getItem();}
     private boolean isWrap() {return MedicalSupplyPolicy.wrap(kind);}
     private boolean isPotion() {return kind==TreatmentKind.HEALING_POTION||kind==TreatmentKind.REGENERATION_POTION||kind==TreatmentKind.POTION;}
+    private boolean draggingTool() {return holding&&(isWrap()||kind==TreatmentKind.FENTANYL||isPotion()||stage==0);}
+    private double pivotX() {return isWrap()?0:kind==TreatmentKind.FENTANYL?11.5:isPotion()?16:kind==TreatmentKind.SPLINT?13.5:22.5;}
+    private double pivotY() {return isWrap()?0:kind==TreatmentKind.FENTANYL?SYRINGE_HEIGHT:isPotion()?16:24.5;}
+    private double toolAngle() {return isWrap()?angle*3:kind==TreatmentKind.FENTANYL?syringeAngle:isPotion()?potionTilt:kind==TreatmentKind.SPLINT?deviceAngle:0;}
+    private void captureGrip(double x,double y) {
+        offsetX=objectX-x;offsetY=objectY-y;
+        var grip=ProcedureToolPose.localGrip(x,y,objectX,objectY,pivotX(),pivotY(),toolAngle());
+        gripLocalX=grip.x();gripLocalY=grip.y();
+    }
     private void target(double x,double y) {pointerX=Math.clamp((x-ox)/scale,-3,259);pointerY=Math.clamp((y-oy)/scale,-3,259);}
     @Override public void mouseMoved(double x,double y) {target(x,y);}
     @Override public void tick() {
@@ -63,7 +76,7 @@ public final class MedicalProcedureScreen extends Screen {
         if(mode==BodySnapshot.Mode.UNCONSCIOUS||mode==BodySnapshot.Mode.DEAD) {onClose();return;}
         syncSupply();
         if(sourceExhausted) {if(MedicalSupplyPolicy.installation(kind)&&completed)finish();else onClose();return;}
-        hand.beginTick();
+        previousObjectX=objectX;previousObjectY=objectY;hand.beginTick();
         for(int i=0;i<3&&!ended;i++) {
             hand.step(pointerX,pointerY,isWrap()&&holding,ClientMedicalState.snapshot().pain());
             if(isWrap())hand.outsideRadius(250);
@@ -100,6 +113,7 @@ public final class MedicalProcedureScreen extends Screen {
     }
     private void interact(double seconds) {
         if(isWrap()) {
+            objectX=hand.x()+offsetX;objectY=hand.y()+offsetY;
             int turns=wrap.turns();double rotation=wrap.advance(hand.x(),hand.y());angle=wrap.angle();
             queueUse(MedicalSupplyPolicy.wrapCost(rotation));
             if(wrap.turns()>turns)MedicalClient.sound("procedure_bandage",.65f,1);
@@ -142,14 +156,14 @@ public final class MedicalProcedureScreen extends Screen {
         if(event.button()!=1)return false;
         double x=hand.x(),y=hand.y();
         if(isWrap()) {
-            double radius=Math.hypot(x-128,y-128),difference=BandageWrapMotion.normalize(BandageWrapMotion.polar(x,y)-angle);
-            holding=radius>=63&&radius<=116&&Math.abs(difference)<26;wrap.grab(x,y);return holding;
+            int size=rollSize();holding=Math.hypot(x-objectX,y-objectY)<=size/2.0+4;
+            if(holding) {captureGrip(x,y);wrap.grab(x,y);}return holding;
         }
         if(kind==TreatmentKind.FENTANYL||isPotion()||stage==0) {
             int w=kind==TreatmentKind.FENTANYL?23:isPotion()?32:kind==TreatmentKind.SPLINT?27:45;
             int h=kind==TreatmentKind.FENTANYL?123:isPotion()?32:49;
             holding=CuProcedureGeometry.toolGrip(x,y,objectX,objectY,w,h,isPotion()?potionTilt:kind==TreatmentKind.SPLINT?deviceAngle:0,4);
-            offsetX=objectX-x;offsetY=objectY-y;return holding;
+            if(holding)captureGrip(x,y);return holding;
         }
         if(kind==TreatmentKind.SPLINT||stage==1) {
             int row=stage<3?112:164,start=(stage%2)==1?96:148;
@@ -175,6 +189,13 @@ public final class MedicalProcedureScreen extends Screen {
         return false;
     }
     @Override public void extractRenderState(GuiGraphicsExtractor graphics,int mouseX,int mouseY,float partialTick) {
+        if(!ended)cursor.hide(minecraft.getWindow().handle());
+        double toolX=ProcedureToolPose.interpolate(previousObjectX,objectX,partialTick),toolY=ProcedureToolPose.interpolate(previousObjectY,objectY,partialTick);
+        double handX=hand.visualX(partialTick),handY=hand.visualY(partialTick);
+        if(draggingTool()) {
+            var grip=ProcedureToolPose.grip(toolX,toolY,pivotX(),pivotY(),gripLocalX,gripLocalY,toolAngle());
+            handX=grip.x();handY=grip.y();
+        }
         extractTransparentBackground(graphics);MedicalPanelRenderer.extract(graphics,MedicalPanelLayout.topLeft());
         graphics.pose().pushMatrix();graphics.pose().translate(ox,oy);graphics.pose().scale(scale,scale);ProcedureVisuals.frame(graphics);
         graphics.centeredText(font,Component.translatable(part.translationKey()).getString(),128,-1,0xFFDDE3DE);
@@ -182,33 +203,22 @@ public final class MedicalProcedureScreen extends Screen {
             MedicalClient.blit(graphics,"bandage_inner",65,65,126,126,164,164,0xFFFFFFFF);
             int diameter=Math.round(150*wrap.sizeMultiplier());
             MedicalClient.radialTexture(graphics,"bandage",128-diameter/2,128-diameter/2,diameter,200,wrap.coverage(),0xFFFFFFFF);
-            double radians=Math.toRadians(angle),rollScale=1-(1-remaining)*(1-remaining),radius=(253+137*rollScale)*.25;
-            int x=128+(int)(Math.sin(radians)*radius),y=128-(int)(Math.cos(radians)*radius),size=Math.max(1,(int)(78*rollScale));
+            double radians=Math.toRadians(angle);
             graphics.pose().pushMatrix();graphics.pose().translate(128,128);graphics.pose().rotate((float)radians);
             MedicalClient.blit(graphics,"bandage_pointer",-101,-101,202,202,300,300,0xFFFFFFFF);graphics.pose().popMatrix();
-            graphics.pose().pushMatrix();graphics.pose().translate(x,y);graphics.pose().rotate((float)(radians*3));
-            MedicalClient.blit(graphics,"bandage_roll",-size/2,-size/2,size,size,104,104,0xFFFFFFFF);graphics.pose().popMatrix();
+            if(!holding)drawBandageRoll(graphics,toolX,toolY);
             MedicalStatusIcons.draw(graphics,MedicalStatusIcons.bleeding(ClientMedicalState.snapshot().part(part)),128,128,32,0xFFF08888);
         } else if(kind==TreatmentKind.FENTANYL) {
             MedicalClient.blit(graphics,"syringe_ground",-22,(int)Math.round(SYRINGE_ENTRY_Y),300,44,200,29,0xFFFFFFFF);
             CuMedicalHand.line(graphics,122,(int)SYRINGE_ENTRY_Y,134,(int)SYRINGE_ENTRY_Y);
-            graphics.pose().pushMatrix();graphics.pose().translate((float)objectX+11.5f,(float)objectY+SYRINGE_HEIGHT);graphics.pose().rotate((float)Math.toRadians(syringeAngle));
-            MedicalClient.blit(graphics,"syringe",-12,-SYRINGE_HEIGHT,23,123,30,164,0xFFFFFFFF);
-            int fillHeight=Math.round(59*remaining);
-            if(fillHeight>0) {
-                int sourceHeight=Math.max(1,Math.round(78*remaining));
-                graphics.blit(RenderPipelines.GUI_TEXTURED,Identifier.fromNamespaceAndPath("decaying_aftermath","textures/gui/procedures/syringe_fill.png"),
-                        -9,-40-fillHeight,0f,78-sourceHeight,15,fillHeight,20,sourceHeight,20,78,0xFF0084AD);
-            }
-            graphics.fill(-15,-SYRINGE_HEIGHT+Math.round((1-remaining)*20)-1,14,-SYRINGE_HEIGHT+Math.round((1-remaining)*20)+1,0xFFEAEAEA);graphics.pose().popMatrix();
+            if(!holding)drawSyringe(graphics,toolX,toolY);
         } else if(isPotion()) {
             drawSelectedPart(graphics,111,80,34,116);
         } else {
             drawSelectedPart(graphics,117,75,27,116);
             if(stage==0) {
                 int toolWidth=kind==TreatmentKind.SPLINT?27:45;
-                graphics.pose().pushMatrix();graphics.pose().translate((float)objectX+toolWidth/2f,(float)objectY+24.5f);graphics.pose().rotate((float)Math.toRadians(kind==TreatmentKind.SPLINT?deviceAngle:0));
-                MedicalClient.blit(graphics,kind==TreatmentKind.SPLINT?"splint":"tourniquet",-toolWidth/2,-24,toolWidth,49,kind==TreatmentKind.SPLINT?16:36,kind==TreatmentKind.SPLINT?29:39,0xFFFFFFFF);graphics.pose().popMatrix();
+                if(!holding)drawDevice(graphics,toolX,toolY,toolWidth);
                 int cue=errorTicks>0?0xFFF08888:CuProcedureGeometry.deviceAligned(objectX,objectY,deviceAngle,kind==TreatmentKind.SPLINT)?0xFFBDD1C0:0xFF707A73;
                 graphics.fill(114,103,116,113,cue);graphics.fill(114,103,124,105,cue);
                 graphics.fill(116+toolWidth+1,146,116+toolWidth+3,156,cue);graphics.fill(116+toolWidth-7,154,116+toolWidth+3,156,cue);
@@ -220,8 +230,14 @@ public final class MedicalProcedureScreen extends Screen {
         }
         ProcedureVisuals.beginWorkArea(graphics);
         float handAngle=hand.rotation(isWrap())+(kind==TreatmentKind.FENTANYL?(float)Math.toRadians(65):0);
-        CuMedicalHand.extract(graphics,hand.visualX(partialTick),hand.visualY(partialTick),handAngle,holding||injecting);
-        if(isPotion())drawPotion(graphics);graphics.disableScissor();
+        CuMedicalHand.extract(graphics,handX,handY,handAngle,holding||injecting);
+        // Held items stay readable in front of the larger opaque arm, at the same frame-time grip.
+        if(draggingTool()) {
+            if(isWrap())drawBandageRoll(graphics,toolX,toolY);
+            else if(kind==TreatmentKind.FENTANYL)drawSyringe(graphics,toolX,toolY);
+            else if(!isPotion())drawDevice(graphics,toolX,toolY,kind==TreatmentKind.SPLINT?27:45);
+        }
+        if(isPotion())drawPotion(graphics,toolX,toolY);graphics.disableScissor();
         graphics.centeredText(font,Component.translatable("decaying_aftermath.procedure.remaining",(int)Math.ceil(remaining*100-.00001f)).getString(),128,244,0xFFE4E9E4);
         graphics.fill(89,259,167,261,0xFF414A43);graphics.fill(89,259,89+Math.round(78*remaining),261,0xFFC3CFC4);
         if(errorTicks>0)graphics.centeredText(font,Component.translatable("decaying_aftermath.procedure.guide.steady").getString(),128,222,0xFFF08888);
@@ -232,11 +248,30 @@ public final class MedicalProcedureScreen extends Screen {
         graphics.pose().popMatrix();
         graphics.centeredText(font,Component.translatable("decaying_aftermath.procedure.cancel").getString(),width/2,Math.min(height-12,(int)(oy+272*scale+6)),0xFFB8C0BA);
     }
-    private void drawPotion(GuiGraphicsExtractor graphics) {
-        // The grasped bottle and stream must remain legible in front of the opaque black palm.
-        graphics.pose().pushMatrix();graphics.pose().translate((float)objectX+16,(float)objectY+16);graphics.pose().rotate((float)Math.toRadians(potionTilt));graphics.pose().scale(2,2);graphics.item(source(),-8,-8);graphics.pose().popMatrix();
+    private int rollSize() {double scale=1-(1-remaining)*(1-remaining);return Math.max(1,(int)(78*scale));}
+    private void drawBandageRoll(GuiGraphicsExtractor graphics,double x,double y) {
+        int size=rollSize();graphics.pose().pushMatrix();graphics.pose().translate((float)x,(float)y);graphics.pose().rotate((float)Math.toRadians(angle*3));
+        MedicalClient.blit(graphics,"bandage_roll",-size/2,-size/2,size,size,104,104,0xFFFFFFFF);graphics.pose().popMatrix();
+    }
+    private void drawDevice(GuiGraphicsExtractor graphics,double x,double y,int width) {
+        graphics.pose().pushMatrix();graphics.pose().translate((float)x+width/2f,(float)y+24.5f);graphics.pose().rotate((float)Math.toRadians(kind==TreatmentKind.SPLINT?deviceAngle:0));
+        MedicalClient.blit(graphics,kind==TreatmentKind.SPLINT?"splint":"tourniquet",-width/2,-24,width,49,kind==TreatmentKind.SPLINT?16:36,kind==TreatmentKind.SPLINT?29:39,0xFFFFFFFF);graphics.pose().popMatrix();
+    }
+    private void drawSyringe(GuiGraphicsExtractor graphics,double x,double y) {
+        graphics.pose().pushMatrix();graphics.pose().translate((float)x+11.5f,(float)y+SYRINGE_HEIGHT);graphics.pose().rotate((float)Math.toRadians(syringeAngle));
+        MedicalClient.blit(graphics,"syringe",-12,-SYRINGE_HEIGHT,23,123,30,164,0xFFFFFFFF);
+        int fillHeight=Math.round(59*remaining);
+        if(fillHeight>0) {
+            int sourceHeight=Math.max(1,Math.round(78*remaining));
+            graphics.blit(RenderPipelines.GUI_TEXTURED,Identifier.fromNamespaceAndPath("decaying_aftermath","textures/gui/procedures/syringe_fill.png"),
+                    -9,-40-fillHeight,0f,78-sourceHeight,15,fillHeight,20,sourceHeight,20,78,0xFF0084AD);
+        }
+        graphics.fill(-15,-SYRINGE_HEIGHT+Math.round((1-remaining)*20)-1,14,-SYRINGE_HEIGHT+Math.round((1-remaining)*20)+1,0xFFEAEAEA);graphics.pose().popMatrix();
+    }
+    private void drawPotion(GuiGraphicsExtractor graphics,double x,double y) {
+        graphics.pose().pushMatrix();graphics.pose().translate((float)x+16,(float)y+16);graphics.pose().rotate((float)Math.toRadians(potionTilt));graphics.pose().scale(2,2);graphics.item(source(),-8,-8);graphics.pose().popMatrix();
         if(stage==1&&holding) {
-            var mouth=CuProcedureGeometry.bottleMouth(objectX,objectY,potionTilt);var wound=CuProcedureGeometry.part(part,111,80,34,116);
+            var mouth=CuProcedureGeometry.bottleMouth(x,y,potionTilt);var wound=CuProcedureGeometry.part(part,111,80,34,116);
             int bottom=wound.y()+wound.height()-4,span=Math.max(1,bottom-(int)mouth.y());
             for(int i=0;i<5;i++) {int dy=(int)mouth.y()+3+(elapsed+i*7)%span;graphics.fill((int)mouth.x()-1,dy,(int)mouth.x()+2,Math.min(dy+3,bottom),0xFFB0BDB3);}
         }
@@ -252,7 +287,7 @@ public final class MedicalProcedureScreen extends Screen {
         end();minecraft.gui.setScreen(previous);
     }
     private void stopSyringeLoop() {if(syringeLoop!=null){syringeLoop.close();syringeLoop=null;}}
-    private void end() {stopSyringeLoop();if(!ended){ended=true;ClientMedicalState.endProcedure();}}
+    private void end() {stopSyringeLoop();cursor.restore();if(!ended){ended=true;ClientMedicalState.endProcedure();}}
     @Override public void onClose() {end();if(minecraft.player!=null)minecraft.gui.setScreen(previous);}
     @Override public void removed() {end();super.removed();}
     @Override public boolean isPauseScreen() {return false;}

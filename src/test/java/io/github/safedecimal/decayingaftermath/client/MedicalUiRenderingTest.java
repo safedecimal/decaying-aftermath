@@ -14,6 +14,8 @@ import sun.misc.Unsafe;
 import javax.imageio.ImageIO;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.HashMap;
+import java.awt.geom.Path2D;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -107,9 +109,39 @@ class MedicalUiRenderingTest {
         var graphics = Graphics.create(640, 420);
         ProcedureVisuals.beginWorkArea(graphics);
         CuMedicalHand.extract(graphics, 128, 128, 0, true);
-        assertEquals(1, graphics.fills.stream().filter(r -> r.col1() == 0xFF000000).count());
-        assertTrue(graphics.fills.stream().skip(1).allMatch(r -> r.col1() == 0xFFEAEAEA));
+        // Tessellated faces need multiple rectangles; draw-call count is not anatomy.
+        assertTrue(graphics.fills.stream().anyMatch(r -> r.col1() == 0xFF000000));
+        assertTrue(graphics.fills.stream().allMatch(r -> r.col1() == 0xFF000000 || r.col1() == 0xFFEAEAEA));
+        assertNoBlackOverflow(graphics, -CuMedicalHand.WIDTH / 2, -CuMedicalHand.WIDTH / 2,
+                CuMedicalHand.WIDTH, CuMedicalHand.HEIGHT, CuMedicalHand.DEPTH);
         assertTrue(graphics.blits.isEmpty());
+    }
+
+    private void assertNoBlackOverflow(Graphics graphics, int x, int y, int width, int height, int depth) {
+        var pixels = new HashMap<Long, Integer>();
+        for (var fill : graphics.fills) {
+            for (int py = fill.y0(); py < fill.y1(); py++) for (int px = fill.x0(); px < fill.x1(); px++)
+                pixels.put(((long) px << 32) | (py & 0xffffffffL), fill.col1());
+        }
+        var silhouette = new Path2D.Double();
+        silhouette.moveTo(x, y); silhouette.lineTo(x + width, y);
+        silhouette.lineTo(x + width + depth, y + depth);
+        silhouette.lineTo(x + width + depth, y + height + depth);
+        silhouette.lineTo(x + depth, y + height + depth); silhouette.lineTo(x, y + height); silhouette.closePath();
+        long outside = pixels.entrySet().stream().filter(p -> p.getValue() == 0xFF000000)
+                .filter(p -> !silhouette.contains((int) (p.getKey() >> 32) + .5, (int) (long) p.getKey() + .5)).count();
+        assertEquals(0, outside, "Black fill must not protrude past the slanted cuboid silhouette");
+    }
+
+    @Test void cuboidFacesDoNotLeaveFlatBlackCornerTabs() throws Exception {
+        var graphics = Graphics.create(640, 420);
+        CuMedicalHand.cube(graphics, 0, 0, 24, 72, 6);
+        assertNoBlackOverflow(graphics, 0, 0, 24, 72, 6);
+    }
+
+    @Test void largerHandRetainsSteveFourByTwelveProportions() {
+        assertEquals(36, CuMedicalHand.WIDTH); assertEquals(108, CuMedicalHand.HEIGHT);
+        assertEquals(9, CuMedicalHand.DEPTH); assertEquals(3 * CuMedicalHand.WIDTH, CuMedicalHand.HEIGHT);
     }
 
     private void assertWholeSprites(int size) throws Exception {

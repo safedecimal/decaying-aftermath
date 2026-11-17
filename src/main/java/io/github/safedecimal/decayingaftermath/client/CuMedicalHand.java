@@ -4,19 +4,27 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 
 /** One Steve-proportioned arm cuboid: black faces and white edges, no fingers or player skin. */
 public final class CuMedicalHand {
+    public static final int WIDTH=36,HEIGHT=108,DEPTH=9;
     private static final int BLACK=0xFF000000,WHITE=0xFFEAEAEA;
     private CuMedicalHand() {}
     public static void extract(GuiGraphicsExtractor g,double x,double y,float rotation,boolean grasp) {
         g.pose().pushMatrix();g.pose().translate((float)x,(float)y);g.pose().rotate(rotation);
         // Minecraft's 4x12 arm ratio. Holding changes the tool interaction, not the arm's shape.
-        cube(g,-12,-12,24,72,6);
+        cube(g,-WIDTH/2,-WIDTH/2,WIDTH,HEIGHT,DEPTH);
         g.pose().popMatrix();
     }
     public static void cube(GuiGraphicsExtractor g,int x,int y,int w,int h,int depth) {
         cube(g,x,y,w,h,depth,BLACK,WHITE);
     }
     public static void cube(GuiGraphicsExtractor g,int x,int y,int w,int h,int depth,int face,int edge) {
-        g.fill(x,y,x+w+depth,y+h+depth,face);
+        // Fill the six-sided silhouette, not its rectangular bounding box.
+        // The old bounding rectangle left black tabs outside the two slanted corners.
+        g.fill(x,y,x+w,y+h,face);
+        if(depth>0) {
+            if(h>depth)g.fill(x+w,y+depth,x+w+depth,y+h,face);
+            for(int row=1;row<depth;row++)g.fill(x+w,y+row,x+w+row,y+row+1,face);
+            for(int row=0;row<depth;row++)g.fill(x+row,y+h+row,x+w+depth,y+h+row+1,face);
+        }
         line(g,x,y,x+w,y,edge);line(g,x+w,y,x+w,y+h,edge);line(g,x+w,y+h,x,y+h,edge);line(g,x,y+h,x,y,edge);
         line(g,x+w,y,x+w+depth,y+depth,edge);line(g,x+w+depth,y+depth,x+w+depth,y+h+depth,edge);
         line(g,x+w+depth,y+h+depth,x+depth,y+h+depth,edge);line(g,x+depth,y+h+depth,x,y+h,edge);

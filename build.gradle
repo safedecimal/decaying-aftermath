@@ -58,6 +58,8 @@ tasks.register('verifyMedicalProcedures', Test) {
         includeTestsMatching 'io.github.safedecimal.decayingaftermath.client.CuProcedureGeometryTest'
         includeTestsMatching 'io.github.safedecimal.decayingaftermath.client.MedicalStatusIconsTest'
         includeTestsMatching 'io.github.safedecimal.decayingaftermath.client.MedicalUiRenderingTest'
+        includeTestsMatching 'io.github.safedecimal.decayingaftermath.client.ProcedureCursorTest'
+        includeTestsMatching 'io.github.safedecimal.decayingaftermath.client.ProcedureToolPoseTest'
         includeTestsMatching 'io.github.safedecimal.decayingaftermath.client.SupplyOverlayLayoutTest'
         includeTestsMatching 'io.github.safedecimal.decayingaftermath.client.FastenerMotionTest'
         includeTestsMatching 'io.github.safedecimal.decayingaftermath.medical.MedicalSupplyPolicyTest'
@@ -73,6 +75,8 @@ tasks.register('verifyMedicalUiRendering', Test) {
     useJUnitPlatform()
     filter {
         includeTestsMatching 'io.github.safedecimal.decayingaftermath.client.MedicalUiRenderingTest'
+        includeTestsMatching 'io.github.safedecimal.decayingaftermath.client.ProcedureCursorTest'
+        includeTestsMatching 'io.github.safedecimal.decayingaftermath.client.ProcedureToolPoseTest'
     }
 }
 

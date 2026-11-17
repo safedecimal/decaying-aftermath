@@ -162,8 +162,8 @@
   "hand_geometry": {
     "shape": "one Steve arm cuboid",
     "front_dimensions": [
-      24,
-      72
+      36,
+      108
     ],
     "Minecraft_ratio": [
       4,
@@ -175,6 +175,10 @@
     "palm": 0,
     "thumb": 0,
     "player_skin": false,
-    "inertial_motion": "unchanged"
-  }
+    "inertial_motion": "unchanged",
+    "depth": 9,
+    "scale_vs_0_3_6": 1.5,
+    "fill": "Exact six-sided silhouette; no rectangular corner overflow"
+  },
+  "mod_revision": "0.3.8"
 }
