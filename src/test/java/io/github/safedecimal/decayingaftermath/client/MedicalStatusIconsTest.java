@@ -16,4 +16,33 @@ class MedicalStatusIconsTest {
     @Test void exactSpriteDimensionsRemainAvailable() {
         var icon=MedicalStatusIcons.bleeding(state(.21f,false));assertEquals(25,icon.width());assertEquals(40,icon.height());
     }
+    private BodySnapshot.PartSnapshot infected(float infection,boolean disinfected) {
+        return new BodySnapshot.PartSnapshot(1,.1f,.5f,true,false,false,false,infection,disinfected,false);
+    }
+    @Test void nativeInfectionThresholdDoesNotInventAnIconForCleanSkin() {
+        assertNull(MedicalStatusIcons.infection(infected(.249f,false)));
+        assertEquals("infection_increasing",MedicalStatusIcons.infection(infected(.25f,false)).name());
+    }
+    @Test void disinfectedInfectionUsesOriginalDownIconWithItsWholeSpriteRegion() {
+        var icon=MedicalStatusIcons.infection(infected(.5f,true));
+        assertEquals("infection_decreasing",icon.name());assertEquals(24,icon.width());assertEquals(22,icon.height());
+    }
+    @Test void exhaustedBandageCareReturnsToUncoveredBleedingEvenIfPreviouslyBandaged() {
+        var used=new BodySnapshot.PartSnapshot(1,.1f,0,false,true,false,false,0,false,false,0);
+        assertEquals("bleeding_heavy",MedicalStatusIcons.bleeding(used).name());
+        var covered=new BodySnapshot.PartSnapshot(1,.1f,0,false,true,false,false,0,false,false,.006f);
+        assertEquals("bleeding_covered_heavy",MedicalStatusIcons.bleeding(covered).name());
+    }
+    @Test void threeStatusIconsFitAllRealWideAndSlimBodyParts() {
+        for(boolean slim:new boolean[]{false,true})for(var part:io.github.safedecimal.decayingaftermath.medical.BodyPart.values()) {
+            var box=MinecraftBodyLayout.box(part,slim);var placements=MedicalStatusIcons.placements(infected(.5f,false),box);
+            assertEquals(3,placements.size());
+            for(var p:placements) {
+                float ratio=p.size()/(float)Math.max(p.icon().width(),p.icon().height());
+                int w=Math.max(1,Math.round(p.icon().width()*ratio)),h=Math.max(1,Math.round(p.icon().height()*ratio));
+                assertTrue(p.x()-w/2>=box.x());assertTrue(p.y()-h/2>=box.y());
+                assertTrue(p.x()-w/2+w<=box.x()+box.width());assertTrue(p.y()-h/2+h<=box.y()+box.height());
+            }
+        }
+    }
 }

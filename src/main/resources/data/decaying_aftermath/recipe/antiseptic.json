@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "group": "decaying_aftermath_medical",
+  "ingredients": [
+    "minecraft:glass_bottle",
+    "minecraft:honey_bottle",
+    "minecraft:paper"
+  ],
+  "result": {
+    "id": "decaying_aftermath:antiseptic",
+    "count": 1
+  }
+}

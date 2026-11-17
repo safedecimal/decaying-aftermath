@@ -4,18 +4,32 @@
   "version": "${version}",
   "name": "Decaying Aftermath",
   "description": "Decaying Aftermath for Minecraft 26.3 (Fabric).",
-  "authors": ["safedecimal"],
+  "authors": [
+    "safedecimal"
+  ],
   "license": "All-Rights-Reserved",
   "environment": "*",
   "entrypoints": {
-    "main": ["io.github.safedecimal.decayingaftermath.DecayingAftermath"],
-    "client": ["io.github.safedecimal.decayingaftermath.client.DecayingAftermathClient"]
+    "main": [
+      "io.github.safedecimal.decayingaftermath.DecayingAftermath"
+    ],
+    "client": [
+      "io.github.safedecimal.decayingaftermath.client.DecayingAftermathClient"
+    ]
   },
-  "mixins": ["decaying-aftermath.mixins.json", "decaying-aftermath.client.mixins.json"],
+  "mixins": [
+    "decaying-aftermath.mixins.json",
+    "decaying-aftermath.client.mixins.json",
+    "decaying-aftermath.compat.mixins.json"
+  ],
   "depends": {
     "fabricloader": ">=0.20.1",
     "minecraft": "26.3",
     "java": ">=25",
     "fabric-api": "*"
+  },
+  "suggests": {
+    "cruor": "*",
+    "ragdollified": "*"
   }
 }

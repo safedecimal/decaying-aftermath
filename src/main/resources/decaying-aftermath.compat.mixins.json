@@ -1,0 +1,16 @@
+{
+  "required": false,
+  "minVersion": "0.8",
+  "package": "io.github.safedecimal.decayingaftermath.compat.mixin",
+  "plugin": "io.github.safedecimal.decayingaftermath.compat.MedicalCompatMixinPlugin",
+  "compatibilityLevel": "JAVA_25",
+  "mixins": [
+    "CruorNetworkCompatMixin"
+  ],
+  "client": [
+    "CruorBodyBloodCompatMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

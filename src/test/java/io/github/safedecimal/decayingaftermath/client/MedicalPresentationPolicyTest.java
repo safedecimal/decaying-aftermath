@@ -53,4 +53,9 @@ class MedicalPresentationPolicyTest {
         assertTrue(MedicalPresentationPolicy.inventoryPulse(true,healthy()));assertFalse(MedicalPresentationPolicy.inventoryPulse(false,healthy()));
         assertFalse(MedicalPresentationPolicy.inventoryPulse(true,body(BodySnapshot.Mode.DEAD,0,0,0,0,0,0)));
     }
+    @Test void brainDyingOwnsItsBoundSoundtrackInsteadOfTheWrongCriticalAmbience() {
+        var dying=body(BodySnapshot.Mode.DYING,.1f,.2f,.3f,.8f,65,.1f);
+        assertTrue(MedicalPresentationPolicy.criticalAlarm(dying));assertFalse(MedicalPresentationPolicy.criticalAmbience(dying));
+        assertEquals("heartbeat_monitor",MedicalPresentationPolicy.beatSound(true,dying));
+    }
 }

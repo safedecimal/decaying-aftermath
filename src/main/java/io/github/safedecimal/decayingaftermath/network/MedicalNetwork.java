@@ -3,6 +3,7 @@ package io.github.safedecimal.decayingaftermath.network;
 import io.github.safedecimal.decayingaftermath.medical.*;
 import io.github.safedecimal.decayingaftermath.server.ServerMedicalSystem;
 import net.fabricmc.fabric.api.networking.v1.*;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffects;
@@ -13,7 +14,7 @@ import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.component.CustomData;
 import java.util.*;
 
-/** Server-owned fractional supplies. Partial units are isolated so vanilla stack merging cannot duplicate fill. */
+/** Server-owned fractional supplies; one active unit is peeled without refilling its neighbours. */
 public final class MedicalNetwork {
     public static final String FILL_KEY="decaying_aftermath_fill";
     private static final Map<UUID,Session> SESSIONS=new HashMap<>();
@@ -24,6 +25,10 @@ public final class MedicalNetwork {
         PayloadTypeRegistry.serverboundPlay().register(MedicalActionPayload.TYPE,MedicalActionPayload.CODEC);
         ServerPlayNetworking.registerGlobalReceiver(MedicalActionPayload.TYPE,(p,c)->c.server().execute(()->handle(c.player(),p)));
         ServerPlayConnectionEvents.DISCONNECT.register((h,s)->SESSIONS.remove(h.getPlayer().getUUID()));
+        ServerTickEvents.END_SERVER_TICK.register(server -> {
+            for (ServerPlayer player : server.getPlayerList().getPlayers())
+                if (player.tickCount % 20 == 0) compactSupplies(player);
+        });
         ServerMedicalSystem.setSyncHandler(MedicalNetwork::sync);
     }
     public static void sync(ServerPlayer player,BodySnapshot snapshot) {
@@ -70,6 +75,10 @@ public final class MedicalNetwork {
         }
         if(request.action()!=MedicalActionPayload.APPLY||stack.isEmpty()||MedicalItems.treatment(stack)!=kind)return;
         boolean creative=player.getAbilities().instabuild;
+        // Repair old one-item stacks and free medical-only clutter before looking for split space.
+        // The source is excluded: its signature and the client's selected slot must remain stable.
+        if(!creative && compactInventory(player.inventoryMenu,request.slot()))
+            player.inventoryMenu.broadcastChanges();
         List<Transfer> transfers=creative?List.of():planUnused(player.inventoryMenu,request.slot(),stack);
         if(transfers==null) {
             if(!session.warnedSpace) {thought(player,"decaying_aftermath.thought.supply_space");session.warnedSpace=true;}
@@ -93,8 +102,7 @@ public final class MedicalNetwork {
                 boolean potion=stack.getItem() instanceof PotionItem;stack.shrink(1);
                 if(potion)slot.set(new ItemStack(Items.GLASS_BOTTLE));
             } else {
-                CustomData.update(DataComponents.CUSTOM_DATA,stack,tag->tag.putFloat(FILL_KEY,spend.remaining()));
-                stack.set(DataComponents.MAX_STACK_SIZE,1);
+                writeFill(stack,spend.remaining());
             }
         }
         session.signature=slot.getItem().copy();
@@ -104,13 +112,71 @@ public final class MedicalNetwork {
         }
         slot.setChanged();player.inventoryMenu.broadcastChanges();sync(player,body.snapshot());
     }
-    /** Unopened units remain full. Do not assign a fractional tag to the whole stack. */
+    /** A counted partial stack contains equal-fill units, not one partial plus magically full units. */
     private static ItemStack unused(ItemStack stack,int count) {
         ItemStack remainder=stack.copyWithCount(count);
-        CustomData.update(DataComponents.CUSTOM_DATA,remainder,tag->tag.remove(FILL_KEY));
-        if(remainder.getOrDefault(DataComponents.CUSTOM_DATA,CustomData.EMPTY).copyTag().isEmpty())remainder.remove(DataComponents.CUSTOM_DATA);
-        remainder.remove(DataComponents.MAX_STACK_SIZE);
+        writeFill(remainder,remainingFill(stack));
         return remainder;
+    }
+    private static void writeFill(ItemStack stack,float fill) {
+        float value=MedicalSupplyPolicy.fill(fill);
+        CustomData.update(DataComponents.CUSTOM_DATA,stack,tag -> {
+            if(value==1)tag.remove(FILL_KEY);else tag.putFloat(FILL_KEY,value);
+        });
+        if(stack.getOrDefault(DataComponents.CUSTOM_DATA,CustomData.EMPTY).copyTag().isEmpty())
+            stack.remove(DataComponents.CUSTOM_DATA);
+        // remove(MAX_STACK_SIZE) is a deletion tombstone in Minecraft, NOT reset-to-default.
+        // set(default) clears just this patch while retaining names and other native components.
+        stack.set(DataComponents.MAX_STACK_SIZE,stack.getItem().getDefaultMaxStackSize());
+    }
+    /** Repair saved 0.3.8 fragments on the server. A held stack or foreign container is never edited. */
+    public static boolean compactSupplies(ServerPlayer player) {
+        if(player.containerMenu!=player.inventoryMenu||!player.inventoryMenu.getCarried().isEmpty())return false;
+        Session session=SESSIONS.get(player.getUUID());
+        if(session!=null&&player.level().getGameTime()-session.start>2400) {
+            SESSIONS.remove(player.getUUID());session=null;
+        }
+        boolean changed=compactInventory(player.inventoryMenu,session==null?-1:session.slot);
+        if(changed)player.inventoryMenu.broadcastChanges();
+        return changed;
+    }
+    private static final class SupplyGroup {
+        final ItemStack template;final List<Integer> slots=new ArrayList<>();double material;
+        SupplyGroup(ItemStack template) {this.template=template;}
+    }
+    private static boolean compactInventory(InventoryMenu menu,int protectedSlot) {
+        if(!menu.getCarried().isEmpty())return false;
+        List<SupplyGroup> groups=new ArrayList<>();
+        for(int i=9;i<Math.min(45,menu.slots.size());i++) {
+            if(i==protectedSlot)continue;
+            ItemStack stack=menu.getSlot(i).getItem();
+            if(stack.isEmpty()||!MedicalSupplyPolicy.inventorySupply(MedicalItems.treatment(stack)))continue;
+            ItemStack template=stack.copyWithCount(1);writeFill(template,1);
+            SupplyGroup group=null;
+            for(SupplyGroup candidate:groups)
+                if(ItemStack.isSameItemSameComponents(candidate.template,template)) {group=candidate;break;}
+            if(group==null) {group=new SupplyGroup(template);groups.add(group);}
+            group.slots.add(i);group.material+=MedicalSupplyPolicy.material(stack.getCount(),remainingFill(stack));
+        }
+        boolean changed=false;
+        for(SupplyGroup group:groups) {
+            var packed=MedicalSupplyPolicy.repack(group.material);
+            int capacity=Math.max(1,group.template.getItem().getDefaultMaxStackSize());
+            long required=((long)packed.fullUnits()+capacity-1)/capacity+(packed.residual()>0?1:0);
+            // A malformed oversized input must not spill, overwrite another item, or lose material.
+            if(group.material>Integer.MAX_VALUE||required>group.slots.size())continue;
+            int full=packed.fullUnits();boolean residual=packed.residual()>0;
+            for(int index:group.slots) {
+                ItemStack replacement=ItemStack.EMPTY;
+                if(full>0) {int count=Math.min(full,capacity);replacement=group.template.copyWithCount(count);full-=count;}
+                else if(residual) {replacement=group.template.copy();writeFill(replacement,packed.residual());residual=false;}
+                Slot slot=menu.getSlot(index);ItemStack original=slot.getItem();
+                if(original.getCount()!=replacement.getCount()||!ItemStack.isSameItemSameComponents(original,replacement)) {
+                    slot.set(replacement);slot.setChanged();changed=true;
+                }
+            }
+        }
+        return changed;
     }
     private record Transfer(Slot slot,int count,ItemStack template) {}
     public static boolean canSeparateSupply(InventoryMenu menu,int sourceSlot,ItemStack stack) {

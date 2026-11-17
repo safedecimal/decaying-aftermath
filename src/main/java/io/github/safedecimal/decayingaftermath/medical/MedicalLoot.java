@@ -31,6 +31,8 @@ public final class MedicalLoot {
             table.withPool(pool(MedicalItems.BANDAGE, 0.15f, 1, 3));
             table.withPool(pool(MedicalItems.SPLINT, 0.05f, 1, 1));
             table.withPool(pool(MedicalItems.FENTANYL, 0.02f, 1, 1));
+            table.withPool(pool(MedicalItems.ANESTHETIC, 0.04f, 1, 2));
+            table.withPool(pool(MedicalItems.ANTISEPTIC, 0.12f, 1, 3));
         });
     }
 

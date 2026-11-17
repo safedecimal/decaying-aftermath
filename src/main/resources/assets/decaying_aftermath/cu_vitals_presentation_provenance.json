@@ -1,0 +1,289 @@
+{
+  "source_assembly_sha256": "48c7f2296fc4a659faae3b1822884ca5b7ff73d6767ef159e6a6c2bc0b2d38f1",
+  "source_asset_sha256": {
+    "resources.assets": "81a5f55001875f37d450197151d7b0d3b349e70c47a5adeb0006f9dc4744df64",
+    "sharedassets0.assets": "eaba5973b39543d5d5539c76695008cfdfff50ed588fb7cff345a15a3b4eaa75",
+    "sharedassets1.assets": "befa3e57e3e7edcf40dd1b0108e7a69ab7961e9fe553fa17fdf43dbb747e3016",
+    "globalgamemanagers.assets": "b5d703000e77d787527b6ebf01528cf5e5961d4beacf9a5f0e346be10e71c141",
+    "level1": "f8c2ea53cab0acb7b333c2165ceba3c36c3963a8ded0196771b8d4d9cc8462b3"
+  },
+  "code_evidence": "Fresh dnSpyEx decompilation + REA CIL members ev_e4df223e12473b95cd834f2612015232bdd4ddcf262a883da803846ee09bd7b3",
+  "native_methods": {
+    "MusicManager.Update": "0x060004D1",
+    "PlayerCamera.HandleUnconsciousScreen": "0x060005B5"
+  },
+  "bindings": {
+    "music_manager": {
+      "source_file": "level1",
+      "path_id": 1964,
+      "type": "MonoBehaviour"
+    },
+    "player_camera": {
+      "source_file": "level1",
+      "path_id": 1555,
+      "type": "MonoBehaviour"
+    },
+    "wound_view": {
+      "source_file": "level1",
+      "path_id": 1596,
+      "type": "MonoBehaviour"
+    },
+    "dyingClip": {
+      "pointer": {
+        "m_FileID": 3,
+        "m_PathID": 1632
+      },
+      "clip": {
+        "source_file": "resources.assets",
+        "path_id": 1632,
+        "type": "AudioClip"
+      },
+      "name": "DrawYourLastBreath1"
+    },
+    "deadClip": {
+      "pointer": {
+        "m_FileID": 3,
+        "m_PathID": 1979
+      },
+      "clip": {
+        "source_file": "resources.assets",
+        "path_id": 1979,
+        "type": "AudioClip"
+      },
+      "name": "DrawYourLastBreath2"
+    },
+    "consciousness_vignette": {
+      "source_file": "sharedassets1.assets",
+      "path_id": 494,
+      "type": "Sprite",
+      "name": "unconsciousVignette",
+      "field": "PlayerCamera.consciousnessVignette",
+      "image": {
+        "source_file": "level1",
+        "path_id": 1822,
+        "type": "MonoBehaviour"
+      },
+      "image_type": 0,
+      "stretch": "RectTransform anchor min(0,0), max(1,1); not tiled"
+    },
+    "infection_decreasing": {
+      "source_file": "sharedassets1.assets",
+      "path_id": 534,
+      "type": "Sprite",
+      "name": "infectiondown",
+      "field": "WoundView.icons[10]",
+      "index": 10,
+      "code": "UpdateView: GetInfectionSpeed()>0 selects11, otherwise10; visible infection>=25 or previously diagnosed"
+    },
+    "infection_increasing": {
+      "source_file": "sharedassets1.assets",
+      "path_id": 434,
+      "type": "Sprite",
+      "name": "infectionup",
+      "field": "WoundView.icons[11]",
+      "index": 11,
+      "code": "UpdateView: GetInfectionSpeed()>0 selects11, otherwise10; visible infection>=25 or previously diagnosed"
+    },
+    "droneTracks": [
+      {
+        "index": 0,
+        "name": "PainDrone",
+        "source_file": "resources.assets",
+        "path_id": 1471,
+        "type": "AudioClip",
+        "time_to_fade_in": 8.0,
+        "time_to_fade_out": 10.0
+      },
+      {
+        "index": 1,
+        "name": "isthistheend",
+        "source_file": "resources.assets",
+        "path_id": 1538,
+        "type": "AudioClip",
+        "time_to_fade_in": 14.0,
+        "time_to_fade_out": 10.0
+      },
+      {
+        "index": 2,
+        "name": "exhausted",
+        "source_file": "resources.assets",
+        "path_id": 2046,
+        "type": "AudioClip",
+        "time_to_fade_in": 14.0,
+        "time_to_fade_out": 10.0
+      },
+      {
+        "index": 3,
+        "name": "tired",
+        "source_file": "resources.assets",
+        "path_id": 1966,
+        "type": "AudioClip",
+        "time_to_fade_in": 14.0,
+        "time_to_fade_out": 10.0
+      }
+    ]
+  },
+  "records": [
+    {
+      "alias": "brain_dying_music",
+      "field": "dyingClip",
+      "source_name": "DrawYourLastBreath1",
+      "source_file": "resources.assets",
+      "path_id": 1632,
+      "type": "AudioClip",
+      "sample_rate": 44100,
+      "channels": 2,
+      "samples": 878850,
+      "duration_seconds": 19.928571428571427,
+      "fsb_sha256": "dd15d791084b44676475edfea2940dcc80b708c9e94ee1eab50518366b6c7400",
+      "wav_path": "C:\\Users\\thuam\\Desktop\\projects\\decaying-aftermath\\verification\\vitals-infection-0.3.9\\cu-evidence\\brain_dying_music.wav",
+      "wav_sha256": "63f01161eec41241ee32bc305c53ca90917c2563734fd3473b6e2e9e642482ab",
+      "output_path": "C:\\Users\\thuam\\Desktop\\projects\\decaying-aftermath\\src\\main\\resources\\assets\\decaying_aftermath\\sounds\\brain_dying_music.ogg",
+      "sha256": "056e12e7e753c7845e145a4e32a2ed3556f4806313c6b247c3ef0b4070a4951c",
+      "bytes": 339305,
+      "transform": "Original FSB PCM re-encoded as Vorbis; no resampling, trimming, generation, or target execution",
+      "path": "sounds/brain_dying_music.ogg"
+    },
+    {
+      "alias": "death_music",
+      "field": "deadClip",
+      "source_name": "DrawYourLastBreath2",
+      "source_file": "resources.assets",
+      "path_id": 1979,
+      "type": "AudioClip",
+      "sample_rate": 44100,
+      "channels": 2,
+      "samples": 1512000,
+      "duration_seconds": 34.285714285714285,
+      "fsb_sha256": "966de22274fb2291ee14d363039580b19a3e6c5180e804569e1b2d510bfaaacd",
+      "wav_path": "C:\\Users\\thuam\\Desktop\\projects\\decaying-aftermath\\verification\\vitals-infection-0.3.9\\cu-evidence\\death_music.wav",
+      "wav_sha256": "672cfb23579c5dd9b8a4af42e103268471cdeb995df4f3e82afab1d5aae3fabf",
+      "output_path": "C:\\Users\\thuam\\Desktop\\projects\\decaying-aftermath\\src\\main\\resources\\assets\\decaying_aftermath\\sounds\\death_music.ogg",
+      "sha256": "16ad365163ab494ac39caea3a8aafda729a4a7f0bb43227ce4f57b19d83e59f7",
+      "bytes": 459609,
+      "transform": "Original FSB PCM re-encoded as Vorbis; no resampling, trimming, generation, or target execution",
+      "path": "sounds/death_music.ogg"
+    },
+    {
+      "alias": "consciousness_vignette",
+      "source_name": "unconsciousVignette",
+      "source_file": "sharedassets1.assets",
+      "path_id": 494,
+      "type": "Sprite",
+      "dimensions": [
+        256,
+        256
+      ],
+      "output_path": "C:\\Users\\thuam\\Desktop\\projects\\decaying-aftermath\\src\\main\\resources\\assets\\decaying_aftermath\\textures\\gui\\procedures\\consciousness_vignette.png",
+      "sha256": "2cd86e052fb1340290fa15d435aed4867e633b9909d43e7fcac6e611c9f2607a",
+      "bytes": 13802,
+      "packed_dimensions": [
+        256,
+        256
+      ],
+      "trim_offset": [
+        0.0,
+        0.0
+      ],
+      "destination_xy": [
+        0,
+        0
+      ],
+      "original_pixel_sha256": "c4cf4929e7d0df54e5f574ec23ef14f5506b3691cd2388bbf4dd6714e1874c77",
+      "transform": "Original full Sprite rect restored with transparent trim offsets; no pixel repaint",
+      "binding": {
+        "field": "PlayerCamera.consciousnessVignette",
+        "image": {
+          "source_file": "level1",
+          "path_id": 1822,
+          "type": "MonoBehaviour"
+        },
+        "image_type": 0,
+        "stretch": "RectTransform anchor min(0,0), max(1,1); not tiled"
+      },
+      "path": "textures/gui/procedures/consciousness_vignette.png"
+    },
+    {
+      "alias": "infection_decreasing",
+      "source_name": "infectiondown",
+      "source_file": "sharedassets1.assets",
+      "path_id": 534,
+      "type": "Sprite",
+      "dimensions": [
+        24,
+        22
+      ],
+      "output_path": "C:\\Users\\thuam\\Desktop\\projects\\decaying-aftermath\\src\\main\\resources\\assets\\decaying_aftermath\\textures\\gui\\status\\infection_decreasing.png",
+      "sha256": "e5c9b2d5f662540ca0b8779a8e7a2aa89d517abc709eb477e4b0f93090659397",
+      "bytes": 274,
+      "packed_dimensions": [
+        24,
+        22
+      ],
+      "trim_offset": [
+        0.0,
+        0.0
+      ],
+      "destination_xy": [
+        0,
+        0
+      ],
+      "original_pixel_sha256": "ed0ca12b1af72340e7ad62ec3c0e73399ed14a273de6872f5b62b8549982cde9",
+      "transform": "Original full Sprite rect restored with transparent trim offsets; no pixel repaint",
+      "binding": {
+        "field": "WoundView.icons[10]",
+        "index": 10,
+        "code": "UpdateView: GetInfectionSpeed()>0 selects11, otherwise10; visible infection>=25 or previously diagnosed"
+      },
+      "path": "textures/gui/status/infection_decreasing.png"
+    },
+    {
+      "alias": "infection_increasing",
+      "source_name": "infectionup",
+      "source_file": "sharedassets1.assets",
+      "path_id": 434,
+      "type": "Sprite",
+      "dimensions": [
+        24,
+        22
+      ],
+      "output_path": "C:\\Users\\thuam\\Desktop\\projects\\decaying-aftermath\\src\\main\\resources\\assets\\decaying_aftermath\\textures\\gui\\status\\infection_increasing.png",
+      "sha256": "b7bdaa7759c88362b5ddb6fbadfbb4f5271433c85aed2d46317d4f70df2af5e4",
+      "bytes": 284,
+      "packed_dimensions": [
+        24,
+        22
+      ],
+      "trim_offset": [
+        0.0,
+        0.0
+      ],
+      "destination_xy": [
+        0,
+        0
+      ],
+      "original_pixel_sha256": "9e5111fed0f9072ffb1361abe88105ec8c7bffd0f334a438390cfe4dc0f1554a",
+      "transform": "Original full Sprite rect restored with transparent trim offsets; no pixel repaint",
+      "binding": {
+        "field": "WoundView.icons[11]",
+        "index": 11,
+        "code": "UpdateView: GetInfectionSpeed()>0 selects11, otherwise10; visible infection>=25 or previously diagnosed"
+      },
+      "path": "textures/gui/status/infection_increasing.png"
+    }
+  ],
+  "presentation_policy": {
+    "brain_dying_music": "DrawYourLastBreath1: looping only while authoritative Mode.DYING; MusicManager.Update alive && brainDying restarts the bound clip as needed",
+    "death_music": "DrawYourLastBreath2: nonlooping once on actual Mode.DEAD; playedDead resets on a new life",
+    "consciousness_vignette": "Original full Sprite, stretched to screen; native fade speed0.4 retained",
+    "infection_icons": "Original WoundView icons[10]/[11]; represented infection>=.25; disinfected selects down"
+  },
+  "explicit_minecraft_adaptations": [
+    "Server owns recoverable60-second DYING state; no death inferred from LastStandSequence10.7s animation.",
+    "Partial darkness capped at.35 in medical UI; medical readouts drawn above vignette for rescue readability.",
+    "Brain grace and consciousness determine gradual dying darkness; no attempt to recreate unavailable Unity full-screen shaders.",
+    "The represented disinfected state selects decreasing infection, rather than fabricating an unavailable CU GetInfectionSpeed result."
+  ],
+  "old_procedure_assets_unchanged": true,
+  "games_started": false
+}

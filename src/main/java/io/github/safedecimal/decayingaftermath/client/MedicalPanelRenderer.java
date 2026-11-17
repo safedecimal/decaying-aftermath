@@ -5,6 +5,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
+import net.minecraft.network.chat.Component;
 
 /** CU's enabled ComputerBack monitor: original gray/green frame, live name and pulse. */
 public final class MedicalPanelRenderer {
@@ -20,7 +21,7 @@ public final class MedicalPanelRenderer {
     }
 
     public static void extract(GuiGraphicsExtractor graphics, MedicalPanelLayout.Box box) {
-        if (!MedicalClient.isInventoryOpen(Minecraft.getInstance())) {
+        if (!MedicalClient.isMedicalPanelOpen(Minecraft.getInstance())) {
             lastDrawNanos = 0;
             return;
         }
@@ -40,6 +41,8 @@ public final class MedicalPanelRenderer {
         } else {
             graphics.blit(RenderPipelines.GUI_TEXTURED, PANEL, 0, 0, 0f, 0f, 133, 196, 133, 196);
             text(graphics, Minecraft.getInstance().getUser().getName(), 6, 4);
+            for(var row:MedicalVitalsReadout.rows(ClientMedicalState.snapshot()))
+                text(graphics,Component.translatable(row.key(),row.percent()).getString(),row.x(),row.y());
             text(graphics, Integer.toString(PulseState.bpm()), 16, 154);
             trace(graphics, 7, 165);
         }

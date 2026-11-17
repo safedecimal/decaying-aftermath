@@ -1,6 +1,7 @@
 package io.github.safedecimal.decayingaftermath.client;
 
 import io.github.safedecimal.decayingaftermath.medical.BodySnapshot.Mode;
+import io.github.safedecimal.decayingaftermath.medical.BodySnapshot;
 
 /** Unscaled visual state from PlayerCamera.HandleUnconsciousScreen / LastStandSequence. */
 public final class MedicalPresentationTimeline {
@@ -13,11 +14,29 @@ public final class MedicalPresentationTimeline {
     public void beginLastStand() { lastStandSeconds = 0; }
 
     public void advance(Mode mode, double seconds) {
+        advance(mode,mode==Mode.UNCONSCIOUS?.25:mode==Mode.DEAD?0:1,1,seconds);
+    }
+    public void advance(BodySnapshot body,double seconds) {
+        advance(body.mode(),body.consciousness(),body.consciousnessProgress(),seconds);
+    }
+    private void advance(Mode mode,double consciousness,double remainingGrace,double seconds) {
         if (!Double.isFinite(seconds) || seconds < 0) return;
-        if (mode == Mode.DEAD) { reset(); return; }
+        if (mode == Mode.DYING || mode == Mode.DEAD) lastStandSeconds=-1;
         if (lastStandSeconds >= 0) lastStandSeconds += seconds;
+        if(mode==Mode.DEAD) {
+            black=towards(black,1,seconds*2);vignette=towards(vignette,.75,seconds*.4);blackSeconds=0;
+            return;
+        }
+        if(mode==Mode.DYING) {
+            double loss=1-Math.clamp(remainingGrace,0,1);
+            double focus=Math.clamp((.7-consciousness)*2.1,0,.55);
+            black=towards(black,Math.max(focus,.12+.43*loss),seconds*.3);
+            vignette=towards(vignette,.45+.55*loss,seconds*.4);blackSeconds=0;
+            return;
+        }
         boolean unconscious = mode == Mode.UNCONSCIOUS;
-        black = towards(black, unconscious ? .965 : 0, seconds * (unconscious ? 2 : .8));
+        double focus=unconscious?.965:Math.clamp((.7-consciousness)*2.1,0,.965);
+        black = towards(black, focus, seconds * (unconscious ? 2 : .8));
         vignette = towards(vignette, unconscious ? 1 : 0, seconds * .4);
         blackSeconds = towards(blackSeconds, unconscious && black >= .965 ? 4 : 0,
                 seconds * (unconscious ? 1 : 1.5));

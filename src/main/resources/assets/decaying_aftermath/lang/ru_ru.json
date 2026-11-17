@@ -30,7 +30,7 @@
   "decaying_aftermath.procedure.remaining": "Осталось %s%%",
   "decaying_aftermath.procedure.applied": "Применено %s%%",
   "decaying_aftermath.procedure.cancel": "Esc: выйти; использованный материал не возвращается",
-  "decaying_aftermath.procedure.guide.wrap": "Возьмите рулон и мотайте по часовой стрелке. Держите руку на кольце; можно продолжать после полного оборота.",
+  "decaying_aftermath.procedure.guide.wrap": "Возьмите рулон и мотайте по часовой стрелке. Нужно несколько слоёв: кровотечение уменьшается постепенно. Продолжайте наматывать; процент — остаток рулона.",
   "decaying_aftermath.procedure.guide.syringe": "ЛКМ: выровнять и ввести иглу. Удерживайте ПКМ для поршня, затем извлеките прямо.",
   "decaying_aftermath.procedure.guide.potion": "ЛКМ: поднесите бутылку к ране. Колесо: наклон; удерживайте подходящий угол для струи.",
   "decaying_aftermath.procedure.guide.splint_align": "Совместите шину с обеими метками. Колесо: повернуть. Отпустите для установки.",
@@ -41,5 +41,11 @@
   "decaying_aftermath.thought.careful": "Осторожно...",
   "decaying_aftermath.last_standing": "Последний рывок",
   "decaying_aftermath.procedure.guide.steady": "Держите руку ровно",
-  "decaying_aftermath.thought.supply_space": "Нужно место для неиспользованных предметов."
+  "decaying_aftermath.thought.supply_space": "Нужно место для неиспользованных предметов.",
+  "item.decaying_aftermath.anesthetic": "Местный анестетик",
+  "item.decaying_aftermath.antiseptic": "Антисептик",
+  "decaying_aftermath.stat.consciousness": "СОЗНАНИЕ %s%%",
+  "decaying_aftermath.stat.energy": "ЭНЕРГИЯ %s%%",
+  "decaying_aftermath.status.infection": " / инфекция",
+  "decaying_aftermath.status.anesthetized": " / местная анестезия"
 }

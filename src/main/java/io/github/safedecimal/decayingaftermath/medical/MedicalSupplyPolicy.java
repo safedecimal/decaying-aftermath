@@ -10,6 +10,25 @@ public final class MedicalSupplyPolicy {
     public static boolean installation(TreatmentKind kind) {
         return kind == TreatmentKind.SPLINT || kind == TreatmentKind.TOURNIQUET;
     }
+    /** Vanilla potions keep their bottle/effect lifecycle and are never repacked. */
+    public static boolean inventorySupply(TreatmentKind kind) {
+        return kind != null && kind != TreatmentKind.POTION
+                && kind != TreatmentKind.HEALING_POTION && kind != TreatmentKind.REGENERATION_POTION;
+    }
+    public static double material(int count, float perUnitFill) {
+        return (double) Math.max(0, count) * fill(perUnitFill);
+    }
+    public record Packed(int fullUnits, float residual) { }
+    /** Combine material, not item counts. Never round a residual upward into a new unit. */
+    public static Packed repack(double material) {
+        if (!Double.isFinite(material) || material <= 0 || material > Integer.MAX_VALUE)
+            return new Packed(0, 0);
+        int fullUnits = (int) Math.floor(material);
+        double exactResidual = material - fullUnits;
+        float residual = (float) exactResidual;
+        if ((double) residual > exactResidual) residual = Math.nextDown(residual);
+        return new Packed(fullUnits, Math.max(0, residual));
+    }
     public static int ticksPerFill(TreatmentKind kind) {
         return wrap(kind) ? 240 : kind == TreatmentKind.SPLINT ? 80 : 120;
     }

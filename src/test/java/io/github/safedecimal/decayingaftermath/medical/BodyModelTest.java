@@ -56,7 +56,8 @@ class BodyModelTest {
         model.damage(LEFT_ARM, 4);
         float before = model.snapshot().part(LEFT_ARM).integrity();
         assertTrue(model.treat(LEFT_ARM, BANDAGE, 1));
-        assertEquals(0, model.snapshot().part(LEFT_ARM).bleeding());
+        assertTrue(model.snapshot().part(LEFT_ARM).bleeding() > 0); // Care is queued, not instant.
+        assertTrue(model.treat(LEFT_ARM, BANDAGE, 1));
         assertEquals(before, model.snapshot().part(LEFT_ARM).integrity());
         ticks(model, 1200);
         assertTrue(model.snapshot().part(LEFT_ARM).integrity() > before);
@@ -123,9 +124,9 @@ class BodyModelTest {
         assertEquals(LAST_STANDING, model.snapshot().mode());
         assertTrue(model.snapshot().consciousnessProgress() > 0);
         model.tick(false, false);
-        assertEquals(DEAD, model.snapshot().mode());
-        assertEquals(0, model.snapshot().bpm());
-        assertFalse(model.treat(HEAD, HEALING_POTION, 1));
+        assertNotEquals(DEAD, model.snapshot().mode());
+        assertTrue(model.snapshot().bpm() > 0);
+        assertTrue(model.treat(HEAD, HEALING_POTION, 1));
     }
 
     @Test void urgentTreatmentCanExitLastStandingButCannotResetItByStateHopping() {
@@ -133,18 +134,17 @@ class BodyModelTest {
         model.damage(HEAD, 31);
         assertEquals(LAST_STANDING, model.snapshot().mode());
         assertTrue(model.treat(HEAD, HEALING_POTION, 1));
-        assertEquals(UNCONSCIOUS, model.snapshot().mode());
-        ticks(model, BodyModel.WAKE_UP_TICKS);
+        ticks(model, BodyModel.LAST_STANDING_TICKS + BodyModel.WAKE_UP_TICKS);
         assertEquals(CONSCIOUS, model.snapshot().mode());
-        model.damage(HEAD, 11);
-        assertEquals(DEAD, model.snapshot().mode());
+        model.damage(HEAD, 40);
+        assertEquals(DYING, model.snapshot().mode());
     }
 
     @Test void repeatedExcessiveInjectionCanProduceFatalGameOverdose() {
         BodyModel model = new BodyModel();
         for (int i = 0; i < 3; i++) assertTrue(model.treat(LEFT_ARM, FENTANYL, 1));
         boolean fainted = false, lastStanding = false;
-        for (int i = 0; i < 1800; i++) {
+        for (int i = 0; i < 6000; i++) {
             model.tick(false, false);
             fainted |= model.snapshot().mode() == UNCONSCIOUS;
             lastStanding |= model.snapshot().mode() == LAST_STANDING;
@@ -160,7 +160,7 @@ class BodyModelTest {
         BodyModel restored = BodyModel.restoreState(model.saveState());
         assertEquals(model.snapshot().consciousnessProgress(), restored.snapshot().consciousnessProgress());
         ticks(restored, 500);
-        assertEquals(DEAD, restored.snapshot().mode());
+        assertNotEquals(DEAD, restored.snapshot().mode());
         BodyModel care = new BodyModel(); care.damage(LEFT_ARM, 4); care.treat(LEFT_ARM, BANDAGE, 1);
         ticks(care, 100);
         var state = care.saveState();

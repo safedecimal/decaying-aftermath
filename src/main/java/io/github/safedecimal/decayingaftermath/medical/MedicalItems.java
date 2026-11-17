@@ -23,6 +23,8 @@ public final class MedicalItems {
     public static final Item SPLINT = item("splint", 16);
     public static final Item TOURNIQUET = item("tourniquet", 16);
     public static final Item FENTANYL = item("fentanyl", 1);
+    public static final Item ANESTHETIC = item("anesthetic", 16);
+    public static final Item ANTISEPTIC = item("antiseptic", 16);
     private static boolean registered;
 
     private MedicalItems() { }
@@ -36,6 +38,8 @@ public final class MedicalItems {
             output.accept(SPLINT);
             output.accept(TOURNIQUET);
             output.accept(FENTANYL);
+            output.accept(ANESTHETIC);
+            output.accept(ANTISEPTIC);
         });
     }
 
@@ -48,6 +52,8 @@ public final class MedicalItems {
         if (item == SPLINT) return TreatmentKind.SPLINT;
         if (item == TOURNIQUET) return TreatmentKind.TOURNIQUET;
         if (item == FENTANYL) return TreatmentKind.FENTANYL;
+        if (item == ANESTHETIC) return TreatmentKind.ANESTHETIC;
+        if (item == ANTISEPTIC) return TreatmentKind.ANTISEPTIC;
         if (!isRegularPotion(stack)) return null;
 
         PotionContents contents = stack.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY);

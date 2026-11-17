@@ -110,5 +110,21 @@
         "stream": false
       }
     ]
+  },
+  "brain_dying_music": {
+    "sounds": [
+      {
+        "name": "decaying_aftermath:brain_dying_music",
+        "stream": true
+      }
+    ]
+  },
+  "death_music": {
+    "sounds": [
+      {
+        "name": "decaying_aftermath:death_music",
+        "stream": true
+      }
+    ]
   }
 }

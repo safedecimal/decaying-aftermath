@@ -5,6 +5,7 @@ import io.github.safedecimal.decayingaftermath.medical.BodySnapshot;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
@@ -26,6 +27,10 @@ public final class MedicalClient {
     private static long lastTickNanos;
     private static boolean playedDrone;
     private static MedicalLoopSound criticalLoop, unconsciousLoop;
+    private static MedicalMusicSound dyingMusic,deadMusic;
+    private static final MedicalDeathMusicState DEATH_MUSIC=new MedicalDeathMusicState();
+    private static Object currentPlayer;
+    private static boolean waitingForLiveBody;
     private static final MedicalPresentationTimeline TIMELINE = new MedicalPresentationTimeline();
     private static final EcgTrace CONSCIOUSNESS_ECG = new EcgTrace(
             ConsciousnessLayout.ECG_WIDTH, ConsciousnessLayout.ECG_HEIGHT);
@@ -35,6 +40,7 @@ public final class MedicalClient {
         if (registered) return;
         registered = true;
         ClientTickEvents.END_CLIENT_TICK.register(client -> tick(client));
+        ClientPlayConnectionEvents.DISCONNECT.register((handler,client)->clearPresentation());
         ScreenEvents.AFTER_INIT.register((client, screen, width, height) -> {
             if (screen.getClass() == InventoryScreen.class && client.player != null
                     && !client.player.hasInfiniteMaterials()) {
@@ -49,30 +55,33 @@ public final class MedicalClient {
 
     private static void tick(Minecraft client) {
         if (client.player == null || client.level == null) {
-            stop("heartbeat"); stop("heartbeat_heavy"); stop("heartbeat_monitor"); activeBeat = null;
-            stop("unconscious"); stop("last_standing"); stop("last_standing_drone");
-            closeCriticalLoops();
-            ThoughtTyper.reset(); beatPhase = 0; lastTickNanos = 0; playedDrone = false;
-            TIMELINE.reset(); CONSCIOUSNESS_ECG.reset();
-            previousMode = BodySnapshot.Mode.CONSCIOUS;
+            clearPresentation();
             return;
+        }
+        if(currentPlayer!=client.player) {
+            boolean staleDeath=currentPlayer!=null&&previousMode==BodySnapshot.Mode.DEAD
+                    &&ClientMedicalState.received()&&ClientMedicalState.snapshot().mode()==BodySnapshot.Mode.DEAD;
+            clearPresentation();currentPlayer=client.player;waitingForLiveBody=staleDeath;
         }
         long now = clockNanos.getAsLong();
         double seconds = lastTickNanos == 0 ? .05 : Math.max(0, (now - lastTickNanos) / 1_000_000_000.0);
         lastTickNanos = now;
         if (!ClientMedicalState.received()) return;
         BodySnapshot body = ClientMedicalState.snapshot();
+        if(waitingForLiveBody) {if(body.mode()==BodySnapshot.Mode.DEAD)return;waitingForLiveBody=false;}
         if (body.mode() != previousMode) {
             previousMode = body.mode();
             if (body.mode() == BodySnapshot.Mode.LAST_STANDING) {
                 TIMELINE.beginLastStand(); playedDrone = false;
                 sound("last_standing", 1f, 1f);
-            } else if (body.mode() == BodySnapshot.Mode.DEAD) {
+            } else if (body.mode() == BodySnapshot.Mode.DEAD || body.mode()==BodySnapshot.Mode.DYING) {
                 stop("last_standing"); stop("last_standing_drone");
             }
         }
         // LastStandSequence and blackout fades use unscaled time, even while the game is paused.
-        TIMELINE.advance(body.mode(), seconds);
+        TIMELINE.advance(body, seconds);
+        updateDeathMusic(body.mode(),seconds);
+        if(body.mode()==BodySnapshot.Mode.DYING||body.mode()==BodySnapshot.Mode.DEAD)closeCriticalLoops();
         if (TIMELINE.lastStandActive() && TIMELINE.droneDue() && !playedDrone) {
             playedDrone = true; sound("last_standing_drone", 1f, 1f);
         }
@@ -114,6 +123,23 @@ public final class MedicalClient {
         if (unconsciousLoop != null) unconsciousLoop.close();
         criticalLoop = unconsciousLoop = null;
     }
+    private static void updateDeathMusic(BodySnapshot.Mode mode,double seconds) {
+        var action=DEATH_MUSIC.advance(mode);
+        if(action.stopDying()&&dyingMusic!=null) {dyingMusic.close();dyingMusic=null;}
+        if(action.stopDead()&&deadMusic!=null) {deadMusic.close();deadMusic=null;}
+        if(action.startDying())dyingMusic=MedicalMusicSound.start("brain_dying_music",true);
+        if(action.playDead())deadMusic=MedicalMusicSound.start("death_music",false);
+        if(dyingMusic!=null)dyingMusic.fadeTo(.8f,seconds);
+    }
+    private static void clearPresentation() {
+        stop("heartbeat");stop("heartbeat_heavy");stop("heartbeat_monitor");activeBeat=null;
+        stop("unconscious");stop("last_standing");stop("last_standing_drone");closeCriticalLoops();
+        if(dyingMusic!=null)dyingMusic.close();if(deadMusic!=null)deadMusic.close();
+        dyingMusic=deadMusic=null;DEATH_MUSIC.reset();
+        ThoughtTyper.reset();beatPhase=0;lastTickNanos=0;playedDrone=false;
+        TIMELINE.reset();CONSCIOUSNESS_ECG.reset();previousMode=BodySnapshot.Mode.CONSCIOUS;
+        currentPlayer=null;waitingForLiveBody=false;
+    }
     public static double beatPhase() { return beatPhase; }
 
     public static void extractHud(GuiGraphicsExtractor graphics) {
@@ -121,8 +147,9 @@ public final class MedicalClient {
         if (client.player == null || !ClientMedicalState.received()) return;
         BodySnapshot body = ClientMedicalState.snapshot();
         if (TIMELINE.black() > 0 || TIMELINE.vignette() > 0) {
-            graphics.fill(0, 0, graphics.guiWidth(), graphics.guiHeight(), color(TIMELINE.black(), 0));
-            blit(graphics, "unconscious_vignette", 0, 0, graphics.guiWidth(), graphics.guiHeight(),
+            double black=MedicalPresentationPolicy.blackOverlay(body,TIMELINE.black(),isMedicalPanelOpen(client));
+            graphics.fill(0, 0, graphics.guiWidth(), graphics.guiHeight(), color(black, 0));
+            blit(graphics, "consciousness_vignette", 0, 0, graphics.guiWidth(), graphics.guiHeight(),
                     256, 256, color(TIMELINE.vignette(), 0xFFFFFF));
         }
         double alpha = TIMELINE.circleAlpha();
@@ -163,6 +190,9 @@ public final class MedicalClient {
             }
             // level1/LastStand has one Image and zero text children. Never draw a red title here.
         }
+        // Keep the medical readouts legible above the edge-darkening during the rescue window.
+        if(body.mode()==BodySnapshot.Mode.DYING&&isMedicalPanelOpen(client))
+            MedicalPanelRenderer.extract(graphics,MedicalPanelLayout.topLeft());
     }
 
     private static int color(double alpha, int rgb) {
@@ -203,6 +233,9 @@ public final class MedicalClient {
     public static boolean isInventoryOpen(Minecraft client) {
         return client.player != null && (client.gui.screen() instanceof MedicalInventoryScreen
                 || client.gui.screen() instanceof InventoryScreen);
+    }
+    public static boolean isMedicalPanelOpen(Minecraft client) {
+        return isInventoryOpen(client)||client.player!=null&&client.gui.screen() instanceof MedicalProcedureScreen;
     }
     private static void stop(String name) { Minecraft.getInstance().getSoundManager().stop(id(name), null); }
     static Identifier id(String path) { return Identifier.fromNamespaceAndPath(DecayingAftermath.MOD_ID,path); }

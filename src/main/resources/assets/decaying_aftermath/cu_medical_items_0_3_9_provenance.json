@@ -1,0 +1,35 @@
+{
+  "source_assembly_sha256": "48c7f2296fc4a659faae3b1822884ca5b7ff73d6767ef159e6a6c2bc0b2d38f1",
+  "items": [
+    {
+      "id": "anesthetic",
+      "source_path": "C:\\Users\\thuam\\Desktop\\projects\\decaying-aftermath\\verification\\vitals-infection-0.3.9\\cu-evidence\\anesthetic_inventory.png",
+      "source_sha256": "47ac23703efb197596bc01875a93c0709a3d547ee7ff1a7de3428a3d890b5856",
+      "source_size": [
+        8,
+        16
+      ],
+      "output_path": "C:\\Users\\thuam\\Desktop\\projects\\decaying-aftermath\\src\\main\\resources\\assets\\decaying_aftermath\\textures\\item\\anesthetic.png",
+      "output_sha256": "f726f4adee746a22be5e9e15a7258112407d3a0532d918f3a2d89f4cb56edd8c",
+      "transform": "Native pixels padded centrally to transparent16x16; no resampling",
+      "scope": "Standalone Minecraft item adaptation; exact CU serialized art/liquid bindings in ITEM_ASSET_BINDINGS.json"
+    },
+    {
+      "id": "antiseptic",
+      "source_path": "C:\\Users\\thuam\\Desktop\\projects\\decaying-aftermath\\verification\\vitals-infection-0.3.9\\cu-evidence\\antiseptic_container_base.png",
+      "source_sha256": "5efb2a6a15ec8f988e30f3e574c55c33ab0e500a9500cab28d2d3ec38c9d0173",
+      "source_size": [
+        6,
+        12
+      ],
+      "output_path": "C:\\Users\\thuam\\Desktop\\projects\\decaying-aftermath\\src\\main\\resources\\assets\\decaying_aftermath\\textures\\item\\antiseptic.png",
+      "output_sha256": "b9ea666ab6abdc1b0cbee1f886983a961ca08c361612fa17321f186cff983222",
+      "transform": "Native pixels padded centrally to transparent16x16; no resampling",
+      "scope": "Standalone Minecraft item adaptation; exact CU serialized art/liquid bindings in ITEM_ASSET_BINDINGS.json"
+    }
+  ],
+  "native_binding_evidence": "C:\\Users\\thuam\\Desktop\\projects\\decaying-aftermath\\verification\\vitals-infection-0.3.9\\cu-evidence\\ITEM_ASSET_BINDINGS.json",
+  "gameplay_units": "Fictional game supply; no real drug dose or manufacturing claim",
+  "anesthetic_availability": "Creative menu and additive medical chest loot",
+  "antiseptic_recipe": "Fictional Minecraft recipe, not real antiseptic manufacture"
+}

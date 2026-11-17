@@ -16,10 +16,12 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.gen.Invoker;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
+import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import io.github.safedecimal.decayingaftermath.compat.MedicalDamageContext;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/** Redirect only the final HP write, after vanilla blocking/armor/magic/absorption. */
+/** Preserve the original damage chain; intercept its final HP write with the captured source. */
 @Mixin(Player.class)
 public abstract class PlayerBodyMixin {
     @Inject(method = "attack", at = @At("HEAD"), cancellable = true)
@@ -27,13 +29,15 @@ public abstract class PlayerBodyMixin {
         if ((Object) this instanceof ServerPlayer player && !ServerMedicalSystem.canAct(player)) ci.cancel();
     }
 
-    @Redirect(method = "actuallyHurt", at = @At(value = "INVOKE",
-            target = "Lnet/minecraft/world/entity/player/Player;setHealth(F)V"))
-    private void decayingAftermath$damageBody(Player player, float nextHealth,
-            ServerLevel level, DamageSource source, float unmitigatedAmount) {
-        if (player instanceof ServerPlayer serverPlayer) {
-            ServerMedicalSystem.applyDamage(serverPlayer, source, player.getHealth() - nextHealth);
-        } else player.setHealth(nextHealth);
+    @WrapMethod(method = "actuallyHurt")
+    private void decayingAftermath$damageBody(ServerLevel level, DamageSource source,
+            float unmitigatedAmount, Operation<Void> original) {
+        if ((Object) this instanceof ServerPlayer player) {
+            try (var scope = MedicalDamageContext.begin(player, source)) {
+                original.call(level, source, unmitigatedAmount);
+                scope.complete();
+            }
+        } else original.call(level, source, unmitigatedAmount);
     }
 
     /** LivingEntity owns inherited health methods; only actual ServerPlayer instances are intercepted. */

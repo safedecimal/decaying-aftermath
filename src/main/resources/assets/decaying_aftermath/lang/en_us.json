@@ -30,7 +30,7 @@
   "decaying_aftermath.procedure.remaining": "Remaining %s%%",
   "decaying_aftermath.procedure.applied": "Applied %s%%",
   "decaying_aftermath.procedure.cancel": "Esc: leave; used material is not restored",
-  "decaying_aftermath.procedure.guide.wrap": "Grab the roll and wind clockwise. Keep the hand on the ring; continue until enough care or the roll runs out.",
+  "decaying_aftermath.procedure.guide.wrap": "Grab the roll and wind clockwise. Multiple layers provide gradual bleed care. Keep winding; the percentage is remaining material.",
   "decaying_aftermath.procedure.guide.syringe": "LMB: align and insert the needle. Hold RMB for the plunger, then withdraw straight.",
   "decaying_aftermath.procedure.guide.potion": "LMB: bring the bottle to the wound. Mouse wheel: tilt; keep the pouring angle steady.",
   "decaying_aftermath.procedure.guide.splint_align": "Align the splint with both marks. Mouse wheel: rotate. Release to fit.",
@@ -41,5 +41,11 @@
   "decaying_aftermath.thought.careful": "Careful...",
   "decaying_aftermath.last_standing": "Last Standing",
   "decaying_aftermath.procedure.guide.steady": "Keep the hand aligned",
-  "decaying_aftermath.thought.supply_space": "Need room for the unused items."
+  "decaying_aftermath.thought.supply_space": "Need room for the unused items.",
+  "item.decaying_aftermath.anesthetic": "Local anesthetic",
+  "item.decaying_aftermath.antiseptic": "Antiseptic",
+  "decaying_aftermath.stat.consciousness": "CONSCIOUSNESS %s%%",
+  "decaying_aftermath.stat.energy": "ENERGY %s%%",
+  "decaying_aftermath.status.infection": " / infection",
+  "decaying_aftermath.status.anesthetized": " / local anesthesia"
 }

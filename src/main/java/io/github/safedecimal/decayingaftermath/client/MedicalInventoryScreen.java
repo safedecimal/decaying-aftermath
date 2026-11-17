@@ -67,10 +67,6 @@ public final class MedicalInventoryScreen extends AbstractContainerScreen<Invent
         validateMedicalCarry();
         MedicalPanelRenderer.extract(graphics,MedicalPanelLayout.topLeft());
         BodySnapshot body=ClientMedicalState.snapshot();
-        cuText(graphics,Component.translatable("decaying_aftermath.stat.blood",Math.round(body.blood()*100)).getString(),7,34);
-        cuText(graphics,Component.translatable("decaying_aftermath.stat.oxygen",Math.round(body.oxygen()*100)).getString(),7,46);
-        cuText(graphics,Component.translatable("decaying_aftermath.stat.pain",Math.round(body.pain()*100)).getString(),7,58);
-        cuText(graphics,Component.translatable("decaying_aftermath.stat.drug",Math.round(body.drug()*100)).getString(),7,70);
         graphics.pose().pushMatrix(); graphics.pose().translate(originX,originY); graphics.pose().scale(scale,scale);
         super.extractRenderState(graphics,(int)virtualX(mouseX),(int)virtualY(mouseY),partialTick);
         graphics.pose().popMatrix();
@@ -84,7 +80,8 @@ public final class MedicalInventoryScreen extends AbstractContainerScreen<Invent
             recipeBook.extractTooltip(graphics,mouseX,mouseY,hoveredSlot);
         }
         // Screens render after HUD elements; keep the unconscious/Last Standing presentation above this screen too.
-        if(body.mode()==BodySnapshot.Mode.UNCONSCIOUS||body.mode()==BodySnapshot.Mode.LAST_STANDING)
+        if(body.mode()==BodySnapshot.Mode.UNCONSCIOUS||body.mode()==BodySnapshot.Mode.LAST_STANDING
+                ||body.mode()==BodySnapshot.Mode.DYING)
             MedicalClient.extractHud(graphics);
     }
 
@@ -123,7 +120,9 @@ public final class MedicalInventoryScreen extends AbstractContainerScreen<Invent
             BodySnapshot.PartSnapshot part=ClientMedicalState.snapshot().part(hover);
             Component text=Component.translatable("decaying_aftermath.body_status",pretty(hover),
                     (part.fractured()?Component.translatable("decaying_aftermath.status.fractured").getString():"")
-                    +(part.bleeding()>0?Component.translatable("decaying_aftermath.status.bleeding").getString():""));
+                    +(part.bleeding()>0?Component.translatable("decaying_aftermath.status.bleeding").getString():"")
+                    +(part.infection()>=.25f?Component.translatable("decaying_aftermath.status.infection").getString():"")
+                    +(part.anesthetized()?Component.translatable("decaying_aftermath.status.anesthetized").getString():""));
             graphics.setTooltipForNextFrame(font,text,mouseX,mouseY);
         }
     }

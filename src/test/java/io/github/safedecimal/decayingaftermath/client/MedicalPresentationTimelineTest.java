@@ -1,6 +1,7 @@
 package io.github.safedecimal.decayingaftermath.client;
 
 import io.github.safedecimal.decayingaftermath.medical.BodySnapshot.Mode;
+import io.github.safedecimal.decayingaftermath.medical.BodySnapshot;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -40,5 +41,26 @@ class MedicalPresentationTimelineTest {
         var timeline = new MedicalPresentationTimeline();timeline.beginLastStand();
         timeline.advance(Mode.LAST_STANDING,Double.NaN);timeline.advance(Mode.LAST_STANDING,-4);
         assertEquals(0,timeline.lastStandFrame());assertEquals(1,timeline.lastStandAlpha());
+    }
+    private BodySnapshot dying(float grace) {
+        var parts=new BodySnapshot.PartSnapshot[6];java.util.Arrays.fill(parts,new BodySnapshot.PartSnapshot(1,0,0,false,false,false,false));
+        return new BodySnapshot(.1f,.2f,.3f,.8f,0,70,Mode.DYING,grace,.2f,.35f,parts);
+    }
+    @Test void dyingProgressGraduallyDarkensButNeverUsesTheLastStandIntroAsADeathTimer() {
+        var timeline=new MedicalPresentationTimeline();timeline.beginLastStand();timeline.advance(dying(1),.1);
+        assertFalse(timeline.lastStandActive());assertTrue(timeline.black()>0);assertTrue(timeline.black()<.1);
+        assertTrue(timeline.vignette()>0);assertEquals(0,timeline.circleAlpha());
+        timeline.advance(dying(.1f),600);assertTrue(timeline.black()<=.55);assertTrue(timeline.vignette()<=1);
+        assertFalse(timeline.lastStandActive());
+    }
+    @Test void medicalDyingOverlayCapKeepsTheProcedureVisible() {
+        assertEquals(.35,MedicalPresentationPolicy.blackOverlay(dying(.1f),.55,true));
+        assertEquals(.55,MedicalPresentationPolicy.blackOverlay(dying(.1f),.55,false));
+    }
+    @Test void deathFadesToNativeBlackRatherThanResettingAllVisualsInstantly() {
+        var timeline=new MedicalPresentationTimeline();timeline.advance(dying(1),2);
+        double before=timeline.black();timeline.advance(Mode.DEAD,.05);
+        assertTrue(timeline.black()>before);assertTrue(timeline.black()<1);
+        timeline.advance(Mode.DEAD,1);assertEquals(1,timeline.black());assertEquals(0,timeline.circleAlpha());
     }
 }

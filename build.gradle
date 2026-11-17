@@ -80,6 +80,24 @@ tasks.register('verifyMedicalUiRendering', Test) {
     }
 }
 
+tasks.register('verifyMedicalVitals', Test) {
+    description = 'Verify restorative LastStand, layered care, energy/consciousness, infection and optional mod bridges.'
+    group = 'verification'
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+    useJUnitPlatform()
+    filter {
+        includeTestsMatching 'io.github.safedecimal.decayingaftermath.medical.BodyVitalsTest'
+        includeTestsMatching 'io.github.safedecimal.decayingaftermath.medical.MedicalSupplyConsolidationTest'
+        includeTestsMatching 'io.github.safedecimal.decayingaftermath.medical.NativeItemComponentPrototypeTest'
+        includeTestsMatching 'io.github.safedecimal.decayingaftermath.medical.MedicalStackPrototypeTest'
+        includeTestsMatching 'io.github.safedecimal.decayingaftermath.client.MedicalVitalsAssetBindingTest'
+        includeTestsMatching 'io.github.safedecimal.decayingaftermath.client.MedicalVitalsReadoutTest'
+        includeTestsMatching 'io.github.safedecimal.decayingaftermath.client.MedicalDeathMusicStateTest'
+        includeTestsMatching 'io.github.safedecimal.decayingaftermath.compat.*'
+    }
+}
+
 java {
     toolchain.languageVersion = JavaLanguageVersion.of(25)
     withSourcesJar()

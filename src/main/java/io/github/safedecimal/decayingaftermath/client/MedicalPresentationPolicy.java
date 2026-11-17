@@ -17,7 +17,7 @@ public final class MedicalPresentationPolicy {
         // Blood pressure, fibrillation, temperature etc. are not invented from condition().
         boolean bleeding = java.util.Arrays.stream(body.parts()).anyMatch(part -> part.bleeding() > 0);
         return body.oxygen() < .5f || (body.blood() < .3f && bleeding)
-                || body.mode() == BodySnapshot.Mode.LAST_STANDING;
+                || body.mode() == BodySnapshot.Mode.LAST_STANDING || body.mode() == BodySnapshot.Mode.DYING;
     }
 
     /** One recording per beat, never physical pulse + monitor simultaneously. */
@@ -29,6 +29,12 @@ public final class MedicalPresentationPolicy {
 
     /** MusicManager.Update: two crossfading looping sources, not an unconscious-entry one-shot. */
     public static boolean criticalAmbience(BodySnapshot body) {
-        return criticalAlarm(body) && body.bpm() > 5;
+        return body.mode()!=BodySnapshot.Mode.DYING && body.mode()!=BodySnapshot.Mode.DEAD
+                && criticalAlarm(body) && body.bpm() > 5;
+    }
+    public static double blackOverlay(BodySnapshot body,double black,boolean treatmentOpen) {
+        double alpha=Double.isFinite(black)?Math.clamp(black,0,1):0;
+        // Dying is a recoverable Minecraft treatment window, not CU's forced unconscious fast-forward.
+        return treatmentOpen&&body.mode()==BodySnapshot.Mode.DYING?Math.min(.35,alpha):alpha;
     }
 }
