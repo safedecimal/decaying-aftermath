@@ -13,6 +13,10 @@ public final class ProcedureVisuals {
         MedicalClient.blit(g,"procedure_frame",-12,-14,280,286,280,286,0xFFFFFFFF);
         g.fill(7,12,249,13,0xFF454B47);g.fill(7,234,249,235,0xFF454B47);
     }
+    public static void beginWorkArea(GuiGraphicsExtractor g) {
+        // 26.3 enableScissor applies the current pose itself: these must stay canvas-local.
+        g.enableScissor(-10,14,266,233);
+    }
     public static void part(GuiGraphicsExtractor g,BodyPart part,int x,int y,int w,int h) {
         var b=CuProcedureGeometry.part(part,x,y,w,h);
         CuMedicalHand.cube(g,b.x(),b.y(),b.width(),b.height(),5,0xFF171B18,0xFF9CA89E);

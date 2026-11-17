@@ -218,7 +218,7 @@ public final class MedicalProcedureScreen extends Screen {
                 else {ProcedureVisuals.rail(graphics,112,fasteners.progress(1),0,stage==1);if(stage>=2) {graphics.pose().pushMatrix();graphics.pose().translate(128,128);graphics.pose().rotate((float)Math.toRadians(angle));CuMedicalHand.cube(graphics,-23,-3,46,6,3);CuMedicalHand.cube(graphics,-26,-6,7,12,2);CuMedicalHand.cube(graphics,19,-6,7,12,2);graphics.pose().popMatrix();}}
             }
         }
-        graphics.enableScissor(ox-(int)(10*scale),oy+(int)(14*scale),ox+(int)(266*scale),oy+(int)(233*scale));
+        ProcedureVisuals.beginWorkArea(graphics);
         float handAngle=hand.rotation(isWrap())+(kind==TreatmentKind.FENTANYL?(float)Math.toRadians(65):0);
         CuMedicalHand.extract(graphics,hand.visualX(partialTick),hand.visualY(partialTick),handAngle,holding||injecting);
         if(isPotion())drawPotion(graphics);graphics.disableScissor();

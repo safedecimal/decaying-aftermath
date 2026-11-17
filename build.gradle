@@ -57,10 +57,22 @@ tasks.register('verifyMedicalProcedures', Test) {
         includeTestsMatching 'io.github.safedecimal.decayingaftermath.client.CuHandMotionTest'
         includeTestsMatching 'io.github.safedecimal.decayingaftermath.client.CuProcedureGeometryTest'
         includeTestsMatching 'io.github.safedecimal.decayingaftermath.client.MedicalStatusIconsTest'
+        includeTestsMatching 'io.github.safedecimal.decayingaftermath.client.MedicalUiRenderingTest'
         includeTestsMatching 'io.github.safedecimal.decayingaftermath.client.SupplyOverlayLayoutTest'
         includeTestsMatching 'io.github.safedecimal.decayingaftermath.client.FastenerMotionTest'
         includeTestsMatching 'io.github.safedecimal.decayingaftermath.medical.MedicalSupplyPolicyTest'
         includeTestsMatching 'io.github.safedecimal.decayingaftermath.medical.MedicalSupplyNbtTest'
+    }
+}
+
+tasks.register('verifyMedicalUiRendering', Test) {
+    description = 'Verify native 26.3 scissor transforms, visible block-arm bounds and full status sprite regions.'
+    group = 'verification'
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+    useJUnitPlatform()
+    filter {
+        includeTestsMatching 'io.github.safedecimal.decayingaftermath.client.MedicalUiRenderingTest'
     }
 }
 

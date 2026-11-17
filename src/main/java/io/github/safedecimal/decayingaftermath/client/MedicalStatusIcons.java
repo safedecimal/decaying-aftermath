@@ -35,6 +35,8 @@ public final class MedicalStatusIcons {
         float ratio=size/(float)Math.max(icon.width(),icon.height());
         int w=Math.max(1,Math.round(icon.width()*ratio)),h=Math.max(1,Math.round(icon.height()*ratio));
         Identifier id=Identifier.fromNamespaceAndPath(DecayingAftermath.MOD_ID,"textures/gui/status/"+icon.name()+".png");
-        graphics.blit(RenderPipelines.GUI_TEXTURED,id,cx-w/2,cy-h/2,0f,0f,w,h,icon.width(),icon.height(),color);
+        // Destination size and source region are independent; the shorter overload crops to w/h.
+        graphics.blit(RenderPipelines.GUI_TEXTURED,id,cx-w/2,cy-h/2,0f,0f,w,h,
+                icon.width(),icon.height(),icon.width(),icon.height(),color);
     }
 }
