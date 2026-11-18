@@ -51,11 +51,11 @@ public final class MedicalInventoryScreen extends AbstractContainerScreen<Invent
             }
         }
         var panel=MedicalPanelLayout.forScreen(width,height);
-        originX=Math.min(panel.x()+panel.width()+MedicalPanelLayout.GAP,Math.max(0,width-80));
-        scale=Math.min(1f,Math.min((width-originX-4f)/CANVAS_W,(height-8f)/CANVAS_H));
-        scale=Math.max(0.15f,scale);
-        originX+=(int)Math.max(0,(width-originX-CANVAS_W*scale)/2);
-        originY=Math.max(4,(int)((height-CANVAS_H*scale)/2));
+        int gap=MedicalPanelLayout.GAP;
+        int inventoryLeft=panel.x()+panel.width()+gap;
+        scale=panel.scale();
+        originX=inventoryLeft+(int)Math.max(0,(width-inventoryLeft-gap-CANVAS_W*scale)/2);
+        originY=Math.max(gap,(int)((height-CANVAS_H*scale)/2));
         for(int i=0;i<menu.slots.size();i++) {
             var p=MedicalInventoryLayout.slot(i);position(i,p.x(),p.y());
         }

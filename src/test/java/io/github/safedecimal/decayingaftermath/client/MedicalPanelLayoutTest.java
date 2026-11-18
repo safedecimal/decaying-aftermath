@@ -13,13 +13,13 @@ class MedicalPanelLayoutTest {
                 int left = MedicalPanelLayout.inventoryLeft(width, 176, vanillaLeft, recipes);
                 int top = (height - 166) / 2;
                 MedicalPanelLayout.Box box = MedicalPanelLayout.locate(width, height, left, top, 176, 166, recipes);
-                assertEquals(Math.round(19*height/1080f),box.x());
-                assertEquals(Math.round(20*height/1080f),box.y());
+                assertEquals(MedicalPanelLayout.GAP,box.x());
+                assertEquals(MedicalPanelLayout.GAP,box.y());
                 assertEquals(vanillaLeft,left);
                 assertTrue(box.width() > 0);
                 assertTrue(box.height() > 0);
-                assertTrue(box.width() <= MedicalPanelLayout.WIDTH);
-                assertTrue(box.height() <= MedicalPanelLayout.HEIGHT);
+                assertTrue(box.width() <= MedicalPanelLayout.SOURCE_WIDTH);
+                assertTrue(box.height() <= MedicalPanelLayout.SOURCE_HEIGHT);
                 assertFalse(box.compact());
                 assertTrue(box.x() + box.width() <= width && box.y() + box.height() <= height, width + ": " + box);
             }
@@ -42,23 +42,25 @@ class MedicalPanelLayoutTest {
                 MedicalPanelLayout.locate(427,240,203,37,176,166,true));
     }
 
-    @Test void referenceCanvasUsesExactCuSizeAndScalesByHeightWithoutMinecraftGuiScaleBias() {
-        assertEquals(399, MedicalPanelLayout.topLeft().width());
-        assertEquals(588, MedicalPanelLayout.topLeft().height());
-        assertEquals(3f, MedicalPanelLayout.topLeft().scale());
-        for (int[] size : new int[][] {{640,480},{320,240},{240,180},{854,480},{1280,720}}) {
+    @Test void medicalMonitorUsesGuiPixelsAtScaleTwoEvenOnHighResolutionDisplays() {
+        var monitor = MedicalPanelLayout.forScreen(1920 / 2, 1080 / 2);
+        assertEquals(1f, monitor.scale());
+        assertEquals(133, monitor.width());
+        assertEquals(196, monitor.height());
+        assertEquals(monitor, MedicalPanelLayout.forScreen(2560 / 2, 1440 / 2));
+        assertEquals(monitor, MedicalPanelLayout.forScreen(3840 / 2, 2160 / 2));
+    }
+
+    @Test void compactWindowsFitInventoryAndMonitorAtTheSameScale() {
+        int gap = MedicalPanelLayout.GAP;
+        for (int[] size : new int[][] {{387,480},{320,240},{160,260},{427,240},{240,180},{640,480}}) {
             var box = MedicalPanelLayout.forScreen(size[0],size[1]);
-            assertTrue(box.height() <= size[1] - MedicalPanelLayout.GAP);
-            assertTrue(box.x()+box.width() <= size[0] / 2);
-            assertEquals(size[1]/360f,box.scale(),.0001f);
-            assertEquals(box.scale(),box.width()/(float)MedicalPanelLayout.SOURCE_WIDTH,.01f);
+            // The monitor's integer bounds round up by less than one pixel.
+            assertTrue(box.x()+box.width()+gap+MedicalInventoryLayout.WIDTH*box.scale() <= size[0]-(gap-1));
+            assertTrue(2*gap+MedicalInventoryLayout.HEIGHT*box.scale() <= size[1]+.001f);
+            assertTrue(box.y()+box.height() <= size[1]-gap);
             assertEquals(50,box.localX(box.x()+50*box.scale()),.001f);
             assertEquals(80,box.localY(box.y()+80*box.scale()),.001f);
-        }
-        for(int guiScale:new int[]{1,2,3,4,6}) {
-            var box=MedicalPanelLayout.forScreen(1920/guiScale,1080/guiScale);
-            assertEquals(399,133*box.scale()*guiScale,.001);
-            assertEquals(588,196*box.scale()*guiScale,.001);
         }
     }
 }
