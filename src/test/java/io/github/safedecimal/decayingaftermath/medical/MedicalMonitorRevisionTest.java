@@ -113,11 +113,18 @@ class MedicalMonitorRevisionTest {
         assertEquals("HemothoraxFill",CuMedicalMonitor.hover(new BodyModel().snapshot(),18,130));
     }
     @Test void nativePacketRoundTripIncludesAllNewPersistentFieldsAndConsumesExactBytes() {
-        var b=body(state(.6f,.4f,.8f,.3f,82.6f,1.75f,2.25f));
+        var base=body(state(.6f,.4f,.8f,.3f,82.6f,1.75f,2.25f));
         var buffer=new RegistryFriendlyByteBuf(Unpooled.buffer(),RegistryAccess.EMPTY);
-        try { BodyPayload.CODEC.encode(buffer,new BodyPayload(b));var decoded=BodyPayload.CODEC.decode(buffer).snapshot();
-            assertEquals(b.survival(),decoded.survival());assertEquals(buffer.writerIndex(),buffer.readerIndex());
-            assertTrue(BodyPayload.TYPE.id().toString().endsWith("body_v4"));
+        try {
+            for(var group:BloodGroup.values()) {
+                buffer.clear();
+                var b=base.withBloodGroup(group);
+                BodyPayload.CODEC.encode(buffer,new BodyPayload(b));
+                var decoded=BodyPayload.CODEC.decode(buffer).snapshot();
+                assertEquals(group,decoded.bloodGroup());
+                assertEquals(b.survival(),decoded.survival());assertEquals(buffer.writerIndex(),buffer.readerIndex());
+            }
+            assertTrue(BodyPayload.TYPE.id().toString().endsWith("body_v5"));
         } finally { buffer.release(); }
     }
     private ValueInput input(Map<String,Object> data) {

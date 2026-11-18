@@ -35,7 +35,8 @@ public final class MedicalNetwork {
         ServerMedicalSystem.setSyncHandler(MedicalNetwork::sync);
     }
     public static void sync(ServerPlayer player,BodySnapshot snapshot) {
-        if(ServerPlayNetworking.canSend(player,BodyPayload.TYPE))ServerPlayNetworking.send(player,new BodyPayload(snapshot));
+        if(ServerPlayNetworking.canSend(player,BodyPayload.TYPE))
+            ServerPlayNetworking.send(player,new BodyPayload(snapshot.withBloodGroup(BloodGroup.forPlayer(player.getUUID()))));
     }
     public static void thought(ServerPlayer player,String message) {
         if(ServerPlayNetworking.canSend(player,ThoughtPayload.TYPE))ServerPlayNetworking.send(player,new ThoughtPayload(message));

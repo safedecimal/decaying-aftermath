@@ -5,9 +5,22 @@ import java.util.Objects;
 /** Game-only quantities are normalized except BPM and the cumulative 0..3 drug burden. */
 public record BodySnapshot(float condition, float blood, float oxygen, float pain, float drug,
         float bpm, Mode mode, float consciousnessProgress, float energy, float consciousness,
-        PartSnapshot[] parts, SurvivalSnapshot survival) {
+        PartSnapshot[] parts, SurvivalSnapshot survival, BloodGroup bloodGroup) {
     // Append modes: saved pre-0.3.9 ordinal 3 must continue to mean DEAD.
     public enum Mode { CONSCIOUS, UNCONSCIOUS, LAST_STANDING, DEAD, DYING }
+
+    /** Local body snapshots have no player identity until the server attaches it. */
+    public BodySnapshot(float condition, float blood, float oxygen, float pain, float drug,
+            float bpm, Mode mode, float consciousnessProgress, float energy, float consciousness,
+            PartSnapshot[] parts, SurvivalSnapshot survival) {
+        this(condition,blood,oxygen,pain,drug,bpm,mode,consciousnessProgress,energy,consciousness,
+                parts,survival,null);
+    }
+
+    public BodySnapshot withBloodGroup(BloodGroup group) {
+        return new BodySnapshot(condition,blood,oxygen,pain,drug,bpm,mode,consciousnessProgress,
+                energy,consciousness,parts,survival,Objects.requireNonNull(group));
+    }
 
     public BodySnapshot(float condition, float blood, float oxygen, float pain, float drug,
             float bpm, Mode mode, float consciousnessProgress, float energy, float consciousness,

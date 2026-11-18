@@ -1,8 +1,9 @@
 package io.github.safedecimal.decayingaftermath.client;
 
 import java.util.List;
+import java.util.stream.Stream;
 
-/** Generated from CU level1/StatMenu RectTransforms; do not hand-arrange readout rows. */
+/** Native geometry from CU level1/StatMenu RectTransforms, plus the mod's blood group readout. */
 public final class CuMedicalGeometry {
     private CuMedicalGeometry() {}
     public record Rect(int x,int y,int width,int height) {
@@ -10,7 +11,8 @@ public final class CuMedicalGeometry {
     }
     public record Readout(String field,Rect box,int alignment) {}
     public record Sprite(String field,String name,Rect box,boolean vertical) {}
-    public static final List<Readout> READOUTS=List.of(
+    static final Readout BLOOD_GROUP = new Readout("BloodGroupText",new Rect(55,63,25,10),4);
+    public static final List<Readout> NATIVE_READOUTS=List.of(
         new Readout("BrainText",new Rect(25,38,27,8),1),
         new Readout("ConscText",new Rect(94,40,25,8),4),
         new Readout("ImmuneText",new Rect(55,51,25,6),4),
@@ -30,6 +32,7 @@ public final class CuMedicalGeometry {
         new Readout("WaterText",new Rect(72,76,19,6),1),
         new Readout("FoodText",new Rect(84,87,18,6),1),
         new Readout("OxyText",new Rect(94,154,25,10),4));
+    public static final List<Readout> READOUTS=Stream.concat(NATIVE_READOUTS.stream(),Stream.of(BLOOD_GROUP)).toList();
     public static final List<Sprite> SPRITES=List.of(
         new Sprite("BrainBar","barbrain",new Rect(28,35,96,2),false),
         new Sprite("TempFill","barthermometer",new Rect(118,66,7,24),true),

@@ -1,5 +1,6 @@
 package io.github.safedecimal.decayingaftermath.client;
 
+import io.github.safedecimal.decayingaftermath.medical.BloodGroup;
 import io.github.safedecimal.decayingaftermath.medical.BodySnapshot;
 import java.util.Arrays;
 import java.nio.charset.StandardCharsets;
@@ -23,8 +24,8 @@ class CuMedicalMonitorTest {
             assertEquals("48c7f2296fc4a659faae3b1822884ca5b7ff73d6767ef159e6a6c2bc0b2d38f1",manifest.get("source_assembly_sha256").getAsString());
             assertEquals(1,manifest.get("canvas_match_height").getAsInt());
             var records=manifest.getAsJsonArray("records");
-            assertEquals(19,CuMedicalGeometry.READOUTS.size());
-            for(var readout:CuMedicalGeometry.READOUTS) {
+            assertEquals(19,CuMedicalGeometry.NATIVE_READOUTS.size());
+            for(var readout:CuMedicalGeometry.NATIVE_READOUTS) {
                 var record=java.util.stream.StreamSupport.stream(records.spliterator(),false).map(e->e.getAsJsonObject()).filter(r->r.get("name").getAsString().equals(readout.field())).findFirst().orElseThrow();
                 var b=record.getAsJsonObject("box");
                 assertEquals(b.get("x").getAsInt(),readout.box().x());assertEquals(b.get("y").getAsInt(),readout.box().y());
@@ -44,6 +45,28 @@ class CuMedicalMonitorTest {
         assertEquals("0.00gy",CuMedicalMonitor.value(body(),"RadText",72));
         assertEquals("100%",CuMedicalMonitor.value(body(),"ImmuneText",72));
         assertEquals("0.00L",CuMedicalMonitor.value(body(),"BleedText",72));
+    }
+    @Test void bloodGroupIsAnIndependentReadoutBelowImmunity() {
+        var readout=CuMedicalGeometry.BLOOD_GROUP;
+        var box=readout.box();
+        var immune=CuMedicalGeometry.NATIVE_READOUTS.stream().filter(r->r.field().equals("ImmuneText")).findFirst().orElseThrow();
+        assertEquals(immune.box().x()+immune.box().width(),box.x()+box.width());
+        assertTrue(box.y()>=immune.box().y()+immune.box().height());
+        for(var nativeReadout:CuMedicalGeometry.NATIVE_READOUTS) {
+            var other=nativeReadout.box();
+            assertTrue(box.x()+box.width()<=other.x()||other.x()+other.width()<=box.x()
+                    ||box.y()+box.height()<=other.y()||other.y()+other.height()<=box.y(),nativeReadout.field());
+        }
+        assertEquals("",CuMedicalMonitor.value(body(),readout.field(),72));
+        assertNull(CuMedicalMonitor.hover(body(),box.x(),box.y()));
+        for(var group:BloodGroup.values()) {
+            var b=body().withBloodGroup(group);
+            assertTrue(MedicalPanelGlyphs.width(group.label())<=box.width());
+            assertEquals(group.label(),CuMedicalMonitor.tooltipValue(b,readout.field(),72));
+            assertEquals(readout.field(),CuMedicalMonitor.hover(b,box.x()+box.width()-1,box.y()));
+            assertEquals("75%",CuMedicalMonitor.value(b,"BloodText",72));
+        }
+        assertEquals("Группа крови",CuMedicalMonitor.label(readout.field()));
     }
     @Test void fillFormulaeAreNativeAndConditionalSyringeAndToxinIconsFollowRealValues() {
         assertEquals(.72f,CuMedicalMonitor.amount(body(),"TempFill"),.0001f);

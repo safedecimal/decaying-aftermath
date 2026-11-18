@@ -147,6 +147,29 @@ class MedicalUiRenderingTest {
         }
     }
 
+    @Test void monitorDrawsTheBloodGroupWithNativeGlyphsOnlyWhenKnown() throws Exception {
+        var body=new io.github.safedecimal.decayingaftermath.medical.BodyModel().snapshot();
+        var graphics=Graphics.create(266,392);
+        var box=CuMedicalGeometry.BLOOD_GROUP.box();
+        MedicalPanelRenderer.extractReadouts(graphics,body);
+        assertFalse(graphics.blits.stream().anyMatch(b->b.y()==box.y()&&b.x()>=box.x()&&b.x()<box.x()+box.width()));
+
+        graphics.blits.clear();
+        var group=io.github.safedecimal.decayingaftermath.medical.BloodGroup.AB_POSITIVE;
+        MedicalPanelRenderer.extractReadouts(graphics,body.withBloodGroup(group));
+        var glyphs=graphics.blits.stream().filter(b->b.y()==box.y()&&b.id().toString().endsWith("/monitor.png")).toList();
+        assertEquals(group.label().length(),glyphs.size());
+        int x=box.x()+box.width()-MedicalPanelGlyphs.width(group.label());
+        for(int i=0;i<glyphs.size();i++) {
+            char glyph=group.label().charAt(i);
+            int index=MedicalPanelGlyphs.index(glyph);
+            assertEquals(x,glyphs.get(i).x());
+            assertEquals(index%16*8f,glyphs.get(i).u());
+            assertEquals(index/16*10f,glyphs.get(i).v());
+            x+=MedicalPanelGlyphs.advance(glyph);
+        }
+    }
+
     @Test void renderRealNativeMonitorExtractionToCpuPreviewWithoutMinecraftWindow() throws Exception {
         var parts=new BodySnapshot.PartSnapshot[6];
         java.util.Arrays.fill(parts,new BodySnapshot.PartSnapshot(1,0,0,false,false,false,false));

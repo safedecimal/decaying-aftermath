@@ -15,6 +15,7 @@ public final class CuMedicalMonitor {
             case "BrainText" -> Integer.toString(Math.round(b.part(BodyPart.HEAD).integrity() * 100));
             case "ConscText" -> percent(b.consciousness());
             case "ImmuneText" -> percent(MedicalPhysiology.immunity(b));
+            case "BloodGroupText" -> b.bloodGroup() == null ? "" : b.bloodGroup().label();
             case "PainText" -> percent(b.pain());
             case "BloodText" -> percent(b.blood());
             case "BPMText" -> bpm+"|"+MedicalPhysiology.systolic(b)+"/"+MedicalPhysiology.diastolic(b);
@@ -99,6 +100,7 @@ public final class CuMedicalMonitor {
             case "BrainText", "BrainBar" -> "Состояние головы";
             case "ConscText" -> "Сознание";
             case "ImmuneText" -> "Иммунитет";
+            case "BloodGroupText" -> "Группа крови";
             case "PainText" -> "Боль";
             case "BloodText", "BloodFill" -> "Кровь";
             case "BPMText" -> "Пульс и давление";
