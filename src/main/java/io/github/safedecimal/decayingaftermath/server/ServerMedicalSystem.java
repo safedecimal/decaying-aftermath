@@ -10,6 +10,13 @@ import io.github.safedecimal.decayingaftermath.medical.BodySnapshot;
 import io.github.safedecimal.decayingaftermath.medical.BodySnapshot.Mode;
 import io.github.safedecimal.decayingaftermath.medical.BodySnapshot.PartSnapshot;
 import io.github.safedecimal.decayingaftermath.medical.TreatmentKind;
+import io.github.safedecimal.decayingaftermath.medical.DamageKind;
+import io.github.safedecimal.decayingaftermath.medical.ItemMassPolicy;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
+import net.minecraft.world.entity.projectile.arrow.ThrownTrident;
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.server.level.ServerPlayer;
@@ -39,6 +46,9 @@ public final class ServerMedicalSystem {
     private static final Identifier LEG_JUMP = Identifier.fromNamespaceAndPath("decaying_aftermath", "injured_leg_jump");
     private static final Identifier ARM_SPEED = Identifier.fromNamespaceAndPath("decaying_aftermath", "injured_arm_speed");
     private static final Identifier ARM_DAMAGE = Identifier.fromNamespaceAndPath("decaying_aftermath", "injured_arm_damage");
+    private static final Identifier SURVIVAL_SPEED = Identifier.fromNamespaceAndPath("decaying_aftermath", "survival_speed");
+    private static final Map<ServerPlayer,Float> CARRIED_MASS = new WeakHashMap<>();
+    private static final Map<ServerPlayer,Integer> SLEEP_TICKS = new WeakHashMap<>();
     private ServerMedicalSystem() {}
 
     public static void register() {
@@ -56,6 +66,7 @@ public final class ServerMedicalSystem {
         ServerPlayerEvents.AFTER_RESPAWN.register((oldPlayer, player, alive) -> syncBody(player, get(player).snapshot()));
         ServerPlayerEvents.LEAVE.register(player -> {
             LAST_SOURCE.remove(player);
+            CARRIED_MASS.remove(player);SLEEP_TICKS.remove(player);
             io.github.safedecimal.decayingaftermath.compat.MedicalRagdollCompatibility.release(player);
         });
     }
@@ -95,15 +106,25 @@ public final class ServerMedicalSystem {
         if (source.is(DamageTypes.GENERIC_KILL) || source.is(DamageTypes.FELL_OUT_OF_WORLD)) model.kill();
         else if (source.is(DamageTypeTags.IS_FALL)) model.fall(amount);
         else if (source.is(DamageTypeTags.IS_DROWNING) || source.is(DamageTypes.IN_WALL)) model.reduceOxygen(Math.min(1, amount * .08f));
-        else if (source.is(DamageTypes.STARVE)) model.reduceOxygen(Math.min(1, amount * .1f));
+        else if (source.is(DamageTypes.STARVE)) model.starve(amount);
+        else if(source.is(DamageTypes.FREEZE))model.damage(BodyPart.TORSO,amount,DamageKind.FROSTBITE);
+        else if(source.is(DamageTypes.MAGIC)||source.is(DamageTypes.WITHER))model.poison(Math.min(1,amount*.08f));
         else if (source.is(DamageTypeTags.IS_EXPLOSION)) {
-            model.damage(BodyPart.TORSO, amount * .3f);
-            model.damage(BodyPart.HEAD, amount * .18f);
-            model.damage(BodyPart.LEFT_ARM, amount * .11f); model.damage(BodyPart.RIGHT_ARM, amount * .11f);
-            model.damage(BodyPart.LEFT_LEG, amount * .15f); model.damage(BodyPart.RIGHT_LEG, amount * .15f);
+            model.damage(BodyPart.TORSO, amount * .3f,DamageKind.EXPLOSION);
+            model.damage(BodyPart.HEAD, amount * .18f,DamageKind.EXPLOSION);
+            model.damage(BodyPart.LEFT_ARM, amount * .11f,DamageKind.EXPLOSION); model.damage(BodyPart.RIGHT_ARM, amount * .11f,DamageKind.EXPLOSION);
+            model.damage(BodyPart.LEFT_LEG, amount * .15f,DamageKind.EXPLOSION); model.damage(BodyPart.RIGHT_LEG, amount * .15f,DamageKind.EXPLOSION);
         } else if (source.is(DamageTypeTags.IS_FIRE)) {
-            for (BodyPart part : BodyPart.values()) model.damage(part, amount / BodyPart.values().length);
-        } else model.damage(resolvePart(player, source), amount);
+            for (BodyPart part : BodyPart.values()) model.damage(part, amount / BodyPart.values().length,DamageKind.BURN);
+        } else if(source.is(DamageTypeTags.IS_PROJECTILE)) {
+            boolean embedded=source.getDirectEntity() instanceof AbstractArrow && !(source.getDirectEntity() instanceof ThrownTrident);
+            model.projectile(resolvePart(player,source),amount,embedded);
+        } else {
+            Entity attacker=source.getEntity();boolean cutting=attacker instanceof LivingEntity living
+                    && (living.getMainHandItem().is(ItemTags.SWORDS)||living.getMainHandItem().is(ItemTags.AXES));
+            if(source.is(DamageTypes.CACTUS)||source.is(DamageTypes.SWEET_BERRY_BUSH))cutting=true;
+            model.damage(resolvePart(player, source), amount,cutting?DamageKind.CUT:DamageKind.BLUNT);
+        }
         if (model.snapshot().mode() == Mode.DEAD) tryBodyTotem(player, source);
         mirrorHealth(player);
         syncBody(player, get(player).snapshot());
@@ -116,7 +137,7 @@ public final class ServerMedicalSystem {
         if (delta < 0) {
             DamageSource source = MedicalDamageContext.activeDamageSource(player);
             if (source != null) applyDamage(player, source, -delta);
-            else get(player).damage(BodyPart.TORSO, -delta);
+            else get(player).damage(BodyPart.TORSO, -delta,DamageKind.BLUNT);
         }
         else if (delta > 0) adaptHealing(player, delta);
         mirrorHealth(player);
@@ -142,8 +163,14 @@ public final class ServerMedicalSystem {
         }
         boolean wasAlive = player.isAlive();
         if (!wasAlive) return;
-        model.tick(player.isSprinting(), player.getDeltaMovement().horizontalDistance() > .01);
+        if(player.tickCount%20==0||!CARRIED_MASS.containsKey(player))CARRIED_MASS.put(player,InventoryMass.carried(player));
+        if(player.isSleeping())SLEEP_TICKS.merge(player,1,Integer::sum);
+        else {
+            Integer slept=SLEEP_TICKS.remove(player);if(slept!=null&&slept>=100)model.finishNightSleep();
+        }
+        model.tick(ServerSurvivalEnvironment.sample(player,CARRIED_MASS.getOrDefault(player,0f)));
         BodySnapshot snapshot = model.snapshot();
+        if(snapshot.energy()<.08f||snapshot.survival().encumbrance()>1.8f)player.setSprinting(false);
         if (player.tickCount % 5 == 0) applyInjuryModifiers(player, snapshot, true);
         if (snapshot.mode() == Mode.UNCONSCIOUS) {
             Vec3 motion = player.getDeltaMovement();
@@ -169,6 +196,9 @@ public final class ServerMedicalSystem {
         transientPenalty(player, Attributes.JUMP_STRENGTH, LEG_JUMP, Math.min(.95, legs * 1.2));
         transientPenalty(player, Attributes.ATTACK_SPEED, ARM_SPEED, Math.min(.7, arms));
         transientPenalty(player, Attributes.ATTACK_DAMAGE, ARM_DAMAGE, Math.min(.65, arms * .75));
+        var s=snapshot.survival();
+        double survival=active?Math.min(.85,ItemMassPolicy.movementPenalty(s.encumbrance())+s.thermalStress()*.18+s.fatigue()*.10):0;
+        transientPenalty(player,Attributes.MOVEMENT_SPEED,SURVIVAL_SPEED,survival);
     }
     private static double limbPenalty(PartSnapshot limb) {
         return (1 - limb.integrity()) * .5 + (limb.fractured() ? limb.splinted() ? .12 : .45 : 0)
@@ -227,7 +257,7 @@ public final class ServerMedicalSystem {
     public static void save(ServerPlayer player, ValueOutput output) {
         BodyModel.SavedState saved = get(player).saveState(); BodySnapshot body = saved.snapshot();
         ValueOutput node = output.child(SAVE_KEY);
-        node.putInt("version", 2); node.putFloat("blood", body.blood()); node.putFloat("oxygen", body.oxygen());
+        node.putInt("version", 3); node.putFloat("blood", body.blood()); node.putFloat("oxygen", body.oxygen());
         node.putFloat("energy", body.energy()); node.putFloat("consciousness", body.consciousness());
         node.putFloat("drug", body.drug()); node.putFloat("bpm", body.bpm()); node.putInt("mode", body.mode().ordinal());
         node.putFloat("progress", body.consciousnessProgress());
@@ -248,6 +278,7 @@ public final class ServerMedicalSystem {
             limb.putFloat("skin_care", skinCare[part.ordinal()]); limb.putFloat("bleed_care", bleedCare[part.ordinal()]);
             limb.putFloat("raw_pain", rawPain[part.ordinal()]);
         }
+        SurvivalPersistence.save(node,saved);
     }
     public static void load(ServerPlayer player, ValueInput input) {
         var optional = input.child(SAVE_KEY);
@@ -269,7 +300,7 @@ public final class ServerMedicalSystem {
             BodySnapshot body = new BodySnapshot(1, number(node, "blood", 1, 1), number(node, "oxygen", 1, 1), 0,
                     number(node, "drug", 0, 3), number(node, "bpm", 72, 220), mode, number(node, "progress", 1, 1),
                     number(node, "energy", 1, 1), number(node, "consciousness", 1, 1), parts);
-            model = BodyModel.restoreState(new BodyModel.SavedState(body, timers(node, "care"), timers(node, "regeneration"),
+            BodyModel.SavedState legacy = new BodyModel.SavedState(body, timers(node, "care"), timers(node, "regeneration"),
                     timers(node, "tourniquet_time"), node.getBooleanOr("last_standing_spent", mode != Mode.CONSCIOUS),
                     Math.clamp(node.getIntOr("stable_ticks", 0), 0, 1200),
                     Math.clamp(node.getIntOr("last_standing_intro", mode == Mode.LAST_STANDING
@@ -278,7 +309,8 @@ public final class ServerMedicalSystem {
                             ? BodyModel.LAST_STANDING_BOOST_TICKS : 0), 0, BodyModel.LAST_STANDING_BOOST_TICKS),
                     Math.clamp(node.getIntOr("dying_ticks", mode == Mode.DYING
                             ? Math.round(body.consciousnessProgress() * BodyModel.DYING_TICKS) : -1), -1, BodyModel.DYING_TICKS),
-                    timers(node, "disinfection_time"), timers(node, "anesthetic_time"), timers(node, "infection_age"), skinCare, bleedCare, rawPain));
+                    timers(node, "disinfection_time"), timers(node, "anesthetic_time"), timers(node, "infection_age"), skinCare, bleedCare, rawPain);
+            model=BodyModel.restoreState(SurvivalPersistence.load(node,legacy));
         }
         owner(player).decayingAftermath$setBody(model); mirrorHealth(player);
     }

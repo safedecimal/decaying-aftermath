@@ -17,6 +17,7 @@ public final class BodyModel {
     public static final int LAST_STANDING_BOOST_TICKS = 20 * 300;
     public static final int DYING_TICKS = 20 * 60;
     public static final int WAKE_UP_TICKS = 20 * 10;
+    public static final int BONE_HEAL_TICKS = 20 * 60 * 8; // Deliberately compressed game recovery time.
     private static final int PARTS = BodyPart.values().length;
     private final float[] integrity = new float[PARTS];
     private final float[] bleeding = new float[PARTS];
@@ -34,6 +35,14 @@ public final class BodyModel {
     private final int[] disinfectionTicks = new int[PARTS];
     private final int[] anestheticTicks = new int[PARTS];
     private final int[] infectionAgeTicks = new int[PARTS];
+    private final float[] burns = new float[PARTS], internalBleeding = new float[PARTS];
+    private final float[] suppressedBleeding = new float[PARTS];
+    private final boolean[] coldInjuries = new boolean[PARTS];
+    private final boolean[] openWounds = new boolean[PARTS], foreignBodies = new boolean[PARTS];
+    private final int[] boneHealing = new int[PARTS], coolingTicks = new int[PARTS];
+    private float lungCollapse;
+    private boolean chestDrain;
+    private SurvivalModel survival = new SurvivalModel();
     private float blood = 1, oxygen = 1, energy = 1, drug, bpm = 72;
     private Mode mode = Mode.CONSCIOUS;
     private int lastStandingTicks, wakeTicks, stableTicks;
@@ -49,6 +58,11 @@ public final class BodyModel {
         Arrays.fill(tourniquetTicks, 0);
         Arrays.fill(infection, 0); Arrays.fill(skinHealAmount, 0); Arrays.fill(bandageSlowAmount, 0);
         Arrays.fill(disinfectionTicks, 0); Arrays.fill(anestheticTicks, 0); Arrays.fill(infectionAgeTicks, 0);
+        Arrays.fill(burns,0); Arrays.fill(internalBleeding,0); Arrays.fill(openWounds,false);
+        Arrays.fill(foreignBodies,false); Arrays.fill(boneHealing,0); Arrays.fill(coolingTicks,0);
+        Arrays.fill(suppressedBleeding,0);
+        Arrays.fill(coldInjuries,false);
+        lungCollapse=0; chestDrain=false; survival=new SurvivalModel();
         blood = oxygen = energy = 1; drug = 0; bpm = 72; mode = Mode.CONSCIOUS;
         lastStandingTicks = wakeTicks = stableTicks = 0; lastStandingSpent = false;
         lastStandingBoostTicks = 0; dyingTicks = -1;
@@ -56,32 +70,76 @@ public final class BodyModel {
 
     /** Input is already mitigated vanilla damage units, not normalized tissue damage. */
     public void damage(BodyPart part, float amount) {
+        damage(part, amount, DamageKind.CUT); // Legacy callers lack a reliable mechanism.
+    }
+
+    public void damage(BodyPart part, float amount, DamageKind kind) {
         Objects.requireNonNull(part, "part");
+        Objects.requireNonNull(kind, "kind");
         if (mode == Mode.DEAD || !Float.isFinite(amount) || amount <= 0) return;
         amount = Math.min(amount, 1000);
         int i = part.ordinal();
-        integrity[i] = unit(integrity[i] - amount * .03f);
-        localPain[i] = unit(localPain[i] + amount * .05f);
-        bleeding[i] = unit(bleeding[i] + amount * .012f);
+        integrity[i] = unit(integrity[i] - amount * kind.tissue);
+        localPain[i] = unit(localPain[i] + amount * kind.pain);
+        bleeding[i] = unit(bleeding[i] + amount * kind.surfaceBleed);
+        if (kind.opensSkin) { openWounds[i]=true; infectionAgeTicks[i]=0; }
+        if (kind==DamageKind.BURN || kind==DamageKind.CHEMICAL) {
+            burns[i]=unit(burns[i]+amount*.025f);
+            if (burns[i]>.3f) openWounds[i]=true;
+        }
+        if(kind==DamageKind.FROSTBITE){coldInjuries[i]=true;if(integrity[i]<.45f)openWounds[i]=true;}
+        if ((kind==DamageKind.BLUNT || kind==DamageKind.EXPLOSION) && amount>6)
+            internalBleeding[i]=unit(internalBleeding[i]+(amount-6)*.006f);
+        if (kind==DamageKind.PUNCTURE && amount>=4) {
+            foreignBodies[i]=true;
+            if (part==BodyPart.TORSO) { internalBleeding[i]=unit(internalBleeding[i]+amount*.004f); lungCollapse=unit(lungCollapse+amount*.03f); }
+        }
         // A new hit can disturb a dressing but does not silently remove an applied tourniquet.
-        if (tourniquet[i]) bleeding[i] = 0;
+        if (tourniquet[i]) {suppressedBleeding[i]=unit(suppressedBleeding[i]+amount*kind.surfaceBleed);bleeding[i] = 0;}
         else if (bandaged[i]) bleeding[i] *= .7f;
-        if (part.isLimb() && (amount >= 8 || amount >= 4 && integrity[i] <= .45f)) fractured[i] = true;
-        evaluate(false);
+        if (kind.fractures && part.isLimb() && (amount >= 8 || amount >= 4 && integrity[i] <= .45f)) {
+            fractured[i] = true; boneHealing[i]=0;
+        }
+        evaluateAndAlign(false);
     }
 
     public void fall(float amount) {
         if (!Float.isFinite(amount) || amount <= 0 || mode == Mode.DEAD) return;
-        damage(BodyPart.LEFT_LEG, amount * .5f);
-        damage(BodyPart.RIGHT_LEG, amount * .5f);
-        if (amount > 14) damage(BodyPart.TORSO, (amount - 14) * .2f);
+        damage(BodyPart.LEFT_LEG, amount * .5f,DamageKind.BLUNT);
+        damage(BodyPart.RIGHT_LEG, amount * .5f,DamageKind.BLUNT);
+        if (amount > 14) damage(BodyPart.TORSO, (amount - 14) * .2f,DamageKind.BLUNT);
+    }
+    public void projectile(BodyPart part,float amount,boolean embedded) {
+        boolean existing=foreignBodies[Objects.requireNonNull(part).ordinal()];
+        damage(part,amount,DamageKind.PUNCTURE);
+        if(!embedded)foreignBodies[part.ordinal()]=existing;
+    }
+
+    /** Side-effect-free validation used BEFORE reserving or consuming an inventory supply. */
+    public boolean canTreat(BodyPart part,TreatmentKind treatment) {
+        Objects.requireNonNull(part); Objects.requireNonNull(treatment);
+        if(mode==Mode.DEAD || treatment.requiresLimb()&&!part.isLimb()
+                || treatment.requiresTorso()&&part!=BodyPart.TORSO) return false;
+        int i=part.ordinal();
+        return switch(treatment) {
+            case BANDAGE,PRESSURE_DRESSING -> bleeding[i]>0 || openWounds[i]&&integrity[i]<1;
+            case SPLINT -> fractured[i]&&!splinted[i];
+            case TOURNIQUET -> bleeding[i]>0&&!tourniquet[i];
+            case ANTISEPTIC -> openWounds[i];
+            case ANESTHETIC,HEALING_POTION -> integrity[i]<1||localPain[i]>0;
+            case REGENERATION_POTION -> integrity[i]<1;
+            case ICE_PACK -> !coldInjuries[i]&&survival.temperature()>35&&(burns[i]>0||localPain[i]>0);
+            case CHEST_DRAIN -> lungCollapse>.01f&&!chestDrain;
+            case REMOVE_FOREIGN_BODY -> foreignBodies[i];
+            default -> survival.canTreat(treatment);
+        };
     }
 
     /** Returns whether this procedure was valid. Invalid anatomy does not consume a medical item. */
     public boolean treat(BodyPart part, TreatmentKind treatment, float amount) {
         Objects.requireNonNull(part, "part"); Objects.requireNonNull(treatment, "treatment");
         if (mode == Mode.DEAD || !Float.isFinite(amount) || amount <= 0) return false;
-        if (treatment.requiresLimb() && !part.isLimb()) return false;
+        if (!canTreat(part,treatment)) return false;
         int i = part.ordinal();
         amount = treatment == TreatmentKind.BANDAGE || treatment == TreatmentKind.PRESSURE_DRESSING
                 ? Math.clamp(amount, 0, 12) : unit(amount);
@@ -111,10 +169,18 @@ public final class BodyModel {
             }
             case TOURNIQUET -> {
                 if (bleeding[i] <= 0) return false;
+                float residual=bleeding[i];
                 bleeding[i] = Math.max(0, bleeding[i] - amount);
-                if (amount >= .5f) { tourniquet[i] = true; bleeding[i] = 0; }
+                if (amount >= .5f) { suppressedBleeding[i]=residual; tourniquet[i] = true; bleeding[i] = 0; }
             }
             case FENTANYL -> drug = Math.clamp(drug + amount * .65f, 0, 3);
+            case PAINKILLERS -> drug = Math.clamp(drug + amount * .30f, 0, 3);
+            case ANTIBIOTICS,NALOXONE,COAGULANT,COMBAT_STIMULANT,BLOOD_BAG,SALINE -> {
+                survival.treat(treatment,amount); blood=survival.bloodVolume();
+            }
+            case ICE_PACK -> coolingTicks[i]=Math.min(2400,coolingTicks[i]+Math.round(amount*1200));
+            case CHEST_DRAIN -> chestDrain=true;
+            case REMOVE_FOREIGN_BODY -> foreignBodies[i]=false;
             case ANESTHETIC -> {
                 if (integrity[i] >= 1 && localPain[i] <= 0) return false;
                 // CU localanesthetic: selected limb only, timed analgesia, no opiate
@@ -127,20 +193,28 @@ public final class BodyModel {
             }
             case HEALING_POTION -> {
                 if (integrity[i] >= 1 && localPain[i] <= 0) return false;
-                integrity[i] = unit(integrity[i] + .32f * amount);
-                localPain[i] = Math.max(0, localPain[i] - .2f * amount);
+                // Outside Last Standing even potion care is gradual and reserve-dependent.
+                skinHealAmount[i]=Math.min(10,skinHealAmount[i]+.16f*amount);
+                careTicks[i]=Math.min(2400,careTicks[i]+Math.round(amount*1200));
+                localPain[i]=Math.max(0,localPain[i]-.08f*amount);
             }
             case REGENERATION_POTION -> {
                 if (integrity[i] >= 1) return false;
                 regenerationTicks[i] = Math.min(1200, regenerationTicks[i] + Math.round(amount * 1200));
             }
         }
-        evaluate(false);
+        evaluateAndAlign(false);
         return true;
     }
 
     /** Every elapsed game tick is explicit; no care is advanced by requesting a snapshot. */
     public void tick(boolean sprinting, boolean moving) {
+        tick(BodyEnvironment.temperate(sprinting,moving));
+    }
+
+    public void tick(BodyEnvironment environment) {
+        Objects.requireNonNull(environment);
+        boolean sprinting=environment.sprinting(),moving=environment.moving();
         if (mode == Mode.DEAD) { bpm = 0; return; }
         if (lastStandingBoostTicks > 0) lastStandingBoostTicks--;
         float totalBleeding = 0;
@@ -149,14 +223,20 @@ public final class BodyModel {
             if (anestheticTicks[i] > 0) anestheticTicks[i]--;
             if (disinfectionTicks[i] > 0) {
                 disinfectionTicks[i]--;
-                infection[i] = unit(infection[i] - .00010f);
-            } else if (integrity[i] < .8f) {
+                infection[i] = unit(infection[i] - .00010f*(foreignBodies[i]?.25f:1));
+            } else if ((openWounds[i] && integrity[i] < .8f) || foreignBodies[i] || infection[i]>.35f) {
                 // CU checks wounded skin every40s; default infection growth is7.2/min.
                 if (infectionAgeTicks[i] < 800) infectionAgeTicks[i]++;
-                else infection[i] = unit(infection[i] + .00006f);
+                else infection[i] = unit(infection[i] + .00006f*(foreignBodies[i]?1.6f:1));
             } else {
                 infection[i] = unit(infection[i] - .000025f);
                 infectionAgeTicks[i] = 0;
+            }
+            // A systemic antibiotic acts over time; cleaning the skin is not systemic sepsis treatment.
+            if(survival.antibioticAction()>0) infection[i]=unit(infection[i]-.000075f*survival.antibioticAction());
+            if(coolingTicks[i]>0) {
+                coolingTicks[i]--; localPain[i]=Math.max(0,localPain[i]-.00015f);
+                survival.cool(.02f);
             }
             if (infection[i] > .75f) {
                 integrity[i] = unit(integrity[i] - .00010f);
@@ -164,6 +244,7 @@ public final class BodyModel {
             }
             if (tourniquet[i]) {
                 bleeding[i] = 0;
+                suppressedBleeding[i]=Math.max(0,suppressedBleeding[i]-.0000125f*survival.clottingFactor());
                 if (++tourniquetTicks[i] > 1200) {
                     integrity[i] = unit(integrity[i] - .00016f);
                     localPain[i] = unit(localPain[i] + .00018f);
@@ -177,50 +258,76 @@ public final class BodyModel {
             }
             // CU's normal-viscosity/no-venom clotting baseline: .025 points/s.
             // Neither viscosity nor venom is inferred from the Minecraft blood reserve.
-            bleeding[i] = Math.max(0, bleeding[i] - .0000125f);
+            bleeding[i] = Math.max(0, bleeding[i] - .0000125f*survival.clottingFactor());
             totalBleeding += bleeding[i];
+            internalBleeding[i]=Math.max(0,internalBleeding[i]-.000008f*survival.clottingFactor());
+            totalBleeding+=internalBleeding[i];
+            boolean perfused=!tourniquet[i] && oxygen>.5f && blood>.3f && survival.nutrition()>.2f
+                    && survival.oxygenDelivery(1-lungCollapse)>.6f && infection[i]<.6f;
             boolean nativeSkinCare = skinHealAmount[i] > 0;
             if (nativeSkinCare) {
                 float used = Math.min(skinHealAmount[i], .00025f);
-                if (oxygen > .2f && blood > .04f) integrity[i] = unit(integrity[i] + used);
-                skinHealAmount[i] = Math.max(0, skinHealAmount[i] - used);
+                if (perfused) {
+                    integrity[i] = unit(integrity[i] + used);
+                    skinHealAmount[i] = Math.max(0, skinHealAmount[i] - used);
+                }
                 receivingCare = true;
             }
             if (careTicks[i] > 0) {
                 receivingCare = true;
                 careTicks[i]--;
-                if (!nativeSkinCare && bleeding[i] <= .001f && oxygen > .4f && blood > .3f)
+                if (!nativeSkinCare && bleeding[i] <= .001f && perfused)
                     integrity[i] = unit(integrity[i] + .00004f);
             }
             if (regenerationTicks[i] > 0) {
                 regenerationTicks[i]--;
                 // This is the selected potion treatment, never hunger/natural regeneration.
-                integrity[i] = unit(integrity[i] + .00012f);
+                if(perfused)integrity[i] = unit(integrity[i] + .00012f);
             }
+            if(fractured[i] && perfused && oxygen>.6f && blood>.5f && survival.nutrition()>.25f
+                    && infection[i]<.35f && !tourniquet[i]) {
+                if(splinted[i]) boneHealing[i]++;
+                else if(moving) boneHealing[i]=Math.max(0,boneHealing[i]-2);
+                int needed=BONE_HEAL_TICKS*(integrity[i]<.4f?2:1);
+                if(boneHealing[i]>=needed) { fractured[i]=false; splinted[i]=false; boneHealing[i]=0; }
+            }
+            if(burns[i]>0 && integrity[i]>.7f && perfused && infection[i]<.25f)
+                burns[i]=Math.max(0,burns[i]-.000004f);
+            if(coldInjuries[i]&&integrity[i]>.9f&&survival.temperature()>=36)coldInjuries[i]=false;
+            if(integrity[i]>=.999f && bleeding[i]<=0 && infection[i]<=.001f && !foreignBodies[i]) openWounds[i]=false;
             float floor = (1 - integrity[i]) * .2f + bleeding[i] * .3f;
             if (fractured[i]) floor += splinted[i] ? .025f : .15f;
             localPain[i] = Math.max(unit(floor), localPain[i] - .00012f);
             // A dry applied dressing remains actual care, not hunger/vanilla HP regen.
             receivingCare |= bandaged[i] && bleeding[i] <= .001f;
         }
-        blood = unit(blood - totalBleeding * .00065f);
-        // Slow recovery only during actual wound care, not simply because the player ate/rested.
-        if (receivingCare && totalBleeding <= .001f && oxygen > .5f) blood = unit(blood + .00008f);
+        survival.tick(environment,totalBleeding*.00065f,sepsis());
+        blood=survival.bloodVolume();
+        if(chestDrain) lungCollapse=Math.max(0,lungCollapse-.0006f);
         drug = Math.max(0, drug - .0002f);
-        float depression = Math.clamp((drug - .7f) / .6f, 0, 1.8f);
-        float breathRecovery = .0008f * (1 - Math.min(1, depression));
+        float activeDrug=survival.effectiveOpiate(drug);
+        float depression = Math.clamp((activeDrug - .7f) / .6f, 0, 1.8f);
+        float breathRecovery = environment.breathable() ? .0008f * (1 - Math.min(1, depression))*(1-lungCollapse) : 0;
         oxygen = unit(oxygen + breathRecovery - depression * .0012f
-                - Math.max(0, .35f - blood) * .0015f - sepsis() * .00015f);
+                - Math.max(0, .35f - blood) * .0015f - sepsis() * .00015f
+                - lungCollapse*.0005f - (environment.breathable()?0:.0008f));
         if (moving && oxygen < .7f) oxygen = unit(oxygen - (sprinting ? .00018f : .00006f));
         boolean exertion = moving && mode != Mode.UNCONSCIOUS;
-        float recovery = exertion ? 0 : .0007f * oxygen * Math.min(1, blood * 2);
-        energy = unit(energy + recovery - (exertion ? sprinting ? .0012f : .00035f : 0)
-                - Math.max(0, drug - .3f) * .00012f - sepsis() * .00018f);
-        evaluate(true);
+        float recovery = exertion ? 0 : .0007f * oxygen * survival.oxygenDelivery(1-lungCollapse)
+                * Math.min(1,survival.hydration()*2)*Math.min(1,survival.nutrition()*2)*(1-survival.fatigue()*.7f);
+        float load=1+Math.max(0,environment.encumbrance()-.5f)*.6f;
+        energy = unit(energy + recovery - (exertion ? sprinting ? .0012f : .00035f : 0)*load
+                - Math.max(0,activeDrug-.3f)*.00012f - sepsis()*.00018f - survival.systemicStress()*.00018f);
+        if(survival.nutrition()<.08f) energy=unit(energy-.0001f);
+        if(survival.thermalStress()>.8f) integrity[BodyPart.TORSO.ordinal()]=unit(integrity[BodyPart.TORSO.ordinal()]-.000025f);
+        if(survival.nutrition()<.02f||survival.hydration()<.04f||survival.systemicStress()>.85f)
+            integrity[BodyPart.TORSO.ordinal()]=unit(integrity[BodyPart.TORSO.ordinal()]-.000025f);
+        evaluateAndAlign(true);
         if (mode == Mode.DEAD) { bpm = 0; return; }
         float target = 72 + (moving ? sprinting ? 65 : 18 : 0) + effectivePain() * 38
                 + (1 - blood) * 65 - Math.min(1, depression) * 65;
         if (lastStandingBoostTicks > 0) target += 20;
+        target+=survival.stimulantAction()*25+survival.systemicStress()*18;
         target = Math.clamp(target, 18, 200);
         bpm += (target - bpm) * (target > bpm ? .04f : .015f);
     }
@@ -229,8 +336,18 @@ public final class BodyModel {
     public void reduceOxygen(float amount) {
         if (mode == Mode.DEAD || !Float.isFinite(amount) || amount <= 0) return;
         oxygen = unit(oxygen - amount);
-        evaluate(false);
+        evaluateAndAlign(false);
     }
+
+    public void consume(float nutrition,float hydration) { if(mode!=Mode.DEAD) survival.feed(nutrition,hydration); }
+    public void poison(float amount) { if(mode!=Mode.DEAD) survival.poison(amount); }
+    public void drinkContaminated(float pathogens,float chemicals){if(mode!=Mode.DEAD)survival.drinkContaminated(pathogens,chemicals);}
+    public void caffeinate(float amount){if(mode!=Mode.DEAD)survival.caffeinate(amount);}
+    public void starve(float amount) {
+        if(mode==Mode.DEAD||!Float.isFinite(amount)||amount<=0)return;
+        survival.starvation(amount); energy=unit(energy-amount*.025f); evaluateAndAlign(false);
+    }
+    public void finishNightSleep() { if(mode!=Mode.DEAD)survival.wakeFromNight(); }
 
     /** Explicit lethal sources such as void/kill; ordinary attacks use damage(). */
     public void kill() { mode = Mode.DEAD; bpm = 0; wakeTicks = lastStandingTicks = 0; dyingTicks = 0; }
@@ -239,7 +356,8 @@ public final class BodyModel {
         int i = Objects.requireNonNull(part).ordinal();
         if (!tourniquet[i] || mode == Mode.DEAD) return false;
         tourniquet[i] = false; tourniquetTicks[i] = 0;
-        bleeding[i] = unit((1 - integrity[i]) * .18f);
+        bleeding[i] = suppressedBleeding[i];suppressedBleeding[i]=0;
+        evaluateAndAlign(false);
         return true;
     }
 
@@ -249,7 +367,8 @@ public final class BodyModel {
         for (int i = 0; i < PARTS; i++) {
             parts[i] = new PartSnapshot(integrity[i], bleeding[i], limbPain(i), fractured[i],
                     bandaged[i], splinted[i], tourniquet[i], infection[i], disinfectionTicks[i] > 0,
-                    anestheticTicks[i] > 40, bandageSlowAmount[i]);
+                    anestheticTicks[i] > 40, bandageSlowAmount[i],burns[i],internalBleeding[i],openWounds[i],
+                    foreignBodies[i],fractured[i]?Math.clamp((float)boneHealing[i]/BONE_HEAL_TICKS,0,1):1,coldInjuries[i]);
             totalIntegrity += integrity[i];
         }
         float condition = Math.min(Math.min(vitalIntegrity() * 1.15f, blood * 1.15f),
@@ -262,7 +381,7 @@ public final class BodyModel {
                 : mode == Mode.LAST_STANDING ? (float) lastStandingTicks / LAST_STANDING_TICKS
                 : mode == Mode.DYING ? (float) Math.max(0, dyingTicks) / DYING_TICKS : 1;
         return new BodySnapshot(unit(condition), blood, oxygen, effectivePain(), drug, bpm, mode,
-                progress, energy, consciousness(), parts);
+                progress, energy, consciousness(), parts,survival.snapshot(totalInternalBleeding(),1-lungCollapse));
     }
 
     /** Snapshot-only restore is conservative; use SavedState to preserve all treatment timers. */
@@ -274,13 +393,16 @@ public final class BodyModel {
         model.lastStandingBoostTicks = model.lastStandingSpent ? LAST_STANDING_BOOST_TICKS : 0;
         if (snapshot.mode() == Mode.LAST_STANDING && model.vitalIntegrity() <= .11f)
             model.restoreLastStandingReserves(); // Migrate the old lethal-timer save conservatively.
+        model.reconcileBlood();
         return model;
     }
 
     public SavedState saveState() {
         return new SavedState(snapshot(), careTicks, regenerationTicks, tourniquetTicks,
                 lastStandingSpent, stableTicks, lastStandingTicks, lastStandingBoostTicks, dyingTicks,
-                disinfectionTicks, anestheticTicks, infectionAgeTicks, skinHealAmount, bandageSlowAmount, localPain);
+                disinfectionTicks, anestheticTicks, infectionAgeTicks, skinHealAmount, bandageSlowAmount, localPain,
+                new WoundState(burns,internalBleeding,openWounds,foreignBodies,boneHealing,coolingTicks,lungCollapse,chestDrain,suppressedBleeding,coldInjuries),
+                survival.save(totalInternalBleeding(),1-lungCollapse));
     }
 
     public static BodyModel restoreState(SavedState state) {
@@ -300,6 +422,15 @@ public final class BodyModel {
         System.arraycopy(state.skinHealAmount(), 0, model.skinHealAmount, 0, PARTS);
         System.arraycopy(state.bandageSlowAmount(), 0, model.bandageSlowAmount, 0, PARTS);
         System.arraycopy(state.rawLocalPain(), 0, model.localPain, 0, PARTS);
+        WoundState wounds=state.wounds();
+        System.arraycopy(wounds.burns(),0,model.burns,0,PARTS); System.arraycopy(wounds.internalBleeding(),0,model.internalBleeding,0,PARTS);
+        System.arraycopy(wounds.openWounds(),0,model.openWounds,0,PARTS); System.arraycopy(wounds.foreignBodies(),0,model.foreignBodies,0,PARTS);
+        copyTimers(wounds.boneHealing(),model.boneHealing); copyTimers(wounds.coolingTicks(),model.coolingTicks);
+        System.arraycopy(wounds.suppressedBleeding(),0,model.suppressedBleeding,0,PARTS);
+        System.arraycopy(wounds.coldInjuries(),0,model.coldInjuries,0,PARTS);
+        model.lungCollapse=wounds.lungCollapse(); model.chestDrain=wounds.chestDrain();
+        model.survival=SurvivalModel.restore(state.survivalState());
+        model.blood=model.survival.bloodVolume();
         return model;
     }
 
@@ -307,7 +438,16 @@ public final class BodyModel {
     public record SavedState(BodySnapshot snapshot, int[] careTicks, int[] regenerationTicks,
             int[] tourniquetTicks, boolean lastStandingSpent, int stableTicks, int lastStandingTicks,
             int lastStandingBoostTicks, int dyingTicks, int[] disinfectionTicks, int[] anestheticTicks,
-            int[] infectionAgeTicks, float[] skinHealAmount, float[] bandageSlowAmount, float[] rawLocalPain) {
+            int[] infectionAgeTicks, float[] skinHealAmount, float[] bandageSlowAmount, float[] rawLocalPain,
+            WoundState wounds,SurvivalModel.SavedState survivalState) {
+        public SavedState(BodySnapshot snapshot, int[] careTicks, int[] regenerationTicks,
+                int[] tourniquetTicks, boolean lastStandingSpent, int stableTicks, int lastStandingTicks,
+                int lastStandingBoostTicks,int dyingTicks,int[] disinfectionTicks,int[] anestheticTicks,
+                int[] infectionAgeTicks,float[] skinHealAmount,float[] bandageSlowAmount,float[] rawLocalPain) {
+            this(snapshot,careTicks,regenerationTicks,tourniquetTicks,lastStandingSpent,stableTicks,lastStandingTicks,
+                    lastStandingBoostTicks,dyingTicks,disinfectionTicks,anestheticTicks,infectionAgeTicks,skinHealAmount,
+                    bandageSlowAmount,rawLocalPain,WoundState.legacy(snapshot),new SurvivalModel.SavedState(snapshot.survival(),0,0));
+        }
         public SavedState(BodySnapshot snapshot, int[] careTicks, int[] regenerationTicks,
                 int[] tourniquetTicks, boolean lastStandingSpent, int stableTicks) {
             this(snapshot, careTicks, regenerationTicks, tourniquetTicks, lastStandingSpent, stableTicks,
@@ -318,6 +458,7 @@ public final class BodyModel {
         }
         public SavedState {
             Objects.requireNonNull(snapshot, "snapshot");
+            Objects.requireNonNull(wounds, "wounds"); Objects.requireNonNull(survivalState, "survivalState");
             careTicks = checkedTimers(careTicks); regenerationTicks = checkedTimers(regenerationTicks);
             tourniquetTicks = checkedTimers(tourniquetTicks);
             disinfectionTicks = checkedTimers(disinfectionTicks); anestheticTicks = checkedTimers(anestheticTicks);
@@ -339,6 +480,7 @@ public final class BodyModel {
 
     private void loadSnapshot(BodySnapshot state) {
         blood = state.blood(); oxygen = state.oxygen(); energy = state.energy(); drug = state.drug(); bpm = state.bpm(); mode = state.mode();
+        survival=new SurvivalModel(state.survival()); lungCollapse=1-state.survival().lungFunction();
         wakeTicks = mode == Mode.UNCONSCIOUS ? Math.round(state.consciousnessProgress() * WAKE_UP_TICKS) : 0;
         lastStandingTicks = mode == Mode.LAST_STANDING ? Math.round(state.consciousnessProgress() * LAST_STANDING_TICKS) : 0;
         dyingTicks = mode == Mode.DYING ? Math.round(state.consciousnessProgress() * DYING_TICKS) : -1;
@@ -348,6 +490,9 @@ public final class BodyModel {
             fractured[i] = value.fractured(); bandaged[i] = value.bandaged(); splinted[i] = value.splinted();
             tourniquet[i] = value.tourniquet();
             infection[i] = value.infection();
+            burns[i]=value.burn(); internalBleeding[i]=value.internalBleeding(); openWounds[i]=value.openWound();
+            foreignBodies[i]=value.foreignBody(); boneHealing[i]=Math.round(value.boneRecovery()*BONE_HEAL_TICKS);
+            coldInjuries[i]=value.coldInjury();
             bandageSlowAmount[i] = value.bandageCare();
             disinfectionTicks[i] = value.disinfected() ? 6000 : 0;
             anestheticTicks[i] = value.anesthetized() ? 1200 : 0;
@@ -407,20 +552,31 @@ public final class BodyModel {
         for (int i = 0; i < PARTS; i++) { bleeding[i] *= .05f; infection[i] *= .05f; }
         bpm = Math.max(100, bpm);
     }
-    private float totalBleeding() { float sum = 0; for (float value : bleeding) sum += value; return sum; }
-    private float sepsis() { float sum = 0; for (float value : infection) sum += value; return unit((sum - 1) / 3); }
+    private float totalBleeding() { float sum = 0; for (float value : bleeding) sum += value;return sum+totalInternalBleeding(); }
+    private float totalInternalBleeding(){float sum=0;for(float value:internalBleeding)sum+=value;return sum;}
+    private float sepsis() {
+        float sum=0,maximum=0;for(float value:infection){sum+=value;maximum=Math.max(maximum,value);}
+        return unit(Math.max((sum-1)/3,Math.max(0,(maximum-.75f)/.25f)*.6f));
+    }
     private float limbPain(int i) { return anestheticTicks[i] > 0 ? 0 : localPain[i]; }
     private float consciousness() {
         if (mode == Mode.DEAD) return 0;
         float reserves = Math.min(Math.min(unit(oxygen / .8f), unit(blood / .6f)), unit(vitalIntegrity() / .35f));
         return unit(reserves * (.25f + .75f * energy) * (1 - effectivePain() * .35f)
-                * (1 - Math.min(1, drug) * .45f) * (1 - sepsis() * .4f));
+                * (1 - Math.min(1, survival.effectiveOpiate(drug)) * .45f) * (1 - sepsis() * .4f)
+                * Math.max(.1f,survival.oxygenDelivery(1-lungCollapse))*(1-survival.systemicStress()*.45f));
     }
     private float effectivePain() {
         float sum = 0, maximum = 0;
         for (int i = 0; i < PARTS; i++) { float value = limbPain(i); sum += value; maximum = Math.max(maximum, value); }
         float raw = .5f * (sum / PARTS) + .5f * maximum;
-        return unit(raw * (1 - Math.min(.8f, drug * .9f)));
+        return unit(raw * (1 - Math.min(.8f, survival.effectiveOpiate(drug) * .9f)));
+    }
+    private void evaluateAndAlign(boolean elapsedTick) { evaluate(elapsedTick); reconcileBlood(); }
+    private void reconcileBlood() {
+        // evaluate and restoreLastStandingReserves are intentionally byte-for-byte preserved.
+        // Only their supernatural volume jump may restore both blood components instantly.
+        if(Math.abs(blood-survival.bloodVolume())>.00001f) survival.restoreLastStandingBlood(blood);
     }
     private static float unit(float value) { return Math.clamp(value, 0, 1); }
     private static float[] snapshotPain(BodySnapshot snapshot) {

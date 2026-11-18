@@ -8,11 +8,12 @@ public final class MedicalSupplyPolicy {
         return kind == TreatmentKind.BANDAGE || kind == TreatmentKind.PRESSURE_DRESSING;
     }
     public static boolean installation(TreatmentKind kind) {
-        return kind == TreatmentKind.SPLINT || kind == TreatmentKind.TOURNIQUET;
+        return kind == TreatmentKind.SPLINT || kind == TreatmentKind.TOURNIQUET
+                || kind == TreatmentKind.CHEST_DRAIN || kind == TreatmentKind.REMOVE_FOREIGN_BODY;
     }
     /** Vanilla potions keep their bottle/effect lifecycle and are never repacked. */
     public static boolean inventorySupply(TreatmentKind kind) {
-        return kind != null && kind != TreatmentKind.POTION
+        return kind != null && !kind.oral() && !kind.reusable() && kind != TreatmentKind.POTION
                 && kind != TreatmentKind.HEALING_POTION && kind != TreatmentKind.REGENERATION_POTION;
     }
     public static double material(int count, float perUnitFill) {
@@ -30,7 +31,7 @@ public final class MedicalSupplyPolicy {
         return new Packed(fullUnits, Math.max(0, residual));
     }
     public static int ticksPerFill(TreatmentKind kind) {
-        return wrap(kind) ? 240 : kind == TreatmentKind.SPLINT ? 80 : 120;
+        return wrap(kind) ? 240 : kind == TreatmentKind.SPLINT ? 80 : kind.simpleTool()?60:120;
     }
     public static float treatmentAmount(TreatmentKind kind, float supply) {
         return fill(supply) * (wrap(kind) ? 12 : 1);

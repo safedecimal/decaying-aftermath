@@ -82,10 +82,12 @@ class BodyModelTest {
         model.damage(LEFT_ARM, 8); model.damage(RIGHT_ARM, 8);
         float blood = model.snapshot().blood();
         assertTrue(model.treat(LEFT_ARM, HEALING_POTION, 1));
-        assertEquals(1, model.snapshot().part(LEFT_ARM).integrity());
+        assertEquals(.76, model.snapshot().part(LEFT_ARM).integrity(),.0001);
         assertEquals(.76, model.snapshot().part(RIGHT_ARM).integrity(), .0001);
         assertEquals(blood, model.snapshot().blood());
         assertTrue(model.snapshot().part(LEFT_ARM).fractured());
+        ticks(model,400);
+        assertTrue(model.snapshot().part(LEFT_ARM).integrity()>.76f);
         float before = model.snapshot().part(RIGHT_ARM).integrity();
         assertTrue(model.treat(RIGHT_ARM, REGENERATION_POTION, 1));
         assertEquals(before, model.snapshot().part(RIGHT_ARM).integrity());

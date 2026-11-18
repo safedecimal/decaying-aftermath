@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:campfire_cooking",
+  "category": "food",
+  "ingredient": "decaying_aftermath:dirty_water_bottle",
+  "result": {
+    "id": "decaying_aftermath:water_bottle",
+    "count": 1
+  },
+  "experience": 0.1,
+  "cookingtime": 600
+}

@@ -54,6 +54,13 @@ public final class MedicalItems {
         if (item == FENTANYL) return TreatmentKind.FENTANYL;
         if (item == ANESTHETIC) return TreatmentKind.ANESTHETIC;
         if (item == ANTISEPTIC) return TreatmentKind.ANTISEPTIC;
+        if(item==SurvivalItems.NALOXONE)return TreatmentKind.NALOXONE;
+        if(item==SurvivalItems.COMBAT_PEN)return TreatmentKind.COMBAT_STIMULANT;
+        if(item==SurvivalItems.BLOOD_BAG)return TreatmentKind.BLOOD_BAG;
+        if(item==SurvivalItems.SALINE)return TreatmentKind.SALINE;
+        if(item==SurvivalItems.ICE_PACK)return TreatmentKind.ICE_PACK;
+        if(item==SurvivalItems.CHEST_DRAIN)return TreatmentKind.CHEST_DRAIN;
+        if(item==SurvivalItems.TWEEZERS)return TreatmentKind.REMOVE_FOREIGN_BODY;
         if (!isRegularPotion(stack)) return null;
 
         PotionContents contents = stack.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY);

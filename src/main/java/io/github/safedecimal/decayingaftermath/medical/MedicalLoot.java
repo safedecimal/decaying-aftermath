@@ -33,6 +33,18 @@ public final class MedicalLoot {
             table.withPool(pool(MedicalItems.FENTANYL, 0.02f, 1, 1));
             table.withPool(pool(MedicalItems.ANESTHETIC, 0.04f, 1, 2));
             table.withPool(pool(MedicalItems.ANTISEPTIC, 0.12f, 1, 3));
+            table.withPool(pool(SurvivalItems.ANTIBIOTICS,.08f,1,3));
+            table.withPool(pool(SurvivalItems.PAINKILLERS,.10f,1,2));
+            table.withPool(pool(SurvivalItems.COAGULANT,.04f,1,2));
+            table.withPool(pool(SurvivalItems.NALOXONE,.05f,1,1));
+            table.withPool(pool(SurvivalItems.COMBAT_PEN,.015f,1,1));
+            table.withPool(pool(SurvivalItems.BLOOD_BAG,.025f,1,1));
+            table.withPool(pool(SurvivalItems.SALINE,.08f,1,2));
+            table.withPool(pool(SurvivalItems.CHEST_DRAIN,.035f,1,1));
+            table.withPool(pool(SurvivalItems.TWEEZERS,.06f,1,1));
+            table.withPool(pool(SurvivalItems.WATER_BOTTLE,.12f,1,2));
+            table.withPool(pool(SurvivalItems.COFFEE,.06f,1,1));
+            table.withPool(pool(SurvivalItems.PEMMICAN,.12f,1,3));
         });
     }
 

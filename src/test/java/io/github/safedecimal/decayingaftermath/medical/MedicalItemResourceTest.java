@@ -12,10 +12,12 @@ import static org.junit.jupiter.api.Assertions.*;
 /** Resource checks do not bootstrap the game or instantiate its registries. */
 class MedicalItemResourceTest {
     private static final List<String> ITEMS = List.of(
-            "bandage", "pressure_dressing", "splint", "tourniquet", "fentanyl", "anesthetic", "antiseptic");
+            "bandage", "pressure_dressing", "splint", "tourniquet", "fentanyl", "anesthetic", "antiseptic",
+            "antibiotics","painkillers","naloxone","coagulant","combatpen","blood_bag","saline",
+            "ice_pack","chest_drain","tweezers","water_bottle","dirty_water_bottle","coffee","pemmican","backpack");
 
     @Test
-    void allSevenRegisteredItemNamesHaveModernModelsAndOriginalIconAssets() throws IOException {
+    void allTwentyTwoRegisteredItemNamesHaveModernModelsAndOriginalIconAssets() throws IOException {
         for (String name : ITEMS) {
             JsonObject item = json("assets/decaying_aftermath/items/" + name + ".json");
             assertEquals("minecraft:model", item.getAsJsonObject("model").get("type").getAsString());

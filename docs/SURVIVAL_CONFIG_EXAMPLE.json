@@ -1,0 +1,10 @@
+{
+  "metabolism": true,
+  "temperature": true,
+  "encumbrance": true,
+  "carryingCapacity": 48.0,
+  "backpackCapacityBonus": 24.0,
+  "blockMass": 0.25,
+  "ordinaryItemMass": 0.05,
+  "itemMass": {}
+}

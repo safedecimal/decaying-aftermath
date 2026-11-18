@@ -13,6 +13,8 @@ import net.minecraft.world.item.*;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.component.CustomData;
 import java.util.*;
+import net.minecraft.server.level.ServerLevel;
+import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 
 /** Server-owned fractional supplies; one active unit is peeled without refilling its neighbours. */
 public final class MedicalNetwork {
@@ -25,6 +27,7 @@ public final class MedicalNetwork {
         PayloadTypeRegistry.serverboundPlay().register(MedicalActionPayload.TYPE,MedicalActionPayload.CODEC);
         ServerPlayNetworking.registerGlobalReceiver(MedicalActionPayload.TYPE,(p,c)->c.server().execute(()->handle(c.player(),p)));
         ServerPlayConnectionEvents.DISCONNECT.register((h,s)->SESSIONS.remove(h.getPlayer().getUUID()));
+        ServerPlayerEvents.COPY_FROM.register((oldPlayer,newPlayer,alive)->SESSIONS.remove(oldPlayer.getUUID()));
         ServerTickEvents.END_SERVER_TICK.register(server -> {
             for (ServerPlayer player : server.getPlayerList().getPlayers())
                 if (player.tickCount % 20 == 0) compactSupplies(player);
@@ -44,6 +47,16 @@ public final class MedicalNetwork {
     }
     private static void handle(ServerPlayer player,MedicalActionPayload request) {
         if(request.action()==MedicalActionPayload.END) {SESSIONS.remove(player.getUUID());return;}
+        if(request.action()==MedicalActionPayload.REMOVE_TOURNIQUET) {
+            if(request.amount()!=0||request.kind()!=TreatmentKind.TOURNIQUET.ordinal()
+                    ||request.part()<0||request.part()>=BodyPart.values().length
+                    ||player.containerMenu!=player.inventoryMenu||!player.inventoryMenu.getCarried().isEmpty()
+                    ||!ServerMedicalSystem.canAct(player))return;
+            SESSIONS.remove(player.getUUID());
+            BodyPart part=BodyPart.values()[request.part()];BodyModel body=ServerMedicalSystem.get(player);
+            if(part.isLimb()&&body.removeTourniquet(part)) {ServerMedicalSystem.mirrorHealth(player);sync(player,body.snapshot());}
+            return;
+        }
         if(!Float.isFinite(request.amount())||request.amount()<0||request.amount()>1
                 ||request.slot()<9||request.slot()>=player.inventoryMenu.slots.size()
                 ||request.part()<0||request.part()>=BodyPart.values().length
@@ -55,6 +68,7 @@ public final class MedicalNetwork {
         long now=player.level().getGameTime();
         if(request.action()==MedicalActionPayload.BEGIN) {
             if(stack.isEmpty()||MedicalItems.treatment(stack)!=kind||(kind.requiresLimb()&&!part.isLimb())||remainingFill(stack)<=MedicalSupplyPolicy.EMPTY)return;
+            if(!ServerMedicalSystem.get(player).canTreat(part,kind)) {thought(player,"decaying_aftermath.thought.not_needed");return;}
             Session prior=SESSIONS.get(player.getUUID());
             if(prior!=null&&now-prior.start<40)return;
             SESSIONS.put(player.getUUID(),new Session(request.slot(),part,kind,stack.copy(),now,remainingFill(stack)));
@@ -62,7 +76,7 @@ public final class MedicalNetwork {
         }
         Session session=SESSIONS.get(player.getUUID());
         if(session==null||session.slot!=request.slot()||session.part!=part||session.kind!=kind
-                ||now-session.start>2400||session.signature.getCount()!=stack.getCount()
+                ||now-session.start<0||now-session.start>2400||session.signature.getCount()!=stack.getCount()
                 ||!ItemStack.isSameItemSameComponents(session.signature,stack)) {SESSIONS.remove(player.getUUID());return;}
         BodyModel body=ServerMedicalSystem.get(player);
         if(request.action()==MedicalActionPayload.FINISH) {
@@ -70,24 +84,32 @@ public final class MedicalNetwork {
                     ||session.spent<session.initialFill-MedicalSupplyPolicy.EMPTY)return;
             // A fitted device is installed, not a fractional pharmacological dose. A remainder
             // resumed after cancellation must still tighten the tourniquet below the 50% mark.
-            body.treat(part,kind,1);SESSIONS.remove(player.getUUID());
+            if(!body.canTreat(part,kind)||!body.treat(part,kind,1)) {SESSIONS.remove(player.getUUID());return;}
+            if(kind.reusable()&&!player.getAbilities().instabuild) {
+                stack.hurtAndBreak(1,(ServerLevel)player.level(),player,ignored->{});
+                if(!stack.isEmpty())writeFill(stack,1);
+                slot.setChanged();player.inventoryMenu.broadcastChanges();
+            }
+            SESSIONS.remove(player.getUUID());
             sync(player,body.snapshot());return;
         }
         if(request.action()!=MedicalActionPayload.APPLY||stack.isEmpty()||MedicalItems.treatment(stack)!=kind)return;
+        if(!body.canTreat(part,kind)) {SESSIONS.remove(player.getUUID());thought(player,"decaying_aftermath.thought.not_needed");return;}
         boolean creative=player.getAbilities().instabuild;
         // Repair old one-item stacks and free medical-only clutter before looking for split space.
         // The source is excluded: its signature and the client's selected slot must remain stable.
         if(!creative && compactInventory(player.inventoryMenu,request.slot()))
             player.inventoryMenu.broadcastChanges();
-        List<Transfer> transfers=creative?List.of():planUnused(player.inventoryMenu,request.slot(),stack);
+        List<Transfer> transfers=creative||kind.reusable()?List.of():planUnused(player.inventoryMenu,request.slot(),stack);
         if(transfers==null) {
             if(!session.warnedSpace) {thought(player,"decaying_aftermath.thought.supply_space");session.warnedSpace=true;}
             return;
         }
-        float grant=session.budget.grant(now,request.amount(),remainingFill(stack));
-        var spend=MedicalSupplyPolicy.spend(remainingFill(stack),grant);
+        float available=kind.reusable()?Math.max(0,1-session.spent):remainingFill(stack);
+        float grant=session.budget.grant(now,request.amount(),available);
+        var spend=MedicalSupplyPolicy.spend(available,grant);
         if(spend.used()<=0)return;
-        if(!creative)separateUnused(slot,stack,transfers);
+        if(!creative&&!kind.reusable())separateUnused(slot,stack,transfers);
         session.spent+=spend.used();
         if(!MedicalSupplyPolicy.installation(kind)) {
             if(kind==TreatmentKind.HEALING_POTION||kind==TreatmentKind.REGENERATION_POTION||kind==TreatmentKind.POTION)
@@ -97,7 +119,7 @@ public final class MedicalNetwork {
                 while(treatment>0) {float dose=Math.min(1,treatment);body.treat(part,kind,dose);treatment=Math.max(0,treatment-dose);}
             }
         }
-        if(!creative) {
+        if(!creative&&!kind.reusable()) {
             if(spend.exhausted()) {
                 boolean potion=stack.getItem() instanceof PotionItem;stack.shrink(1);
                 if(potion)slot.set(new ItemStack(Items.GLASS_BOTTLE));

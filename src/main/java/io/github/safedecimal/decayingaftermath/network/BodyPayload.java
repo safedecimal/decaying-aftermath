@@ -7,7 +7,7 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
 
 public record BodyPayload(BodySnapshot snapshot) implements CustomPacketPayload {
-    public static final Type<BodyPayload> TYPE = new Type<>(Identifier.fromNamespaceAndPath("decaying_aftermath", "body"));
+    public static final Type<BodyPayload> TYPE = new Type<>(Identifier.fromNamespaceAndPath("decaying_aftermath", "body_v3"));
     public static final StreamCodec<RegistryFriendlyByteBuf, BodyPayload> CODEC = CustomPacketPayload.codec(BodyPayload::write, BodyPayload::read);
     @Override public Type<BodyPayload> type() { return TYPE; }
     private void write(RegistryFriendlyByteBuf b) {
@@ -20,7 +20,15 @@ public record BodyPayload(BodySnapshot snapshot) implements CustomPacketPayload 
             b.writeBoolean(p.fractured()); b.writeBoolean(p.bandaged()); b.writeBoolean(p.splinted()); b.writeBoolean(p.tourniquet());
             b.writeFloat(p.infection()); b.writeBoolean(p.disinfected()); b.writeBoolean(p.anesthetized());
             b.writeFloat(p.bandageCare());
+            b.writeFloat(p.burn());b.writeFloat(p.internalBleeding());b.writeBoolean(p.openWound());
+            b.writeBoolean(p.foreignBody());b.writeFloat(p.boneRecovery());
+            b.writeBoolean(p.coldInjury());
         }
+        var s=snapshot.survival();
+        b.writeFloat(s.hydration());b.writeFloat(s.nutrition());b.writeFloat(s.temperature());b.writeFloat(s.fatigue());
+        b.writeFloat(s.toxin());b.writeFloat(s.plasma());b.writeFloat(s.redCells());b.writeFloat(s.antibiotic());
+        b.writeFloat(s.stimulant());b.writeFloat(s.antagonist());b.writeFloat(s.coagulant());b.writeFloat(s.internalBleeding());
+        b.writeFloat(s.lungFunction());b.writeFloat(s.encumbrance());b.writeFloat(s.gutInfection());
     }
     private static BodyPayload read(RegistryFriendlyByteBuf b) {
         float condition=b.readFloat(), blood=b.readFloat(), oxygen=b.readFloat(), pain=b.readFloat(), drug=b.readFloat(), bpm=b.readFloat();
@@ -28,7 +36,9 @@ public record BodyPayload(BodySnapshot snapshot) implements CustomPacketPayload 
         if (mode<0 || mode>=BodySnapshot.Mode.values().length) throw new IllegalArgumentException("Unknown body mode");
         float progress=b.readFloat(), energy=b.readFloat(), consciousness=b.readFloat();
         var parts=new BodySnapshot.PartSnapshot[BodyPart.values().length];
-        for (int i=0;i<parts.length;i++) parts[i]=new BodySnapshot.PartSnapshot(b.readFloat(),b.readFloat(),b.readFloat(),b.readBoolean(),b.readBoolean(),b.readBoolean(),b.readBoolean(),b.readFloat(),b.readBoolean(),b.readBoolean(),b.readFloat());
-        return new BodyPayload(new BodySnapshot(condition,blood,oxygen,pain,drug,bpm,BodySnapshot.Mode.values()[mode],progress,energy,consciousness,parts));
+        for (int i=0;i<parts.length;i++) parts[i]=new BodySnapshot.PartSnapshot(b.readFloat(),b.readFloat(),b.readFloat(),b.readBoolean(),b.readBoolean(),b.readBoolean(),b.readBoolean(),b.readFloat(),b.readBoolean(),b.readBoolean(),b.readFloat(),b.readFloat(),b.readFloat(),b.readBoolean(),b.readBoolean(),b.readFloat(),b.readBoolean());
+        var s=new SurvivalSnapshot(b.readFloat(),b.readFloat(),b.readFloat(),b.readFloat(),b.readFloat(),b.readFloat(),b.readFloat(),
+                b.readFloat(),b.readFloat(),b.readFloat(),b.readFloat(),b.readFloat(),b.readFloat(),b.readFloat(),b.readFloat());
+        return new BodyPayload(new BodySnapshot(condition,blood,oxygen,pain,drug,bpm,BodySnapshot.Mode.values()[mode],progress,energy,consciousness,parts,s));
     }
 }

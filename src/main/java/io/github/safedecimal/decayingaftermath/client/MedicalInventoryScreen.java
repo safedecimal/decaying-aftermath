@@ -123,7 +123,12 @@ public final class MedicalInventoryScreen extends AbstractContainerScreen<Invent
                     (part.fractured()?Component.translatable("decaying_aftermath.status.fractured").getString():"")
                     +(part.bleeding()>0?Component.translatable("decaying_aftermath.status.bleeding").getString():"")
                     +(part.infection()>=.25f?Component.translatable("decaying_aftermath.status.infection").getString():"")
-                    +(part.anesthetized()?Component.translatable("decaying_aftermath.status.anesthetized").getString():""));
+                    +(part.anesthetized()?Component.translatable("decaying_aftermath.status.anesthetized").getString():"")
+                    +(part.burn()>.01f?Component.translatable("decaying_aftermath.status.burn").getString():"")
+                    +(part.coldInjury()?Component.translatable("decaying_aftermath.status.cold_injury").getString():"")
+                    +(part.internalBleeding()>.001f?Component.translatable("decaying_aftermath.status.internal_bleeding").getString():"")
+                    +(part.foreignBody()?Component.translatable("decaying_aftermath.status.foreign_body").getString():"")
+                    +(part.tourniquet()?Component.translatable("decaying_aftermath.status.remove_tourniquet").getString():""));
             graphics.setTooltipForNextFrame(font,text,mouseX,mouseY);
         }
     }
@@ -167,6 +172,10 @@ public final class MedicalInventoryScreen extends AbstractContainerScreen<Invent
             clearMedicalCarry();recipeBook.toggleVisibility();return true;
         }
         BodyPart part=partAt(e.x(),e.y());
+        if(part!=null&&event.button()==3&&(event.modifiers()&1)!=0&&menu.getCarried().isEmpty()
+                &&ClientMedicalState.snapshot().part(part).tourniquet()) {
+            clearMedicalCarry();ClientMedicalState.removeTourniquet(part);return true;
+        }
         if(clickCarry&&(event.button()==1||event.button()==3)&&event.modifiers()==0) {
             if(part!=null) return startProcedure(part);
             Slot target=slotAt(e.x(),e.y());
@@ -222,6 +231,12 @@ public final class MedicalInventoryScreen extends AbstractContainerScreen<Invent
         if((kind==TreatmentKind.SPLINT||kind==TreatmentKind.TOURNIQUET)
                 &&(part==BodyPart.HEAD||part==BodyPart.TORSO)) {
             ThoughtTyper.enqueue(Component.translatable("decaying_aftermath.thought.needs_limb").getString());return true;
+        }
+        if(kind.requiresTorso()&&part!=BodyPart.TORSO) {
+            ThoughtTyper.enqueue(Component.translatable("decaying_aftermath.thought.needs_torso").getString());return true;
+        }
+        if(!BodyModel.restore(ClientMedicalState.snapshot()).canTreat(part,kind)) {
+            ThoughtTyper.enqueue(Component.translatable("decaying_aftermath.thought.not_needed").getString());return true;
         }
         int source=pendingSlot;selected=part;clearMedicalCarry();
         minecraft.gui.setScreen(new MedicalProcedureScreen(this,source,part,kind));return true;

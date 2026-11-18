@@ -1,0 +1,1327 @@
+{
+  "kind": "CU native survival/medical item bindings, static extraction only",
+  "assembly_path": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Casualties Unknown\\CasualtiesUnknown_Data\\Managed\\Assembly-CSharp.dll",
+  "assembly_sha256": "48c7f2296fc4a659faae3b1822884ca5b7ff73d6767ef159e6a6c2bc0b2d38f1",
+  "unity_version": "2022.3.62f3",
+  "serialized_scope": [
+    "resources.assets",
+    "sharedassets0.assets",
+    "sharedassets1.assets",
+    "globalgamemanagers.assets",
+    "level1"
+  ],
+  "source_hashes": {
+    "resources.assets": "81a5f55001875f37d450197151d7b0d3b349e70c47a5adeb0006f9dc4744df64",
+    "sharedassets0.assets": "eaba5973b39543d5d5539c76695008cfdfff50ed588fb7cff345a15a3b4eaa75",
+    "sharedassets1.assets": "befa3e57e3e7edcf40dd1b0108e7a69ab7961e9fe553fa17fdf43dbb747e3016",
+    "globalgamemanagers.assets": "b5d703000e77d787527b6ebf01528cf5e5961d4beacf9a5f0e346be10e71c141",
+    "level1": "f8c2ea53cab0acb7b333c2165ceba3c36c3963a8ded0196771b8d4d9cc8462b3"
+  },
+  "native_item_scope_count": 429,
+  "games_started": false,
+  "screenshots_taken": false,
+  "limitations": [
+    "Saved decompilation is static reconstructed C#, not observed gameplay.",
+    "Liquid fill composition adapts native container rendering; runtime clipping, distortion and Unity material shaders are not replayed.",
+    "combatpen is a native mixed stimulant injector; it must not be represented as an original standalone epinephrine Item id.",
+    "Charcoal is a native material; a medical activated-charcoal role would be an explicit gameplay adaptation.",
+    "Third-party CU asset ownership is unchanged; this extraction grants no public redistribution license."
+  ],
+  "records": [
+    {
+      "alias": "antibiotics",
+      "native_item_id": "antibiotics",
+      "resource_id": "antibiotics",
+      "code_provenance": "Native antibiotic tablets; Item.cs:1598-1620; Liquids.cs:1229-1243",
+      "item": {
+        "source_file": "resources.assets",
+        "path_id": 13879,
+        "type": "MonoBehaviour",
+        "raw_object_sha256": "75890119a688b06b0d769d131848f483ff4fbcfd63ecb84292c8306bd3f5e00f"
+      },
+      "game_object": {
+        "source_file": "resources.assets",
+        "path_id": 3646,
+        "type": "GameObject",
+        "raw_object_sha256": "6d5727dd7856a3c58821ac1606164eee8dbf39a04287554b659089037c934d55",
+        "name": "antibiotics"
+      },
+      "sprite_renderer": {
+        "source_file": "resources.assets",
+        "path_id": 9700,
+        "type": "SpriteRenderer",
+        "raw_object_sha256": "4d5bac35b989a9f7676cb22c4cf9731289dccbb149571796a730fdb4ec30ec1c"
+      },
+      "renderer_color": {
+        "r": 1.0,
+        "g": 1.0,
+        "b": 1.0,
+        "a": 1.0
+      },
+      "native_sprite": {
+        "source_file": "resources.assets",
+        "path_id": 3175,
+        "type": "Sprite",
+        "raw_object_sha256": "b04170e0f435ec107f364ff667e194fcf2b097f568491f0538adfbf35a78b1dd",
+        "source_name": "antibiotics",
+        "dimensions": [
+          4,
+          7
+        ],
+        "pivot": [
+          0.5,
+          0.5
+        ],
+        "pixels_to_units": 8.0,
+        "trim_offset": [
+          0.0,
+          0.0
+        ],
+        "destination_xy": [
+          0,
+          0
+        ],
+        "output_path": "C:\\Users\\thuam\\Desktop\\projects\\decaying-aftermath\\verification\\cu-survival-0.4.0\\cu-evidence\\antibiotics_native.png",
+        "output_sha256": "8303f2cbcb6b4088ed2b21a5b1cf4a96cf51e79efc128d79a27f04e42ea9f276",
+        "bytes": 175,
+        "transform": "Original full Sprite canvas restored from texture crop; no painted replacement pixels"
+      },
+      "native_fill_sprite": null,
+      "water_container": {
+        "source_file": "resources.assets",
+        "path_id": 14097,
+        "type": "MonoBehaviour",
+        "raw_object_sha256": "3a80e72c56b8c992c5480e49631904c97c5254d1a7af703466fb85a5ba3b2ef6"
+      },
+      "output_path": "C:\\Users\\thuam\\Desktop\\projects\\decaying-aftermath\\verification\\cu-survival-0.4.0\\cu-evidence\\antibiotics.png",
+      "output_sha256": "8303f2cbcb6b4088ed2b21a5b1cf4a96cf51e79efc128d79a27f04e42ea9f276",
+      "dimensions": [
+        4,
+        7
+      ],
+      "bytes": 175,
+      "inventory_transform": "Full native Sprite",
+      "mod_item_id": "decaying_aftermath:antibiotics",
+      "destination": "textures/item/antibiotics.png",
+      "destination_sha256": "01b604ef6544b62ff12a1ba2c21483f715d02aae0c16d7ea1220b22f99d08c97",
+      "transformation": "Native Sprite, nearest-neighbour integer scale 2, centred transparent 16x16 canvas"
+    },
+    {
+      "alias": "painkillers",
+      "native_item_id": "painkillers",
+      "resource_id": "painkillers",
+      "code_provenance": "Native opioid painkiller tablets; Item.cs:1330-1351; Liquids.cs:283-297",
+      "item": {
+        "source_file": "resources.assets",
+        "path_id": 12733,
+        "type": "MonoBehaviour",
+        "raw_object_sha256": "c22389a837a9ba1aabdeb83a07b5ca9d4b452b75a63bdf34330bb5e8e2cde5e5"
+      },
+      "game_object": {
+        "source_file": "resources.assets",
+        "path_id": 4378,
+        "type": "GameObject",
+        "raw_object_sha256": "f6efe9e857d1fb65517d7187cd1eaef94c6ed6cf2f34f71075c616b33adb8131",
+        "name": "painkillers"
+      },
+      "sprite_renderer": {
+        "source_file": "resources.assets",
+        "path_id": 9791,
+        "type": "SpriteRenderer",
+        "raw_object_sha256": "3a7f38a85290682a2e8f07eb8b1334c5a48dca3b21509da1b1db9eb6cf5b2e17"
+      },
+      "renderer_color": {
+        "r": 1.0,
+        "g": 1.0,
+        "b": 1.0,
+        "a": 1.0
+      },
+      "native_sprite": {
+        "source_file": "resources.assets",
+        "path_id": 2875,
+        "type": "Sprite",
+        "raw_object_sha256": "0a513a5f6d25c81f108bb892fd2d4f2ea615ef3aeb5092e0074aeb2566635a6d",
+        "source_name": "painkillers",
+        "dimensions": [
+          4,
+          7
+        ],
+        "pivot": [
+          0.5,
+          0.5
+        ],
+        "pixels_to_units": 8.0,
+        "trim_offset": [
+          0.0,
+          0.0
+        ],
+        "destination_xy": [
+          0,
+          0
+        ],
+        "output_path": "C:\\Users\\thuam\\Desktop\\projects\\decaying-aftermath\\verification\\cu-survival-0.4.0\\cu-evidence\\painkillers_native.png",
+        "output_sha256": "6fb0528990da063b0b239cc775c637dd7fa7c029d5e91a57255eb6dbe7f99943",
+        "bytes": 164,
+        "transform": "Original full Sprite canvas restored from texture crop; no painted replacement pixels"
+      },
+      "native_fill_sprite": null,
+      "water_container": {
+        "source_file": "resources.assets",
+        "path_id": 11638,
+        "type": "MonoBehaviour",
+        "raw_object_sha256": "5ee33944e1cc5ebe09eda52d5ace231a3ecafb986cfecb651356e3e422aa6ddd"
+      },
+      "output_path": "C:\\Users\\thuam\\Desktop\\projects\\decaying-aftermath\\verification\\cu-survival-0.4.0\\cu-evidence\\painkillers.png",
+      "output_sha256": "6fb0528990da063b0b239cc775c637dd7fa7c029d5e91a57255eb6dbe7f99943",
+      "dimensions": [
+        4,
+        7
+      ],
+      "bytes": 164,
+      "inventory_transform": "Full native Sprite",
+      "mod_item_id": "decaying_aftermath:painkillers",
+      "destination": "textures/item/painkillers.png",
+      "destination_sha256": "d38d71877c1ad633323152911b2160e3aadb2d6d77bd0a7f60e6d6751ff25a97",
+      "transformation": "Native Sprite, nearest-neighbour integer scale 2, centred transparent 16x16 canvas"
+    },
+    {
+      "alias": "naloxone",
+      "native_item_id": "naloxone",
+      "resource_id": "naloxone",
+      "code_provenance": "Native naloxone syringe; Item.cs:1148-1175; Liquids.cs:322-340",
+      "item": {
+        "source_file": "resources.assets",
+        "path_id": 13708,
+        "type": "MonoBehaviour",
+        "raw_object_sha256": "8bfee2e41d0c801542f01916c6fe6c40033fc1cd080f72b28ddf1c3e463e885a"
+      },
+      "game_object": {
+        "source_file": "resources.assets",
+        "path_id": 5314,
+        "type": "GameObject",
+        "raw_object_sha256": "62099a24a8b551998cab7a4735f3dac897d05f7a5c83e88b1ba1d21cb97a8649",
+        "name": "naloxone"
+      },
+      "sprite_renderer": {
+        "source_file": "resources.assets",
+        "path_id": 10229,
+        "type": "SpriteRenderer",
+        "raw_object_sha256": "52599e6e8b44e8e5201e0c0cfe7c89cd95ef5f0d9f97ae65c6f7a2d295222af8"
+      },
+      "renderer_color": {
+        "r": 1.0,
+        "g": 1.0,
+        "b": 1.0,
+        "a": 1.0
+      },
+      "native_sprite": {
+        "source_file": "resources.assets",
+        "path_id": 2386,
+        "type": "Sprite",
+        "raw_object_sha256": "ae0f32ee9c0d38d0442d02d48000cc154ed6c2c8c83e41e43ced75b598d0b582",
+        "source_name": "naloxone",
+        "dimensions": [
+          6,
+          8
+        ],
+        "pivot": [
+          0.5,
+          0.5
+        ],
+        "pixels_to_units": 8.0,
+        "trim_offset": [
+          0.0,
+          0.0
+        ],
+        "destination_xy": [
+          0,
+          0
+        ],
+        "output_path": "C:\\Users\\thuam\\Desktop\\projects\\decaying-aftermath\\verification\\cu-survival-0.4.0\\cu-evidence\\naloxone_native.png",
+        "output_sha256": "6b2730d354bc89cb624b6d925ee7c90d1fcdb2f386180276b07c2b05d75bbcce",
+        "bytes": 199,
+        "transform": "Original full Sprite canvas restored from texture crop; no painted replacement pixels"
+      },
+      "native_fill_sprite": null,
+      "water_container": {
+        "source_file": "resources.assets",
+        "path_id": 11662,
+        "type": "MonoBehaviour",
+        "raw_object_sha256": "a327ac8dedd85077358f21670dafa147becbd795611a12f2db24e2f819fc26ec"
+      },
+      "output_path": "C:\\Users\\thuam\\Desktop\\projects\\decaying-aftermath\\verification\\cu-survival-0.4.0\\cu-evidence\\naloxone.png",
+      "output_sha256": "6b2730d354bc89cb624b6d925ee7c90d1fcdb2f386180276b07c2b05d75bbcce",
+      "dimensions": [
+        6,
+        8
+      ],
+      "bytes": 199,
+      "inventory_transform": "Full native Sprite",
+      "mod_item_id": "decaying_aftermath:naloxone",
+      "destination": "textures/item/naloxone.png",
+      "destination_sha256": "fb8bc0fe74ef0268b303cd6304995a22370a15f76c9e1a0842c5ed9af2995e69",
+      "transformation": "Native Sprite, nearest-neighbour integer scale 2, centred transparent 16x16 canvas"
+    },
+    {
+      "alias": "coagulant",
+      "native_item_id": "bloodcoagulant",
+      "resource_id": "bloodcoagulant",
+      "code_provenance": "Native bloodcoagulant injector; Item.cs:1822-1849; Liquids.cs:1352-1390",
+      "item": {
+        "source_file": "resources.assets",
+        "path_id": 12135,
+        "type": "MonoBehaviour",
+        "raw_object_sha256": "49d070b27c72effef07f4a24cf8b4a5f28120181b198ee2de72ac38de6fd02cb"
+      },
+      "game_object": {
+        "source_file": "resources.assets",
+        "path_id": 5433,
+        "type": "GameObject",
+        "raw_object_sha256": "deff8efce33668c0beeb8ad9f63db57c62521c851075a78fe65872a33d6fe366",
+        "name": "bloodcoagulant"
+      },
+      "sprite_renderer": {
+        "source_file": "resources.assets",
+        "path_id": 9720,
+        "type": "SpriteRenderer",
+        "raw_object_sha256": "2c0e47eabf8bf4501212a7cc78ad0df004361289c15bf1ec5e9c13980b324999"
+      },
+      "renderer_color": {
+        "r": 1.0,
+        "g": 1.0,
+        "b": 1.0,
+        "a": 1.0
+      },
+      "native_sprite": {
+        "source_file": "resources.assets",
+        "path_id": 2791,
+        "type": "Sprite",
+        "raw_object_sha256": "276ff714150ff7372b93aec5f9cbbbc67f648ff7cf2aea6e294b5aee24cf364f",
+        "source_name": "bloodcoagulant",
+        "dimensions": [
+          6,
+          8
+        ],
+        "pivot": [
+          0.5,
+          0.5
+        ],
+        "pixels_to_units": 8.0,
+        "trim_offset": [
+          0.0,
+          0.0
+        ],
+        "destination_xy": [
+          0,
+          0
+        ],
+        "output_path": "C:\\Users\\thuam\\Desktop\\projects\\decaying-aftermath\\verification\\cu-survival-0.4.0\\cu-evidence\\coagulant_native.png",
+        "output_sha256": "d5869f67cf0e28fbe7c52cda81495bec5eeeb9a34373042e04a39f1c9326e114",
+        "bytes": 194,
+        "transform": "Original full Sprite canvas restored from texture crop; no painted replacement pixels"
+      },
+      "native_fill_sprite": null,
+      "water_container": {
+        "source_file": "resources.assets",
+        "path_id": 12117,
+        "type": "MonoBehaviour",
+        "raw_object_sha256": "8d75803c03c63fe361612e5f1160fccc3de044776f0b3de42c206cd28f1e4871"
+      },
+      "output_path": "C:\\Users\\thuam\\Desktop\\projects\\decaying-aftermath\\verification\\cu-survival-0.4.0\\cu-evidence\\coagulant.png",
+      "output_sha256": "d5869f67cf0e28fbe7c52cda81495bec5eeeb9a34373042e04a39f1c9326e114",
+      "dimensions": [
+        6,
+        8
+      ],
+      "bytes": 194,
+      "inventory_transform": "Full native Sprite",
+      "mod_item_id": "decaying_aftermath:coagulant",
+      "destination": "textures/item/coagulant.png",
+      "destination_sha256": "c33d6bd7af9747d431fc3e8d3b6b37f18c5464b85d2eccfdcc64a8ebb0e2aa90",
+      "transformation": "Native Sprite, nearest-neighbour integer scale 2, centred transparent 16x16 canvas"
+    },
+    {
+      "alias": "combatpen",
+      "native_item_id": "combatpen",
+      "resource_id": "combatpen",
+      "code_provenance": "Native combatpen mixes highgradestimulant, epinephrine and oxyline (Item.cs:1851-1880), not a standalone epinephrine Item. Native liquid color is the weighted mean (0.60 white + 0.15 epinephrine[161,255,233] + 0.25 oxyline[77,255,222]). Epinephrine behavior: Liquids.cs:1391-1434",
+      "item": {
+        "source_file": "resources.assets",
+        "path_id": 11934,
+        "type": "MonoBehaviour",
+        "raw_object_sha256": "f6a467767eb8de9df4b4f3764ebd602d9de6a0787ce988ffe29f8308639e1fb6"
+      },
+      "game_object": {
+        "source_file": "resources.assets",
+        "path_id": 4552,
+        "type": "GameObject",
+        "raw_object_sha256": "44f918a47364b7545f8b294ac7d0152a85dfafbbc5836e3bacb32db15c978611",
+        "name": "combatpen (2)"
+      },
+      "sprite_renderer": {
+        "source_file": "resources.assets",
+        "path_id": 9953,
+        "type": "SpriteRenderer",
+        "raw_object_sha256": "6ffa68b06b82d9201e40c2e76a43433a38206e97cd8ab26592018b0ca06d18a2"
+      },
+      "renderer_color": {
+        "r": 1.0,
+        "g": 1.0,
+        "b": 1.0,
+        "a": 1.0
+      },
+      "native_sprite": {
+        "source_file": "resources.assets",
+        "path_id": 3113,
+        "type": "Sprite",
+        "raw_object_sha256": "36df23b3ccd4ed88099f2731a8962f68f9abede97f40231d410ac4e1396283f4",
+        "source_name": "combatpen",
+        "dimensions": [
+          8,
+          3
+        ],
+        "pivot": [
+          0.5,
+          0.5
+        ],
+        "pixels_to_units": 8.0,
+        "trim_offset": [
+          0.0,
+          0.0
+        ],
+        "destination_xy": [
+          0,
+          0
+        ],
+        "output_path": "C:\\Users\\thuam\\Desktop\\projects\\decaying-aftermath\\verification\\cu-survival-0.4.0\\cu-evidence\\combatpen_native.png",
+        "output_sha256": "b2ff17e86e5fc7eaedfaa8aca564a7d5c830fce9922ae174f077853472243b05",
+        "bytes": 162,
+        "transform": "Original full Sprite canvas restored from texture crop; no painted replacement pixels"
+      },
+      "native_fill_sprite": null,
+      "water_container": {
+        "source_file": "resources.assets",
+        "path_id": 11991,
+        "type": "MonoBehaviour",
+        "raw_object_sha256": "21493e2c5c63ae697a0833496e8b7889665eff93ebd1e9cf58dc11b42eef3638"
+      },
+      "output_path": "C:\\Users\\thuam\\Desktop\\projects\\decaying-aftermath\\verification\\cu-survival-0.4.0\\cu-evidence\\combatpen.png",
+      "output_sha256": "b2ff17e86e5fc7eaedfaa8aca564a7d5c830fce9922ae174f077853472243b05",
+      "dimensions": [
+        8,
+        3
+      ],
+      "bytes": 162,
+      "inventory_transform": "Full native Sprite",
+      "mod_item_id": "decaying_aftermath:combatpen",
+      "destination": "textures/item/combatpen.png",
+      "destination_sha256": "6d8ce3b45a45f66d4113806c0f00c6980826f019a4143f2e407434b506837a84",
+      "transformation": "Native Sprite, nearest-neighbour integer scale 2, centred transparent 16x16 canvas"
+    },
+    {
+      "alias": "blood_bag",
+      "native_item_id": "bloodbaghuman",
+      "resource_id": "bloodbaghuman",
+      "code_provenance": "Native human blood bag; Item.cs:2237-2268; Liquids.cs:1636-1663. Minecraft human-player compatibility is a gameplay adaptation, not native CU species compatibility.",
+      "item": {
+        "source_file": "resources.assets",
+        "path_id": 12474,
+        "type": "MonoBehaviour",
+        "raw_object_sha256": "435b4b5bcd201d0ab4bf75fefc4bd5ab6f2aae79462541a7ff329c4ddabf54e9"
+      },
+      "game_object": {
+        "source_file": "resources.assets",
+        "path_id": 5525,
+        "type": "GameObject",
+        "raw_object_sha256": "20247c06ca5d1ce2955b555283c13ec29555323291432c28aa894ed9cdcc3c23",
+        "name": "bloodbaghuman"
+      },
+      "sprite_renderer": {
+        "source_file": "resources.assets",
+        "path_id": 9405,
+        "type": "SpriteRenderer",
+        "raw_object_sha256": "31f4b3797e560516f881b5f094c8c0f2265fe12cf3de3d5387d2cf069eaface8"
+      },
+      "renderer_color": {
+        "r": 1.0,
+        "g": 1.0,
+        "b": 1.0,
+        "a": 1.0
+      },
+      "native_sprite": {
+        "source_file": "resources.assets",
+        "path_id": 2263,
+        "type": "Sprite",
+        "raw_object_sha256": "166a22ff332b28d0e8461c18ca5c12026d51a17afae4dc7f76faccd69149fad0",
+        "source_name": "bloodbag",
+        "dimensions": [
+          12,
+          16
+        ],
+        "pivot": [
+          0.5,
+          0.5
+        ],
+        "pixels_to_units": 8.0,
+        "trim_offset": [
+          0.0,
+          0.0
+        ],
+        "destination_xy": [
+          0,
+          0
+        ],
+        "output_path": "C:\\Users\\thuam\\Desktop\\projects\\decaying-aftermath\\verification\\cu-survival-0.4.0\\cu-evidence\\blood_bag_native.png",
+        "output_sha256": "382990e44172a906f01532730f0537e1acf979a15cd67abe2c7344bf9bf4d833",
+        "bytes": 561,
+        "transform": "Original full Sprite canvas restored from texture crop; no painted replacement pixels"
+      },
+      "native_fill_sprite": {
+        "source_file": "resources.assets",
+        "path_id": 2203,
+        "type": "Sprite",
+        "raw_object_sha256": "61c12a73586eaf90adbe82301c155842e33d95ef6735269cbb3b90e0976a506c",
+        "source_name": "bloodbagfill",
+        "dimensions": [
+          12,
+          16
+        ],
+        "pivot": [
+          0.5,
+          0.5
+        ],
+        "pixels_to_units": 8.0,
+        "trim_offset": [
+          0.0,
+          0.0
+        ],
+        "destination_xy": [
+          0,
+          0
+        ],
+        "output_path": "C:\\Users\\thuam\\Desktop\\projects\\decaying-aftermath\\verification\\cu-survival-0.4.0\\cu-evidence\\blood_bag_fill_native.png",
+        "output_sha256": "8c9f8927e7b9e98fe09b7bf5877b44128cc2e96603799cf3adf19a3af2591530",
+        "bytes": 475,
+        "transform": "Original full Sprite canvas restored from texture crop; no painted replacement pixels",
+        "liquid_color_rgba": [
+          199,
+          10,
+          10,
+          255
+        ],
+        "composite_destination_xy": [
+          0,
+          0
+        ]
+      },
+      "water_container": {
+        "source_file": "resources.assets",
+        "path_id": 12185,
+        "type": "MonoBehaviour",
+        "raw_object_sha256": "49dfa06a40819b7a89dbd96183cbc94ce075fd4933d1806e27e635fcabdab1b0"
+      },
+      "output_path": "C:\\Users\\thuam\\Desktop\\projects\\decaying-aftermath\\verification\\cu-survival-0.4.0\\cu-evidence\\blood_bag.png",
+      "output_sha256": "28b10a50d10d59f8063c7c88415abab53d75803b9c3067dac212223753b49f70",
+      "dimensions": [
+        12,
+        16
+      ],
+      "bytes": 625,
+      "inventory_transform": "Full native base + centered native fill Sprite tinted to explicitly recorded liquid color; full fill, Minecraft inventory adaptation",
+      "mod_item_id": "decaying_aftermath:blood_bag",
+      "destination": "textures/item/blood_bag.png",
+      "destination_sha256": "dd1576f67dd5feddd268ae7f869cb437097f9e1b59304d4b160412bca21ac30a",
+      "transformation": "Native Sprite, nearest-neighbour integer scale 1, centred transparent 16x16 canvas"
+    },
+    {
+      "alias": "saline",
+      "native_item_id": "saline",
+      "resource_id": "saline",
+      "code_provenance": "Native saline infusion bag; Item.cs:2171-2202; Liquids.cs:1557-1583",
+      "item": {
+        "source_file": "resources.assets",
+        "path_id": 12538,
+        "type": "MonoBehaviour",
+        "raw_object_sha256": "d0f0cd9d5c0d951363f2cbaec7f83634be326576fa0f61e008c940f42a983150"
+      },
+      "game_object": {
+        "source_file": "resources.assets",
+        "path_id": 4804,
+        "type": "GameObject",
+        "raw_object_sha256": "7f9279f56198e377b45c3d0987a2b4723ff8ecb139ec31b62e59eb01d022c12a",
+        "name": "saline"
+      },
+      "sprite_renderer": {
+        "source_file": "resources.assets",
+        "path_id": 9081,
+        "type": "SpriteRenderer",
+        "raw_object_sha256": "cf4457939c1fe54e2a9024ed1bf75f692e2389e672e88065f45dd12c33919422"
+      },
+      "renderer_color": {
+        "r": 1.0,
+        "g": 1.0,
+        "b": 1.0,
+        "a": 1.0
+      },
+      "native_sprite": {
+        "source_file": "resources.assets",
+        "path_id": 2774,
+        "type": "Sprite",
+        "raw_object_sha256": "5a83936af67bbd244aa195a8c8c16e0a4f66079002248cc46c3191c97ae72ea7",
+        "source_name": "saline",
+        "dimensions": [
+          8,
+          16
+        ],
+        "pivot": [
+          0.5,
+          0.5
+        ],
+        "pixels_to_units": 8.0,
+        "trim_offset": [
+          0.0,
+          0.0
+        ],
+        "destination_xy": [
+          0,
+          0
+        ],
+        "output_path": "C:\\Users\\thuam\\Desktop\\projects\\decaying-aftermath\\verification\\cu-survival-0.4.0\\cu-evidence\\saline_native.png",
+        "output_sha256": "48f96aedb0b19dbf34cd421295c3838eac63ed3161a487af76771c81f80767a3",
+        "bytes": 483,
+        "transform": "Original full Sprite canvas restored from texture crop; no painted replacement pixels"
+      },
+      "native_fill_sprite": {
+        "source_file": "resources.assets",
+        "path_id": 2794,
+        "type": "Sprite",
+        "raw_object_sha256": "cb3daf3ff7188426e5cb962343af7ea1e61504aab22897fc02a7744f1c9143a2",
+        "source_name": "salineinner",
+        "dimensions": [
+          8,
+          16
+        ],
+        "pivot": [
+          0.5,
+          0.5
+        ],
+        "pixels_to_units": 8.0,
+        "trim_offset": [
+          0.0,
+          0.0
+        ],
+        "destination_xy": [
+          0,
+          0
+        ],
+        "output_path": "C:\\Users\\thuam\\Desktop\\projects\\decaying-aftermath\\verification\\cu-survival-0.4.0\\cu-evidence\\saline_fill_native.png",
+        "output_sha256": "9c7ac103c1515dd7f73e07bd80c71f471520b45085cf4f3e211406b6c4006fd0",
+        "bytes": 274,
+        "transform": "Original full Sprite canvas restored from texture crop; no painted replacement pixels",
+        "liquid_color_rgba": [
+          196,
+          196,
+          196,
+          255
+        ],
+        "composite_destination_xy": [
+          0,
+          0
+        ]
+      },
+      "water_container": {
+        "source_file": "resources.assets",
+        "path_id": 12251,
+        "type": "MonoBehaviour",
+        "raw_object_sha256": "81c06c46a5d82c7eb1325f3b742e5ec28cd1808fe79668229d6dc4ac3add06a7"
+      },
+      "output_path": "C:\\Users\\thuam\\Desktop\\projects\\decaying-aftermath\\verification\\cu-survival-0.4.0\\cu-evidence\\saline.png",
+      "output_sha256": "815250571e563e4e0eaed98d81fdb9f4a73302a2dc8a8cb4457704e7b7662ff4",
+      "dimensions": [
+        8,
+        16
+      ],
+      "bytes": 492,
+      "inventory_transform": "Full native base + centered native fill Sprite tinted to explicitly recorded liquid color; full fill, Minecraft inventory adaptation",
+      "mod_item_id": "decaying_aftermath:saline",
+      "destination": "textures/item/saline.png",
+      "destination_sha256": "df159d135ab1f5dddb80e2252b7debc8ed2157e7e734b2bfd3fa535f3010757c",
+      "transformation": "Native Sprite, nearest-neighbour integer scale 1, centred transparent 16x16 canvas"
+    },
+    {
+      "alias": "ice_pack",
+      "native_item_id": "icepack",
+      "resource_id": "icepack",
+      "code_provenance": "Native icepack; Item.cs:1934-1956",
+      "item": {
+        "source_file": "resources.assets",
+        "path_id": 13461,
+        "type": "MonoBehaviour",
+        "raw_object_sha256": "bc1f5e165c1133b70bed0bdf6cd989b94bf8ca83d4a87ee2023af95bbf8e85b0"
+      },
+      "game_object": {
+        "source_file": "resources.assets",
+        "path_id": 5512,
+        "type": "GameObject",
+        "raw_object_sha256": "f9a865244384887a7fb9e90a658b87ff848848daf0aa0bc6773dd00199f51c51",
+        "name": "icepack"
+      },
+      "sprite_renderer": {
+        "source_file": "resources.assets",
+        "path_id": 9115,
+        "type": "SpriteRenderer",
+        "raw_object_sha256": "2bb545fd96fa0c3b770c43be2cd1a2a9d2e4e5959a4d905692c2c308a9ffec33"
+      },
+      "renderer_color": {
+        "r": 1.0,
+        "g": 1.0,
+        "b": 1.0,
+        "a": 1.0
+      },
+      "native_sprite": {
+        "source_file": "resources.assets",
+        "path_id": 2405,
+        "type": "Sprite",
+        "raw_object_sha256": "34cb2450c04b771ab098c99174abd36fd23f0eca2e5b232729571a383f2764d5",
+        "source_name": "icepack",
+        "dimensions": [
+          10,
+          12
+        ],
+        "pivot": [
+          0.5,
+          0.5
+        ],
+        "pixels_to_units": 8.0,
+        "trim_offset": [
+          0.0,
+          0.0
+        ],
+        "destination_xy": [
+          0,
+          0
+        ],
+        "output_path": "C:\\Users\\thuam\\Desktop\\projects\\decaying-aftermath\\verification\\cu-survival-0.4.0\\cu-evidence\\ice_pack_native.png",
+        "output_sha256": "4d4841ffa7cb1a2f96e0d2347541ac297c4b25faec6ab47be8ddf5853715e5df",
+        "bytes": 459,
+        "transform": "Original full Sprite canvas restored from texture crop; no painted replacement pixels"
+      },
+      "native_fill_sprite": null,
+      "water_container": null,
+      "output_path": "C:\\Users\\thuam\\Desktop\\projects\\decaying-aftermath\\verification\\cu-survival-0.4.0\\cu-evidence\\ice_pack.png",
+      "output_sha256": "4d4841ffa7cb1a2f96e0d2347541ac297c4b25faec6ab47be8ddf5853715e5df",
+      "dimensions": [
+        10,
+        12
+      ],
+      "bytes": 459,
+      "inventory_transform": "Full native Sprite",
+      "mod_item_id": "decaying_aftermath:ice_pack",
+      "destination": "textures/item/ice_pack.png",
+      "destination_sha256": "fe3efbe9800ce12aebc8cd927d5b9ff544ac451e3725a182528b5af58d558abc",
+      "transformation": "Native Sprite, nearest-neighbour integer scale 1, centred transparent 16x16 canvas"
+    },
+    {
+      "alias": "chest_drain",
+      "native_item_id": "chestdrain",
+      "resource_id": "chestdrain",
+      "code_provenance": "Native torso-only chestdrain; Item.cs:1910-1932. Gameplay item, not a real procedure instruction.",
+      "item": {
+        "source_file": "resources.assets",
+        "path_id": 14030,
+        "type": "MonoBehaviour",
+        "raw_object_sha256": "4d68cf294c8df94f23e61a82dfe5550641fd7465dbada6bbe5af45e56558100d"
+      },
+      "game_object": {
+        "source_file": "resources.assets",
+        "path_id": 3996,
+        "type": "GameObject",
+        "raw_object_sha256": "3ab2fa83f06e04eaae7051cc4c4b0d8598b765fb5fab80e72714e1f248e9dfb3",
+        "name": "chestdrain"
+      },
+      "sprite_renderer": {
+        "source_file": "resources.assets",
+        "path_id": 10201,
+        "type": "SpriteRenderer",
+        "raw_object_sha256": "ad3bd9afca448a15f48b67642145a482665aab9c78492650c62feecb40fd2079"
+      },
+      "renderer_color": {
+        "r": 1.0,
+        "g": 1.0,
+        "b": 1.0,
+        "a": 1.0
+      },
+      "native_sprite": {
+        "source_file": "resources.assets",
+        "path_id": 3117,
+        "type": "Sprite",
+        "raw_object_sha256": "0f14fc0294fed2770a536952b7eec3396248bc3471143b08298b480369b2915e",
+        "source_name": "chestdrain",
+        "dimensions": [
+          8,
+          12
+        ],
+        "pivot": [
+          0.5,
+          0.5
+        ],
+        "pixels_to_units": 8.0,
+        "trim_offset": [
+          0.0,
+          0.0
+        ],
+        "destination_xy": [
+          0,
+          0
+        ],
+        "output_path": "C:\\Users\\thuam\\Desktop\\projects\\decaying-aftermath\\verification\\cu-survival-0.4.0\\cu-evidence\\chest_drain_native.png",
+        "output_sha256": "607f282ac911377066aa672c30db4913a318673b85500d66ec881d3a5781ad50",
+        "bytes": 374,
+        "transform": "Original full Sprite canvas restored from texture crop; no painted replacement pixels"
+      },
+      "native_fill_sprite": null,
+      "water_container": null,
+      "output_path": "C:\\Users\\thuam\\Desktop\\projects\\decaying-aftermath\\verification\\cu-survival-0.4.0\\cu-evidence\\chest_drain.png",
+      "output_sha256": "607f282ac911377066aa672c30db4913a318673b85500d66ec881d3a5781ad50",
+      "dimensions": [
+        8,
+        12
+      ],
+      "bytes": 374,
+      "inventory_transform": "Full native Sprite",
+      "mod_item_id": "decaying_aftermath:chest_drain",
+      "destination": "textures/item/chest_drain.png",
+      "destination_sha256": "40c4c69ea9b3dd9fce1970e3e806c58791758caad9dbfdf85c828355eb294754",
+      "transformation": "Native Sprite, nearest-neighbour integer scale 1, centred transparent 16x16 canvas"
+    },
+    {
+      "alias": "tweezers",
+      "native_item_id": "tweezers",
+      "resource_id": "tweezers",
+      "code_provenance": "Native tweezers for foreign objects; Item.cs:2000-2019",
+      "item": {
+        "source_file": "resources.assets",
+        "path_id": 12511,
+        "type": "MonoBehaviour",
+        "raw_object_sha256": "5cfbad5f4ff403a2e1cc40da603ea91f5bd00777800df21f1c63fbc5789ade0a"
+      },
+      "game_object": {
+        "source_file": "resources.assets",
+        "path_id": 3546,
+        "type": "GameObject",
+        "raw_object_sha256": "74480da16eeacfe29e8e3e938e0af7d41467e68da12dbee4368eff90bfa420c1",
+        "name": "tweezers"
+      },
+      "sprite_renderer": {
+        "source_file": "resources.assets",
+        "path_id": 9701,
+        "type": "SpriteRenderer",
+        "raw_object_sha256": "7c049eee60a9b27aedee922252345e35d72b18801d7b0066d59e729ce7fbfc3a"
+      },
+      "renderer_color": {
+        "r": 1.0,
+        "g": 1.0,
+        "b": 1.0,
+        "a": 1.0
+      },
+      "native_sprite": {
+        "source_file": "resources.assets",
+        "path_id": 2622,
+        "type": "Sprite",
+        "raw_object_sha256": "a24ede1893a9f7b3c60106602b792766b35bd6413cecb7d6e24e8ca3d5b9cb5f",
+        "source_name": "tweezers",
+        "dimensions": [
+          8,
+          5
+        ],
+        "pivot": [
+          0.5,
+          0.5
+        ],
+        "pixels_to_units": 8.0,
+        "trim_offset": [
+          0.0,
+          0.0
+        ],
+        "destination_xy": [
+          0,
+          0
+        ],
+        "output_path": "C:\\Users\\thuam\\Desktop\\projects\\decaying-aftermath\\verification\\cu-survival-0.4.0\\cu-evidence\\tweezers_native.png",
+        "output_sha256": "df09b04441618def397126404ba76c35644b30e69016066f31c9890df3664a55",
+        "bytes": 128,
+        "transform": "Original full Sprite canvas restored from texture crop; no painted replacement pixels"
+      },
+      "native_fill_sprite": null,
+      "water_container": null,
+      "output_path": "C:\\Users\\thuam\\Desktop\\projects\\decaying-aftermath\\verification\\cu-survival-0.4.0\\cu-evidence\\tweezers.png",
+      "output_sha256": "df09b04441618def397126404ba76c35644b30e69016066f31c9890df3664a55",
+      "dimensions": [
+        8,
+        5
+      ],
+      "bytes": 128,
+      "inventory_transform": "Full native Sprite",
+      "mod_item_id": "decaying_aftermath:tweezers",
+      "destination": "textures/item/tweezers.png",
+      "destination_sha256": "2ae5bd06d75de23bfd4b499c37fd9ef1c05693d5eb23cb9940ca2cbeb6231955",
+      "transformation": "Native Sprite, nearest-neighbour integer scale 2, centred transparent 16x16 canvas"
+    },
+    {
+      "alias": "water_bottle",
+      "native_item_id": "waterbottle",
+      "resource_id": "waterbottle",
+      "code_provenance": "Native clean water bottle; Item.cs:3564-3585; Liquids.cs:157-173",
+      "item": {
+        "source_file": "resources.assets",
+        "path_id": 12021,
+        "type": "MonoBehaviour",
+        "raw_object_sha256": "9e95cde52b8da4a0274fbf6d11e4c636e6bc4d584442a005de91c9c81016a290"
+      },
+      "game_object": {
+        "source_file": "resources.assets",
+        "path_id": 3483,
+        "type": "GameObject",
+        "raw_object_sha256": "b703a31233b61ddedca3445d3e796275ce5c4412030f4e5c17054ebf84430892",
+        "name": "waterbottle"
+      },
+      "sprite_renderer": {
+        "source_file": "resources.assets",
+        "path_id": 9812,
+        "type": "SpriteRenderer",
+        "raw_object_sha256": "1a0325f78733e749aeb6c643be0084c55090e4c765e385cdc615b69f5fe02cb5"
+      },
+      "renderer_color": {
+        "r": 1.0,
+        "g": 1.0,
+        "b": 1.0,
+        "a": 1.0
+      },
+      "native_sprite": {
+        "source_file": "resources.assets",
+        "path_id": 3017,
+        "type": "Sprite",
+        "raw_object_sha256": "8ef3ac4c59ccd0e313a06e2ced3bf1b244051f096e0217ae8763d28218ecf31d",
+        "source_name": "waterbottle",
+        "dimensions": [
+          6,
+          12
+        ],
+        "pivot": [
+          0.5,
+          0.5
+        ],
+        "pixels_to_units": 8.0,
+        "trim_offset": [
+          0.0,
+          0.0
+        ],
+        "destination_xy": [
+          0,
+          0
+        ],
+        "output_path": "C:\\Users\\thuam\\Desktop\\projects\\decaying-aftermath\\verification\\cu-survival-0.4.0\\cu-evidence\\water_bottle_native.png",
+        "output_sha256": "ea7e27fd64e2baad15e3c4a9f09dd03597119c87c8b1cd9fd1a77b5d5ad582a3",
+        "bytes": 355,
+        "transform": "Original full Sprite canvas restored from texture crop; no painted replacement pixels"
+      },
+      "native_fill_sprite": {
+        "source_file": "resources.assets",
+        "path_id": 2410,
+        "type": "Sprite",
+        "raw_object_sha256": "c5b1d055171172c354b5f335c731fd9a77b134b488c37e98945924623b87e807",
+        "source_name": "waterbottleinner",
+        "dimensions": [
+          6,
+          12
+        ],
+        "pivot": [
+          0.5,
+          0.5
+        ],
+        "pixels_to_units": 8.0,
+        "trim_offset": [
+          0.0,
+          0.0
+        ],
+        "destination_xy": [
+          0,
+          0
+        ],
+        "output_path": "C:\\Users\\thuam\\Desktop\\projects\\decaying-aftermath\\verification\\cu-survival-0.4.0\\cu-evidence\\water_bottle_fill_native.png",
+        "output_sha256": "cda5a05628855bd510335d8c7ca1950bc98f019bb41beb8721c11ff3704debe2",
+        "bytes": 215,
+        "transform": "Original full Sprite canvas restored from texture crop; no painted replacement pixels",
+        "liquid_color_rgba": [
+          117,
+          209,
+          255,
+          255
+        ],
+        "composite_destination_xy": [
+          0,
+          0
+        ]
+      },
+      "water_container": {
+        "source_file": "resources.assets",
+        "path_id": 13511,
+        "type": "MonoBehaviour",
+        "raw_object_sha256": "a2fd3a9b78c7a40e48eb2c97606b86d7f3b0b306c58893c7d61ddaa77c883f29"
+      },
+      "output_path": "C:\\Users\\thuam\\Desktop\\projects\\decaying-aftermath\\verification\\cu-survival-0.4.0\\cu-evidence\\water_bottle.png",
+      "output_sha256": "c6b7c8382fb7a7443a6775434dca9fe955ec5c0432c2cf274a6ad63cdb5b3659",
+      "dimensions": [
+        6,
+        12
+      ],
+      "bytes": 360,
+      "inventory_transform": "Full native base + centered native fill Sprite tinted to explicitly recorded liquid color; full fill, Minecraft inventory adaptation",
+      "mod_item_id": "decaying_aftermath:water_bottle",
+      "destination": "textures/item/water_bottle.png",
+      "destination_sha256": "5031b55907374245751daf18ba17d51155ec178d931be99f54fab8410169df90",
+      "transformation": "Native Sprite, nearest-neighbour integer scale 1, centred transparent 16x16 canvas"
+    },
+    {
+      "alias": "coffee",
+      "native_item_id": "coffee",
+      "resource_id": "coffee",
+      "code_provenance": "Native coffee; Item.cs:3771-3792; Liquids.cs:738-759",
+      "item": {
+        "source_file": "resources.assets",
+        "path_id": 11939,
+        "type": "MonoBehaviour",
+        "raw_object_sha256": "a4e5331ce4a4ac8016e2a1c30cee92fdd85682c2b72c539d1428f00b345e493d"
+      },
+      "game_object": {
+        "source_file": "resources.assets",
+        "path_id": 3972,
+        "type": "GameObject",
+        "raw_object_sha256": "24effe1fd02eae50fe97ee5d7f2c2f43a254de4e77d35f081200404e9c9d47b9",
+        "name": "coffee"
+      },
+      "sprite_renderer": {
+        "source_file": "resources.assets",
+        "path_id": 9762,
+        "type": "SpriteRenderer",
+        "raw_object_sha256": "c4ad072a9feea2ed6f21d942de9319211a235202375b0124db9b27a9bf99d079"
+      },
+      "renderer_color": {
+        "r": 1.0,
+        "g": 1.0,
+        "b": 1.0,
+        "a": 1.0
+      },
+      "native_sprite": {
+        "source_file": "resources.assets",
+        "path_id": 2592,
+        "type": "Sprite",
+        "raw_object_sha256": "2115f01e4f37fb61cf15f1658b1fbe23d347caf98df7b3a6b989143c97c430e7",
+        "source_name": "coffee",
+        "dimensions": [
+          6,
+          9
+        ],
+        "pivot": [
+          0.5,
+          0.5
+        ],
+        "pixels_to_units": 8.0,
+        "trim_offset": [
+          0.0,
+          0.0
+        ],
+        "destination_xy": [
+          0,
+          0
+        ],
+        "output_path": "C:\\Users\\thuam\\Desktop\\projects\\decaying-aftermath\\verification\\cu-survival-0.4.0\\cu-evidence\\coffee_native.png",
+        "output_sha256": "a6119a6e69d8606d3686d77cc6d7808b274fb9118f792c4b68fc677183e63016",
+        "bytes": 260,
+        "transform": "Original full Sprite canvas restored from texture crop; no painted replacement pixels"
+      },
+      "native_fill_sprite": null,
+      "water_container": {
+        "source_file": "resources.assets",
+        "path_id": 14165,
+        "type": "MonoBehaviour",
+        "raw_object_sha256": "3a32dac67868cb2afdc93de38e8cc7e42309737a22b9ab5a20127e0df11a5e03"
+      },
+      "output_path": "C:\\Users\\thuam\\Desktop\\projects\\decaying-aftermath\\verification\\cu-survival-0.4.0\\cu-evidence\\coffee.png",
+      "output_sha256": "a6119a6e69d8606d3686d77cc6d7808b274fb9118f792c4b68fc677183e63016",
+      "dimensions": [
+        6,
+        9
+      ],
+      "bytes": 260,
+      "inventory_transform": "Full native Sprite",
+      "mod_item_id": "decaying_aftermath:coffee",
+      "destination": "textures/item/coffee.png",
+      "destination_sha256": "4d7cb54dc9ef7d66ad1b2d5b882b5cb38f8da6c2549d32ede2ebeb075ad265bd",
+      "transformation": "Native Sprite, nearest-neighbour integer scale 1, centred transparent 16x16 canvas"
+    },
+    {
+      "alias": "pemmican",
+      "native_item_id": "pemmican",
+      "resource_id": "pemmican",
+      "code_provenance": "Native pemmican preserved food; Item.cs:3297-3320",
+      "item": {
+        "source_file": "resources.assets",
+        "path_id": 14201,
+        "type": "MonoBehaviour",
+        "raw_object_sha256": "fdd62e725e0620946af9a72508f280b1eb996a7cdb5fcc975ad95f35ae963852"
+      },
+      "game_object": {
+        "source_file": "resources.assets",
+        "path_id": 4340,
+        "type": "GameObject",
+        "raw_object_sha256": "520455ffdbf71ec4b83aabcf75d170a491950d76c5ddb59e18a795d1746c71ea",
+        "name": "pemmican"
+      },
+      "sprite_renderer": {
+        "source_file": "resources.assets",
+        "path_id": 10250,
+        "type": "SpriteRenderer",
+        "raw_object_sha256": "00fd9510aa0e47f2dd95739bd951cca178944f6360547828b83f15aec2f956db"
+      },
+      "renderer_color": {
+        "r": 1.0,
+        "g": 1.0,
+        "b": 1.0,
+        "a": 1.0
+      },
+      "native_sprite": {
+        "source_file": "resources.assets",
+        "path_id": 2475,
+        "type": "Sprite",
+        "raw_object_sha256": "eed258b7b588a9e485ed25174860ff1775502e0bf871e55f8f065693512a84e2",
+        "source_name": "pemmican",
+        "dimensions": [
+          10,
+          8
+        ],
+        "pivot": [
+          0.5,
+          0.5
+        ],
+        "pixels_to_units": 8.0,
+        "trim_offset": [
+          0.0,
+          0.0
+        ],
+        "destination_xy": [
+          0,
+          0
+        ],
+        "output_path": "C:\\Users\\thuam\\Desktop\\projects\\decaying-aftermath\\verification\\cu-survival-0.4.0\\cu-evidence\\pemmican_native.png",
+        "output_sha256": "97bfa602923e5c8c0419093bf6cbbb4be862ced784a495e5894751c059516053",
+        "bytes": 344,
+        "transform": "Original full Sprite canvas restored from texture crop; no painted replacement pixels"
+      },
+      "native_fill_sprite": null,
+      "water_container": null,
+      "output_path": "C:\\Users\\thuam\\Desktop\\projects\\decaying-aftermath\\verification\\cu-survival-0.4.0\\cu-evidence\\pemmican.png",
+      "output_sha256": "97bfa602923e5c8c0419093bf6cbbb4be862ced784a495e5894751c059516053",
+      "dimensions": [
+        10,
+        8
+      ],
+      "bytes": 344,
+      "inventory_transform": "Full native Sprite",
+      "mod_item_id": "decaying_aftermath:pemmican",
+      "destination": "textures/item/pemmican.png",
+      "destination_sha256": "7f047fb0208e3c8fe811c85811cbba2f54cb1f06dd869dd9d16f717aad3edd3b",
+      "transformation": "Native Sprite, nearest-neighbour integer scale 1, centred transparent 16x16 canvas"
+    },
+    {
+      "alias": "backpack",
+      "native_item_id": "bigpack",
+      "resource_id": "bigpack",
+      "code_provenance": "Native bigpack wearable back container; Item.cs:6509-6530; Body.GetTotalEncumberance:2476-2504",
+      "item": {
+        "source_file": "resources.assets",
+        "path_id": 13662,
+        "type": "MonoBehaviour",
+        "raw_object_sha256": "1e14f65013afe1534bdc38eef51e61cb012124416a04b2ba9282f2525fc6b880"
+      },
+      "game_object": {
+        "source_file": "resources.assets",
+        "path_id": 5373,
+        "type": "GameObject",
+        "raw_object_sha256": "7d092fbb3d0eb7567c1d6bc55d598f940e5f018b225edfac3f5a2323bdd56bb9",
+        "name": "bigpack"
+      },
+      "sprite_renderer": {
+        "source_file": "resources.assets",
+        "path_id": 9538,
+        "type": "SpriteRenderer",
+        "raw_object_sha256": "a1801ade13438c1f0a62da486f0778d2c7f60e11c10eb89bdd86746ad0c98f56"
+      },
+      "renderer_color": {
+        "r": 1.0,
+        "g": 1.0,
+        "b": 1.0,
+        "a": 1.0
+      },
+      "native_sprite": {
+        "source_file": "resources.assets",
+        "path_id": 2430,
+        "type": "Sprite",
+        "raw_object_sha256": "3acf2e48cb0bccfd94c1c4ef84e91beecca331b6d7b2c0241eeb3f937a001bb2",
+        "source_name": "bigPack",
+        "dimensions": [
+          24,
+          24
+        ],
+        "pivot": [
+          0.5,
+          0.5
+        ],
+        "pixels_to_units": 8.0,
+        "trim_offset": [
+          0.0,
+          0.0
+        ],
+        "destination_xy": [
+          0,
+          0
+        ],
+        "output_path": "C:\\Users\\thuam\\Desktop\\projects\\decaying-aftermath\\verification\\cu-survival-0.4.0\\cu-evidence\\backpack_native.png",
+        "output_sha256": "0f63b1de7a8833e9682f470e5595caac41b0f0e765fae7af3c0b01d4d96b1fb6",
+        "bytes": 691,
+        "transform": "Original full Sprite canvas restored from texture crop; no painted replacement pixels"
+      },
+      "native_fill_sprite": null,
+      "water_container": null,
+      "output_path": "C:\\Users\\thuam\\Desktop\\projects\\decaying-aftermath\\verification\\cu-survival-0.4.0\\cu-evidence\\backpack.png",
+      "output_sha256": "0f63b1de7a8833e9682f470e5595caac41b0f0e765fae7af3c0b01d4d96b1fb6",
+      "dimensions": [
+        24,
+        24
+      ],
+      "bytes": 691,
+      "inventory_transform": "Full native Sprite",
+      "mod_item_id": "decaying_aftermath:backpack",
+      "destination": "textures/item/backpack.png",
+      "destination_sha256": "9328a25c05a4aff0256c91d41d4992f23fbec77d3c140552e1b65bd6127b32b6",
+      "transformation": "Native Sprite, nearest-neighbour integer scale 1, centred transparent 32x32 canvas"
+    },
+    {
+      "alias": "water_bottle",
+      "native_item_id": "waterbottle",
+      "resource_id": "waterbottle",
+      "code_provenance": "Native clean water bottle; Item.cs:3564-3585; Liquids.cs:157-173",
+      "item": {
+        "source_file": "resources.assets",
+        "path_id": 12021,
+        "type": "MonoBehaviour",
+        "raw_object_sha256": "9e95cde52b8da4a0274fbf6d11e4c636e6bc4d584442a005de91c9c81016a290"
+      },
+      "game_object": {
+        "source_file": "resources.assets",
+        "path_id": 3483,
+        "type": "GameObject",
+        "raw_object_sha256": "b703a31233b61ddedca3445d3e796275ce5c4412030f4e5c17054ebf84430892",
+        "name": "waterbottle"
+      },
+      "sprite_renderer": {
+        "source_file": "resources.assets",
+        "path_id": 9812,
+        "type": "SpriteRenderer",
+        "raw_object_sha256": "1a0325f78733e749aeb6c643be0084c55090e4c765e385cdc615b69f5fe02cb5"
+      },
+      "renderer_color": {
+        "r": 1.0,
+        "g": 1.0,
+        "b": 1.0,
+        "a": 1.0
+      },
+      "native_sprite": {
+        "source_file": "resources.assets",
+        "path_id": 3017,
+        "type": "Sprite",
+        "raw_object_sha256": "8ef3ac4c59ccd0e313a06e2ced3bf1b244051f096e0217ae8763d28218ecf31d",
+        "source_name": "waterbottle",
+        "dimensions": [
+          6,
+          12
+        ],
+        "pivot": [
+          0.5,
+          0.5
+        ],
+        "pixels_to_units": 8.0,
+        "trim_offset": [
+          0.0,
+          0.0
+        ],
+        "destination_xy": [
+          0,
+          0
+        ],
+        "output_path": "C:\\Users\\thuam\\Desktop\\projects\\decaying-aftermath\\verification\\cu-survival-0.4.0\\cu-evidence\\water_bottle_native.png",
+        "output_sha256": "ea7e27fd64e2baad15e3c4a9f09dd03597119c87c8b1cd9fd1a77b5d5ad582a3",
+        "bytes": 355,
+        "transform": "Original full Sprite canvas restored from texture crop; no painted replacement pixels"
+      },
+      "native_fill_sprite": {
+        "source_file": "resources.assets",
+        "path_id": 2410,
+        "type": "Sprite",
+        "raw_object_sha256": "c5b1d055171172c354b5f335c731fd9a77b134b488c37e98945924623b87e807",
+        "source_name": "waterbottleinner",
+        "dimensions": [
+          6,
+          12
+        ],
+        "pivot": [
+          0.5,
+          0.5
+        ],
+        "pixels_to_units": 8.0,
+        "trim_offset": [
+          0.0,
+          0.0
+        ],
+        "destination_xy": [
+          0,
+          0
+        ],
+        "output_path": "C:\\Users\\thuam\\Desktop\\projects\\decaying-aftermath\\verification\\cu-survival-0.4.0\\cu-evidence\\water_bottle_fill_native.png",
+        "output_sha256": "cda5a05628855bd510335d8c7ca1950bc98f019bb41beb8721c11ff3704debe2",
+        "bytes": 215,
+        "transform": "Original full Sprite canvas restored from texture crop; no painted replacement pixels",
+        "liquid_color_rgba": [
+          117,
+          209,
+          255,
+          255
+        ],
+        "composite_destination_xy": [
+          0,
+          0
+        ]
+      },
+      "water_container": {
+        "source_file": "resources.assets",
+        "path_id": 13511,
+        "type": "MonoBehaviour",
+        "raw_object_sha256": "a2fd3a9b78c7a40e48eb2c97606b86d7f3b0b306c58893c7d61ddaa77c883f29"
+      },
+      "output_path": "C:\\Users\\thuam\\Desktop\\projects\\decaying-aftermath\\verification\\cu-survival-0.4.0\\cu-evidence\\water_bottle.png",
+      "output_sha256": "c6b7c8382fb7a7443a6775434dca9fe955ec5c0432c2cf274a6ad63cdb5b3659",
+      "dimensions": [
+        6,
+        12
+      ],
+      "bytes": 360,
+      "inventory_transform": "Full native base + centered native fill Sprite tinted to explicitly recorded liquid color; full fill, Minecraft inventory adaptation",
+      "mod_item_id": "decaying_aftermath:dirty_water_bottle",
+      "destination": "textures/item/dirty_water_bottle.png",
+      "destination_sha256": "4e015b66b811ed6770dc04cf37ebf40d0d51b44dbefbb7344e238d480d57921f",
+      "transformation": "Native Sprite, nearest-neighbour integer scale 1, centred transparent 16x16 canvas; documented dirty-water colour variant, alpha unchanged"
+    }
+  ],
+  "adaptation": "CU survival/medical assets; native Minecraft items and adapted physiology, not an identical port. Last Standing unchanged by explicit user exception.",
+  "public_distribution": "Permission to use/modify supplied by the user. Rights remain with original owners; public redistribution not authorised by this file."
+}
