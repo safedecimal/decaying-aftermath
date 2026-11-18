@@ -98,5 +98,10 @@
   "decaying_aftermath.device.remove_tourniquet": "Снять жгут",
   "decaying_aftermath.device.remove_splint": "Снять шину",
   "decaying_aftermath.status.remove_splint": " / шина: снять кнопкой справа",
-  "decaying_aftermath.report.splint_removed": "Шина снята: %s."
+  "decaying_aftermath.report.splint_removed": "Шина снята: %s.",
+  "decaying_aftermath.recovery.wake_in": "Пробуждение: %s с",
+  "decaying_aftermath.recovery.blood": "Кровопотеря — нужна помощь",
+  "decaying_aftermath.recovery.oxygen": "Недостаток кислорода",
+  "decaying_aftermath.recovery.injury": "Тяжёлая травма",
+  "decaying_aftermath.recovery.consciousness": "Угнетение сознания"
 }

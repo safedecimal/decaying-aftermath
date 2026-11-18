@@ -143,6 +143,18 @@ class MedicalMonitorRevisionTest {
         var legacy=SurvivalPersistence.load(input(Map.of("version",3)),new BodyModel().saveState()).survivalState().snapshot();
         assertEquals(75,legacy.bodyMassKg());assertEquals(0,legacy.radiationGy());assertEquals(0,legacy.bloodLostLiters());
     }
+    @Test void nativeSaveLoadPreservesWakeHysteresisAndOldSavesDefaultToArmed() {
+        var model=new BodyModel();var saved=model.saveState();
+        var recovered=new BodyModel.SavedState(saved.snapshot(),saved.careTicks(),saved.regenerationTicks(),
+                saved.tourniquetTicks(),saved.lastStandingSpent(),saved.stableTicks(),saved.lastStandingTicks(),
+                saved.lastStandingBoostTicks(),saved.dyingTicks(),saved.disinfectionTicks(),saved.anestheticTicks(),
+                saved.infectionAgeTicks(),saved.skinHealAmount(),saved.bandageSlowAmount(),saved.rawLocalPain(),
+                saved.wounds(),saved.survivalState(),true);
+        var data=new HashMap<String,Object>();data.put("version",3);SurvivalPersistence.save(output(data),recovered);
+        assertEquals(true,data.get("faint_recovered"));
+        assertTrue(SurvivalPersistence.load(input(data),saved).faintRecovered());
+        assertFalse(SurvivalPersistence.load(input(Map.of("version",3)),saved).faintRecovered());
+    }
     @Test void unnecessaryProceduresAreAcceptedAndWrongPlacementWastesWithoutBenefit() {
         for(var part:BodyPart.values())for(var kind:TreatmentKind.values()) {
             var b=new BodyModel();assertTrue(b.canTreat(part,kind));

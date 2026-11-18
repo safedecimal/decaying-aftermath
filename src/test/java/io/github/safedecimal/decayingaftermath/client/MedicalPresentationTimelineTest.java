@@ -6,14 +6,18 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 class MedicalPresentationTimelineTest {
-    @Test void blackoutThenOriginalSleepFillAndEcgFadeTogether() {
+    @Test void recoveryCircleAppearsPromptlyInsteadOfWaitingForFullBlackout() {
         var timeline = new MedicalPresentationTimeline();
-        timeline.advance(Mode.UNCONSCIOUS,.5);
-        assertEquals(.965,timeline.black(),1e-9); assertEquals(0,timeline.circleAlpha());
-        timeline.advance(Mode.UNCONSCIOUS,.5); assertEquals(0,timeline.circleAlpha());
-        timeline.advance(Mode.UNCONSCIOUS,1); assertTrue(timeline.circleAlpha()>0);
-        timeline.advance(Mode.UNCONSCIOUS,3); assertEquals(1,timeline.circleAlpha());
+        timeline.advance(Mode.UNCONSCIOUS,.05); assertEquals(.2,timeline.circleAlpha(),1e-9);
+        timeline.advance(Mode.UNCONSCIOUS,.2); assertEquals(1,timeline.circleAlpha());
+        timeline.advance(Mode.UNCONSCIOUS,.25); assertEquals(.965,timeline.black(),1e-9);
         timeline.advance(Mode.CONSCIOUS,5); assertEquals(0,timeline.black());assertEquals(0,timeline.circleAlpha());
+    }
+    @Test void zeroTimeAndSwitchingToDyingOrDeadNeverLeaveARecoveryCircle() {
+        var timeline = new MedicalPresentationTimeline();timeline.advance(Mode.UNCONSCIOUS,0);
+        assertEquals(0,timeline.circleAlpha());timeline.advance(Mode.UNCONSCIOUS,1);
+        timeline.advance(Mode.DYING,.05);assertEquals(0,timeline.circleAlpha());
+        timeline.advance(Mode.UNCONSCIOUS,1);timeline.advance(Mode.DEAD,.05);assertEquals(0,timeline.circleAlpha());
     }
     @Test void originalLastStandHasTwoBlackSecondsThenDelayedDroneAndEightFpsFrames() {
         var timeline = new MedicalPresentationTimeline();timeline.beginLastStand();

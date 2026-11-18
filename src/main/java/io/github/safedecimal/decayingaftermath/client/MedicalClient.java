@@ -207,13 +207,15 @@ public final class MedicalClient {
             blit(graphics, "consciousness_vignette", 0, 0, graphics.guiWidth(), graphics.guiHeight(),
                     256, 256, color(TIMELINE.vignette(), 0xFFFFFF));
         }
-        double alpha = TIMELINE.circleAlpha();
+        double alpha = body.mode() == BodySnapshot.Mode.UNCONSCIOUS ? Math.max(.35, TIMELINE.circleAlpha()) : TIMELINE.circleAlpha();
         if (alpha > 0) {
             var box = ConsciousnessLayout.at(graphics.guiWidth(), graphics.guiHeight());
-            // sleepFill references sleepcircle (149x149), Image.Type.Filled, Radial360, Top, clockwise.
-            // There is no separate solid green Circle image beneath it in the CU scene.
-            radialTexture(graphics, "unconscious_ring", box.x(), box.y(), box.diameter(),
-                    149, body.consciousnessProgress(), color(alpha, 0xFFFFFF));
+            extractRecoveryRing(graphics, box, body, alpha);
+            if (body.mode() == BodySnapshot.Mode.UNCONSCIOUS)
+                graphics.centeredText(client.font, net.minecraft.network.chat.Component.translatable(
+                        io.github.safedecimal.decayingaftermath.medical.WakeRecovery.labelKey(body),
+                        io.github.safedecimal.decayingaftermath.medical.WakeRecovery.remainingSeconds(body)),
+                        box.textX(), box.y() + box.diameter() + 6, color(alpha, 0xFFFFFF));
             // Preserve the user's inventory-only pulse requirement; blackout/recovery ring remains on HUD.
             if (isInventoryOpen(client) && body.mode() == BodySnapshot.Mode.UNCONSCIOUS) {
                 for (int column = 0; column < CONSCIOUSNESS_ECG.width(); column++) {
@@ -248,6 +250,14 @@ public final class MedicalClient {
         // Keep the medical readouts legible above the edge-darkening during the rescue window.
         if(body.mode()==BodySnapshot.Mode.DYING&&isMedicalPanelOpen(client))
             MedicalPanelRenderer.extract(graphics,MedicalPanelLayout.forScreen(graphics.guiWidth(),graphics.guiHeight()));
+    }
+
+    static void extractRecoveryRing(GuiGraphicsExtractor graphics, ConsciousnessLayout box, BodySnapshot body, double alpha) {
+        // A full dim track remains visible even when progress is zero or recovery is paused.
+        blit(graphics, "unconscious_ring", box.x(), box.y(), box.diameter(), box.diameter(),
+                149, 149, color(alpha * .35, 0xFFFFFF));
+        radialTexture(graphics, "unconscious_ring", box.x(), box.y(), box.diameter(),
+                149, body.consciousnessProgress(), color(alpha, 0xFFFFFF));
     }
 
     private static int color(double alpha, int rgb) {

@@ -8,6 +8,7 @@ import net.minecraft.world.level.storage.ValueOutput;
 public final class SurvivalPersistence {
     private SurvivalPersistence(){ }
     public static void save(ValueOutput node,BodyModel.SavedState state) {
+        node.putBoolean("faint_recovered",state.faintRecovered());
         var s=state.survivalState();var v=s.snapshot();ValueOutput out=node.child("survival");
         out.putFloat("hydration",v.hydration());out.putFloat("nutrition",v.nutrition());out.putFloat("temperature",v.temperature());
         out.putFloat("fatigue",v.fatigue());out.putFloat("toxin",v.toxin());out.putFloat("plasma",v.plasma());out.putFloat("red_cells",v.redCells());
@@ -55,7 +56,7 @@ public final class SurvivalPersistence {
         return new BodyModel.SavedState(legacy.snapshot(),legacy.careTicks(),legacy.regenerationTicks(),legacy.tourniquetTicks(),
                 legacy.lastStandingSpent(),legacy.stableTicks(),legacy.lastStandingTicks(),legacy.lastStandingBoostTicks(),
                 legacy.dyingTicks(),legacy.disinfectionTicks(),legacy.anestheticTicks(),legacy.infectionAgeTicks(),
-                legacy.skinHealAmount(),legacy.bandageSlowAmount(),legacy.rawLocalPain(),wounds,survival);
+                legacy.skinHealAmount(),legacy.bandageSlowAmount(),legacy.rawLocalPain(),wounds,survival,node.getBooleanOr("faint_recovered",false));
     }
     private static float number(ValueInput node,String key,float fallback,float minimum,float maximum) {
         float v=node.getFloatOr(key,fallback);return Float.isFinite(v)?Math.clamp(v,minimum,maximum):fallback;

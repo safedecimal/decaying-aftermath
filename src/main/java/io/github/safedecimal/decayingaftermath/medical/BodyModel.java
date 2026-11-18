@@ -16,7 +16,7 @@ public final class BodyModel {
     public static final int LAST_STANDING_TICKS = 20 * 12;
     public static final int LAST_STANDING_BOOST_TICKS = 20 * 300;
     public static final int DYING_TICKS = 20 * 60;
-    public static final int WAKE_UP_TICKS = 20 * 10;
+    public static final int WAKE_UP_TICKS = 20 * 6;
     public static final int BONE_HEAL_TICKS = 20 * 60 * 8; // Deliberately compressed game recovery time.
     private static final int PARTS = BodyPart.values().length;
     private final float[] integrity = new float[PARTS];
@@ -47,7 +47,7 @@ public final class BodyModel {
     private Mode mode = Mode.CONSCIOUS;
     private int lastStandingTicks, wakeTicks, stableTicks;
     private int lastStandingBoostTicks, dyingTicks = -1;
-    private boolean lastStandingSpent;
+    private boolean lastStandingSpent, faintRecovered;
 
     public BodyModel() { reset(); }
 
@@ -65,7 +65,7 @@ public final class BodyModel {
         lungCollapse=0; chestDrain=false; survival=new SurvivalModel();
         blood = oxygen = energy = 1; drug = 0; bpm = 72; mode = Mode.CONSCIOUS;
         lastStandingTicks = wakeTicks = stableTicks = 0; lastStandingSpent = false;
-        lastStandingBoostTicks = 0; dyingTicks = -1;
+        lastStandingBoostTicks = 0; dyingTicks = -1; faintRecovered = false;
     }
 
     /** Input is already mitigated vanilla damage units, not normalized tissue damage. */
@@ -100,6 +100,7 @@ public final class BodyModel {
         if (kind.fractures && part.isLimb() && (amount >= 8 || amount >= 4 && integrity[i] <= .45f)) {
             fractured[i] = true; boneHealing[i]=0;
         }
+        faintRecovered = false; // A new injury may cause a new faint, unlike an unchanged wound.
         evaluateAndAlign(false);
     }
 
@@ -387,7 +388,7 @@ public final class BodyModel {
                 lastStandingSpent, stableTicks, lastStandingTicks, lastStandingBoostTicks, dyingTicks,
                 disinfectionTicks, anestheticTicks, infectionAgeTicks, skinHealAmount, bandageSlowAmount, localPain,
                 new WoundState(burns,internalBleeding,openWounds,foreignBodies,boneHealing,coolingTicks,lungCollapse,chestDrain,suppressedBleeding,coldInjuries),
-                survival.save(totalInternalBleeding(),1-lungCollapse));
+                survival.save(totalInternalBleeding(),1-lungCollapse), faintRecovered);
     }
 
     public static BodyModel restoreState(SavedState state) {
@@ -397,6 +398,7 @@ public final class BodyModel {
         copyTimers(state.regenerationTicks(), model.regenerationTicks);
         copyTimers(state.tourniquetTicks(), model.tourniquetTicks);
         model.lastStandingSpent = state.lastStandingSpent();
+        model.faintRecovered = state.faintRecovered();
         model.stableTicks = Math.clamp(state.stableTicks(), 0, 1200);
         model.lastStandingTicks = Math.clamp(state.lastStandingTicks(), 0, LAST_STANDING_TICKS);
         model.lastStandingBoostTicks = Math.clamp(state.lastStandingBoostTicks(), 0, LAST_STANDING_BOOST_TICKS);
@@ -424,7 +426,16 @@ public final class BodyModel {
             int[] tourniquetTicks, boolean lastStandingSpent, int stableTicks, int lastStandingTicks,
             int lastStandingBoostTicks, int dyingTicks, int[] disinfectionTicks, int[] anestheticTicks,
             int[] infectionAgeTicks, float[] skinHealAmount, float[] bandageSlowAmount, float[] rawLocalPain,
-            WoundState wounds,SurvivalModel.SavedState survivalState) {
+            WoundState wounds,SurvivalModel.SavedState survivalState, boolean faintRecovered) {
+        public SavedState(BodySnapshot snapshot, int[] careTicks, int[] regenerationTicks,
+                int[] tourniquetTicks, boolean lastStandingSpent, int stableTicks, int lastStandingTicks,
+                int lastStandingBoostTicks, int dyingTicks, int[] disinfectionTicks, int[] anestheticTicks,
+                int[] infectionAgeTicks, float[] skinHealAmount, float[] bandageSlowAmount, float[] rawLocalPain,
+                WoundState wounds, SurvivalModel.SavedState survivalState) {
+            this(snapshot, careTicks, regenerationTicks, tourniquetTicks, lastStandingSpent, stableTicks,
+                    lastStandingTicks, lastStandingBoostTicks, dyingTicks, disinfectionTicks, anestheticTicks,
+                    infectionAgeTicks, skinHealAmount, bandageSlowAmount, rawLocalPain, wounds, survivalState, false);
+        }
         public SavedState(BodySnapshot snapshot, int[] careTicks, int[] regenerationTicks,
                 int[] tourniquetTicks, boolean lastStandingSpent, int stableTicks, int lastStandingTicks,
                 int lastStandingBoostTicks,int dyingTicks,int[] disinfectionTicks,int[] anestheticTicks,
@@ -516,10 +527,16 @@ public final class BodyModel {
         }
         boolean faint = vitalIntegrity() <= .22f || blood <= .45f || oxygen <= .45f
                 || effectivePain() >= .85f || consciousness() <= .15f;
-        if (faint) {
+        boolean blocked = WakeRecovery.blocker(vitalIntegrity(), blood, oxygen, consciousness()) != WakeRecovery.Blocker.NONE;
+        if (!faint) faintRecovered = false; // Rearm only after the original trigger clears (hysteresis).
+        if (mode == Mode.UNCONSCIOUS) {
+            // Persistent pain/tissue damage no longer erase progress every tick. Unsafe physiology
+            // pauses the countdown instead; critical Last Standing / dying handling above is unchanged.
+            if (!blocked && elapsedTick && ++wakeTicks >= WAKE_UP_TICKS) {
+                mode = Mode.CONSCIOUS; wakeTicks = 0; faintRecovered = true;
+            }
+        } else if (faint && (!faintRecovered || blocked)) {
             mode = Mode.UNCONSCIOUS; wakeTicks = stableTicks = 0;
-        } else if (mode == Mode.UNCONSCIOUS) {
-            if (elapsedTick && ++wakeTicks >= WAKE_UP_TICKS) { mode = Mode.CONSCIOUS; wakeTicks = 0; }
         }
         if (elapsedTick && mode == Mode.CONSCIOUS && blood >= .7f && oxygen >= .7f && vitalIntegrity() >= .6f) {
             stableTicks = Math.min(1200, stableTicks + 1);

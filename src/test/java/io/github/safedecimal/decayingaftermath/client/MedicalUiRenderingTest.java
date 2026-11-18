@@ -83,6 +83,35 @@ class MedicalUiRenderingTest {
         return result;
     }
 
+    private BodySnapshot recovering(float progress, float blood) {
+        var parts=new BodySnapshot.PartSnapshot[6];
+        java.util.Arrays.fill(parts,new BodySnapshot.PartSnapshot(1,0,0,false,false,false,false));
+        return new BodySnapshot(.3f,blood,1,0,0,80,BodySnapshot.Mode.UNCONSCIOUS,progress,1,1,parts);
+    }
+    @Test void zeroProgressAndPausedRecoveryStillRenderACompleteVisibleRing() throws Exception {
+        for(float blood:new float[]{1,.25f}) {
+            var graphics=Graphics.create(640,420);var box=ConsciousnessLayout.at(640,420);
+            MedicalClient.extractRecoveryRing(graphics,box,recovering(0,blood),.35);
+            assertEquals(1,graphics.blits.size());var ring=graphics.blits.getFirst();
+            assertTrue((ring.color()>>>24)>0);assertTrue(ring.id().toString().endsWith("unconscious_ring.png"));
+            assertEquals(box.diameter(),ring.width());assertEquals(box.diameter(),ring.height());
+            assertEquals(149,ring.sourceWidth());assertEquals(149,ring.sourceHeight());
+        }
+    }
+    @Test void recoveryFillRendersAboveDimRingWithoutClippingAtCommonGuiScales() throws Exception {
+        for(int height:new int[]{180,240,420,1080}) {
+            int width=height*16/9;var graphics=Graphics.create(width,height);var box=ConsciousnessLayout.at(width,height);
+            MedicalClient.extractRecoveryRing(graphics,box,recovering(.5f,1),1);
+            assertTrue(graphics.blits.size()>1);var base=graphics.blits.getFirst();
+            assertTrue(graphics.blits.getLast().color()>>>24 > base.color()>>>24);
+            for(var ring:graphics.blits) {
+                assertTrue(ring.x()>=0);assertTrue(ring.y()>=0);
+                assertTrue(ring.x()+ring.width()<=width);assertTrue(ring.y()+ring.height()<=height);
+            }
+            assertTrue(box.y()+box.diameter()+6+9<height,"Countdown below the ring stays on screen");
+        }
+    }
+
     @Test void nativeScissorAppliesCanvasTransformOnlyOnce() throws Exception {
         var graphics = Graphics.create(640, 420);
         graphics.pose().translate(192, 82).scale(.5f, .5f);

@@ -98,5 +98,10 @@
   "decaying_aftermath.device.remove_tourniquet": "Remove tourniquet",
   "decaying_aftermath.device.remove_splint": "Remove splint",
   "decaying_aftermath.status.remove_splint": " / splint: remove with the right-side button",
-  "decaying_aftermath.report.splint_removed": "Splint removed: %s."
+  "decaying_aftermath.report.splint_removed": "Splint removed: %s.",
+  "decaying_aftermath.recovery.wake_in": "Wake up: %s s",
+  "decaying_aftermath.recovery.blood": "Blood loss — help needed",
+  "decaying_aftermath.recovery.oxygen": "Low oxygen",
+  "decaying_aftermath.recovery.injury": "Severe injury",
+  "decaying_aftermath.recovery.consciousness": "Suppressed consciousness"
 }
