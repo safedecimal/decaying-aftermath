@@ -23,7 +23,7 @@ import net.minecraft.world.item.crafting.display.RecipeDisplay;
 /** Real InventoryMenu slots around a front-view cubic Minecraft player using their skin. */
 public final class MedicalInventoryScreen extends AbstractContainerScreen<InventoryMenu> implements RecipeUpdateListener {
     private static final int CANVAS_W=MedicalInventoryLayout.WIDTH, CANVAS_H=MedicalInventoryLayout.HEIGHT;
-    private final int[][] originalPositions;
+    private int[][] originalPositions;
     private final CraftingRecipeBookComponent recipeBook;
     private float scale=1;
     private int originX,originY;
@@ -37,16 +37,19 @@ public final class MedicalInventoryScreen extends AbstractContainerScreen<Invent
 
     public MedicalInventoryScreen(Player player) {
         super(player.inventoryMenu,player.getInventory(),Component.translatable("decaying_aftermath.inventory.title"),CANVAS_W,CANVAS_H);
-        originalPositions=new int[menu.slots.size()][2];
-        for(int i=0;i<menu.slots.size();i++) {
-            originalPositions[i][0]=menu.slots.get(i).x;
-            originalPositions[i][1]=menu.slots.get(i).y;
-        }
         recipeBook=new CraftingRecipeBookComponent(menu);
     }
 
     @Override protected void init() {
         super.init(); leftPos=topPos=0;
+        // The outgoing screen has restored the shared menu by now. Don't recapture on resize.
+        if(originalPositions==null) {
+            originalPositions=new int[menu.slots.size()][2];
+            for(int i=0;i<menu.slots.size();i++) {
+                originalPositions[i][0]=menu.slots.get(i).x;
+                originalPositions[i][1]=menu.slots.get(i).y;
+            }
+        }
         var panel=MedicalPanelLayout.forScreen(width,height);
         originX=Math.min(panel.x()+panel.width()+MedicalPanelLayout.GAP,Math.max(0,width-80));
         scale=Math.min(1f,Math.min((width-originX-4f)/CANVAS_W,(height-8f)/CANVAS_H));
@@ -283,7 +286,8 @@ public final class MedicalInventoryScreen extends AbstractContainerScreen<Invent
     @Override public void fillGhostRecipe(RecipeDisplay display) {recipeBook.fillGhostRecipe(display);}
     @Override public void removed() {
         clearMedicalCarry();consumeMedicalRelease=false;
-        for(int i=0;i<originalPositions.length;i++) position(i,originalPositions[i][0],originalPositions[i][1]);
+        if(originalPositions!=null)
+            for(int i=0;i<originalPositions.length;i++) position(i,originalPositions[i][0],originalPositions[i][1]);
         super.removed();
     }
 }

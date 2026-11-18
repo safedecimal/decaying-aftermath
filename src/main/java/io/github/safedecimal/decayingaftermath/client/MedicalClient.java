@@ -4,7 +4,6 @@ import io.github.safedecimal.decayingaftermath.DecayingAftermath;
 import io.github.safedecimal.decayingaftermath.medical.BodySnapshot;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
-import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -43,15 +42,6 @@ public final class MedicalClient {
         registered = true;
         ClientTickEvents.END_CLIENT_TICK.register(client -> tick(client));
         ClientPlayConnectionEvents.DISCONNECT.register((handler,client)->clearPresentation());
-        ScreenEvents.AFTER_INIT.register((client, screen, width, height) -> {
-            if (screen.getClass() == InventoryScreen.class && client.player != null
-                    && !client.player.hasInfiniteMaterials()) {
-                client.execute(() -> {
-                    if (client.gui.screen() == screen && client.player != null)
-                        client.gui.setScreen(new MedicalInventoryScreen(client.player));
-                });
-            }
-        });
         HudElementRegistry.addLast(id("medical_condition"), (graphics, delta) -> {
             Object screen=Minecraft.getInstance().gui.screen();
             // These two screens explicitly extract after their own contents; never composite twice.

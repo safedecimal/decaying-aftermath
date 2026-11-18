@@ -3,6 +3,6 @@
   "minVersion": "0.8",
   "package": "io.github.safedecimal.decayingaftermath.client.mixin",
   "compatibilityLevel": "JAVA_25",
-  "client": ["ConditionHeartsMixin", "InventoryMedicalPanelMixin", "GuiItemSupplyMixin", "RecipeBookScreenAccessor", "ContainerScreenAccessor", "SlotPositionAccessor", "SoundEngineMixin", "SoundEngineAccessor", "SoundManagerAccessor", "MusicManagerMixin", "UnconsciousHintsMixin", "UnconsciousToastMixin"],
+  "client": ["ConditionHeartsMixin", "MedicalInventoryOpenMixin", "InventoryMedicalPanelMixin", "GuiItemSupplyMixin", "RecipeBookScreenAccessor", "ContainerScreenAccessor", "SlotPositionAccessor", "SoundEngineMixin", "SoundEngineAccessor", "SoundManagerAccessor", "MusicManagerMixin", "UnconsciousHintsMixin", "UnconsciousToastMixin"],
   "injectors": { "defaultRequire": 1 }
 }
