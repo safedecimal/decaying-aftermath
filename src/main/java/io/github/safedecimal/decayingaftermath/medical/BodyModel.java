@@ -88,7 +88,7 @@ public final class BodyModel {
             if (burns[i]>.3f) openWounds[i]=true;
         }
         if(kind==DamageKind.FROSTBITE){coldInjuries[i]=true;if(integrity[i]<.45f)openWounds[i]=true;}
-        if ((kind==DamageKind.BLUNT || kind==DamageKind.EXPLOSION) && amount>6)
+        if ((kind==DamageKind.BLUNT || kind==DamageKind.EXPLOSION || kind==DamageKind.FALL_IMPACT) && amount>6)
             internalBleeding[i]=unit(internalBleeding[i]+(amount-6)*.006f);
         if (kind==DamageKind.PUNCTURE && amount>=4) {
             foreignBodies[i]=true;
@@ -105,9 +105,7 @@ public final class BodyModel {
 
     public void fall(float amount) {
         if (!Float.isFinite(amount) || amount <= 0 || mode == Mode.DEAD) return;
-        damage(BodyPart.LEFT_LEG, amount * .5f,DamageKind.BLUNT);
-        damage(BodyPart.RIGHT_LEG, amount * .5f,DamageKind.BLUNT);
-        if (amount > 14) damage(BodyPart.TORSO, (amount - 14) * .2f,DamageKind.BLUNT);
+        for(var hit:FallTrauma.hits(amount))if(hit.amount()>0)damage(hit.part(),hit.amount(),hit.kind());
     }
     public void projectile(BodyPart part,float amount,boolean embedded) {
         boolean existing=foreignBodies[Objects.requireNonNull(part).ordinal()];
@@ -517,7 +515,7 @@ public final class BodyModel {
             return;
         }
         boolean faint = vitalIntegrity() <= .22f || blood <= .45f || oxygen <= .45f
-                || effectivePain() >= .85f || energy <= .06f || consciousness() <= .15f;
+                || effectivePain() >= .85f || consciousness() <= .15f;
         if (faint) {
             mode = Mode.UNCONSCIOUS; wakeTicks = stableTicks = 0;
         } else if (mode == Mode.UNCONSCIOUS) {
@@ -549,7 +547,7 @@ public final class BodyModel {
     private float consciousness() {
         if (mode == Mode.DEAD) return 0;
         float reserves = Math.min(Math.min(unit(oxygen / .8f), unit(blood / .6f)), unit(vitalIntegrity() / .35f));
-        return unit(reserves * (.25f + .75f * energy) * (1 - effectivePain() * .35f)
+        return unit(reserves * (1 - effectivePain() * .35f)
                 * (1 - Math.min(1, survival.effectiveOpiate(drug)) * .45f) * (1 - sepsis() * .4f)
                 * Math.max(.1f,survival.oxygenDelivery(1-lungCollapse))*(1-survival.systemicStress()*.45f));
     }
@@ -561,7 +559,7 @@ public final class BodyModel {
     }
     private void evaluateAndAlign(boolean elapsedTick) { evaluate(elapsedTick); reconcileBlood(); }
     private void reconcileBlood() {
-        // evaluate and restoreLastStandingReserves are intentionally byte-for-byte preserved.
+        // Last Standing selection and reserve restoration are unchanged.
         // Only their supernatural volume jump may restore both blood components instantly.
         if(Math.abs(blood-survival.bloodVolume())>.00001f) survival.restoreLastStandingBlood(blood);
     }

@@ -29,17 +29,15 @@ class BodyModelTest {
             assertEquals(1, model.snapshot().part(part).integrity());
     }
 
-    @Test void HeavyFallPrioritizesBothLegsAndDoesNotHitTheHeadOrArms() {
-        BodyModel model = new BodyModel();
-        model.fall(20);
-        assertEquals(.7, model.snapshot().part(LEFT_LEG).integrity(), .0001);
-        assertEquals(.7, model.snapshot().part(RIGHT_LEG).integrity(), .0001);
-        assertTrue(model.snapshot().part(LEFT_LEG).fractured());
-        assertTrue(model.snapshot().part(RIGHT_LEG).fractured());
-        assertEquals(1, model.snapshot().part(HEAD).integrity());
-        assertEquals(1, model.snapshot().part(LEFT_ARM).integrity());
-        assertEquals(1, model.snapshot().part(RIGHT_ARM).integrity());
-        assertTrue(model.snapshot().part(TORSO).integrity() < 1);
+    @Test void heavyFallPrioritizesLegsButAlsoHitsTheRestOfTheBody() {
+        BodyModel model=new BodyModel();model.fall(20);var b=model.snapshot();
+        assertEquals(.745f,b.part(LEFT_LEG).integrity(),.0001f);
+        assertEquals(.745f,b.part(RIGHT_LEG).integrity(),.0001f);
+        assertTrue(b.part(LEFT_LEG).fractured());assertTrue(b.part(RIGHT_LEG).fractured());
+        assertTrue(b.part(LEFT_LEG).bleeding()>0);assertTrue(b.part(RIGHT_LEG).bleeding()>0);
+        assertTrue(b.part(HEAD).integrity()<1);assertTrue(b.part(TORSO).integrity()<1);
+        assertTrue(b.part(LEFT_ARM).integrity()<1);assertTrue(b.part(RIGHT_ARM).integrity()<1);
+        assertTrue(b.part(LEFT_ARM).integrity()>b.part(TORSO).integrity());
     }
 
     @Test void untreatedTissueDoesNotNaturallyRegenerate() {

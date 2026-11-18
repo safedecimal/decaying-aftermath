@@ -97,12 +97,12 @@ class BodyVitalsTest {
         assertEquals(1,body.snapshot().part(TORSO).integrity());
     }
 
-    @Test void consciousnessDependsOnOxygenPainSedationAndEnergy() {
+    @Test void consciousnessDependsOnOxygenPainAndSedationNotRunningEnergy() {
         BodyModel rested=new BodyModel(),hypoxic=new BodyModel(),tired=new BodyModel(),sedated=new BodyModel();
         hypoxic.reduceOxygen(.4f);for(int i=0;i<600;i++)tired.tick(true,true);
         sedated.treat(LEFT_ARM,FENTANYL,1);
         assertTrue(hypoxic.snapshot().consciousness()<rested.snapshot().consciousness());
-        assertTrue(tired.snapshot().consciousness()<rested.snapshot().consciousness());
+        assertEquals(rested.snapshot().consciousness(),tired.snapshot().consciousness());
         assertTrue(sedated.snapshot().consciousness()<rested.snapshot().consciousness());
         rested.damage(LEFT_ARM,8);assertTrue(rested.snapshot().consciousness()<1);
     }

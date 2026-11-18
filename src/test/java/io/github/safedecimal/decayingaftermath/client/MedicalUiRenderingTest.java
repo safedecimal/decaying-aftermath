@@ -150,9 +150,22 @@ class MedicalUiRenderingTest {
             painter.drawImage(crop,b.x(),b.y(),b.width(),b.height(),null);
         }
         painter.dispose();
-        var path=java.nio.file.Path.of(System.getProperty("user.dir"),"verification","medical-complete-0.4.5","PANEL_PREVIEW.png");
+        var path=java.nio.file.Path.of(System.getProperty("user.dir"),"verification","external-fall-0.4.6","PANEL_PREVIEW.png");
         java.nio.file.Files.createDirectories(path.getParent());ImageIO.write(canvas,"PNG",path.toFile());
         assertEquals(266,ImageIO.read(path.toFile()).getWidth());
+    }
+
+    @Test void externalBleedBadgeIsExtractedOnMonitorAndOnBodyWithContrast() throws Exception {
+        var model=new io.github.safedecimal.decayingaftermath.medical.BodyModel();model.fall(40);var body=model.snapshot();
+        var g=Graphics.create(266,392);g.pose().scale(2,2);MedicalPanelRenderer.extractReadouts(g,body);
+        var external=g.blits.stream().filter(b->b.id().toString().contains("/status/bleeding_")).toList();
+        assertEquals(1,external.size());assertEquals(0xFFFF5555,external.get(0).color());
+        assertTrue(external.get(0).width()>0&&external.get(0).height()>0);
+        var limb=Graphics.create(260,250);
+        MedicalStatusIcons.body(limb,body.part(io.github.safedecimal.decayingaftermath.medical.BodyPart.LEFT_LEG),
+                MinecraftBodyLayout.box(io.github.safedecimal.decayingaftermath.medical.BodyPart.LEFT_LEG,false));
+        assertTrue(limb.fills.stream().anyMatch(f->f.col1()==0xFF210909&&f.bounds()!=null));
+        assertTrue(limb.blits.stream().filter(b->b.id().toString().contains("/bleeding_")).allMatch(b->((b.color()>>>16)&255)>=192));
     }
 
     @Test void rightLungMirrorsTheSourceShapeInsideItsOwnClipAtAllGuiScales() throws Exception {

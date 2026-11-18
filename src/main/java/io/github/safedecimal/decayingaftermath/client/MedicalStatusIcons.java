@@ -83,7 +83,19 @@ public final class MedicalStatusIcons {
         return List.copyOf(result);
     }
     public static void body(GuiGraphicsExtractor graphics, BodySnapshot.PartSnapshot part, MinecraftBodyLayout.Box box) {
-        for(var p:placements(part,box))draw(graphics,p.icon(),p.x(),p.y(),p.size(),p.color());
+        for(var p:placements(part,box)) {
+            int color=p.color();
+            if(p.icon().name().startsWith("bleeding_")) {
+                float ratio=p.size()/(float)Math.max(p.icon().width(),p.icon().height());
+                int w=Math.max(1,Math.round(p.icon().width()*ratio)),h=Math.max(1,Math.round(p.icon().height()*ratio));
+                graphics.fill(p.x()-w/2-1,p.y()-h/2-1,p.x()-w/2+w+1,p.y()-h/2+h+1,0xFF210909);
+                color=visibleBleedingColor(color);
+            }
+            draw(graphics,p.icon(),p.x(),p.y(),p.size(),color);
+        }
+    }
+    public static int visibleBleedingColor(int nativeColor) {
+        return 0xFF000000|(Math.max(192,(nativeColor>>>16)&255)<<16)|(nativeColor&0xFFFF);
     }
     public static void draw(GuiGraphicsExtractor graphics, Icon icon, int cx, int cy, int size, int color) {
         if (icon==null) return;

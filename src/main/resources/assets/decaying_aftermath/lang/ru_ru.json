@@ -26,7 +26,7 @@
   "decaying_aftermath.stat.drug": "ПРЕПАРАТ %s",
   "decaying_aftermath.body_status": "%s%s",
   "decaying_aftermath.status.fractured": " / перелом",
-  "decaying_aftermath.status.bleeding": " / кровотечение",
+  "decaying_aftermath.status.bleeding": " / наружное кровотечение",
   "decaying_aftermath.procedure.remaining": "Осталось %s%%",
   "decaying_aftermath.procedure.applied": "Применено %s%%",
   "decaying_aftermath.procedure.cancel": "Esc: выйти; использованный материал не возвращается",

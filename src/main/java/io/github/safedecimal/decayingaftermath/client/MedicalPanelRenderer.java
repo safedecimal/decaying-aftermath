@@ -86,6 +86,8 @@ public final class MedicalPanelRenderer {
             if(mirror)graphics.pose().popMatrix();
             if (clipped) graphics.disableScissor();
         }
+        var external=CuMedicalMonitor.externalBleedSource(body);
+        if(external!=null)MedicalStatusIcons.draw(graphics,MedicalStatusIcons.bleeding(external),18,65,8,0xFFFF5555);
         double seconds = System.nanoTime() / 1_000_000_000.0;
         for (var readout : CuMedicalGeometry.READOUTS) {
             String value = CuMedicalMonitor.value(body, readout.field(), bpm);
@@ -112,6 +114,8 @@ public final class MedicalPanelRenderer {
         var lines = new ArrayList<FormattedCharSequence>();
         lines.add(Component.literal(title).withColor(0x2BE080).getVisualOrderText());
         lines.add(Component.literal(value).getVisualOrderText());
+        if(field.equals("BleedText"))for(String flow:CuMedicalMonitor.bleedingDetails(body))
+            lines.add(Component.literal(flow).getVisualOrderText());
         graphics.setTooltipForNextFrame(font, lines, mouseX, mouseY);
     }
 

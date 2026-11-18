@@ -8,7 +8,8 @@ public enum DamageKind {
     BURN(.030f, 0, .060f, false, false),
     EXPLOSION(.030f, .008f, .055f, true, true),
     FROSTBITE(.020f, 0, .035f, false, false),
-    CHEMICAL(.025f, 0, .045f, false, false);
+    CHEMICAL(.025f, 0, .045f, false, false),
+    FALL_IMPACT(.030f, .008f, .055f, true, true);
 
     public final float tissue, surfaceBleed, pain;
     public final boolean opensSkin, fractures;

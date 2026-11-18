@@ -53,9 +53,29 @@ public final class CuMedicalMonitor {
             default -> throw new IllegalArgumentException(field);
         }, 0, 1);
     }
+    public static float externalBleeding(BodySnapshot b) {
+        float total=0;for(var part:b.parts())total+=part.bleeding();return total;
+    }
+    /** Match the model's bounded loss per tick, expressed as current flow per game minute. */
+    public static int bleedFlowMlPerMinute(BodySnapshot b,boolean internal) {
+        float outside=externalBleeding(b),inside=b.survival().internalBleeding(),total=outside+inside;
+        if(total<=0)return 0;
+        float removed=Math.min(b.survival().bloodVolume(),total*.00065f);
+        return Math.round(removed*1200*b.survival().bodyMassKg()*.07f*1000*(internal?inside:outside)/total);
+    }
+    public static List<String> bleedingDetails(BodySnapshot b) {
+        return List.of("Наружное: "+bleedFlowMlPerMinute(b,false)+" мл/мин",
+                "Внутреннее: "+bleedFlowMlPerMinute(b,true)+" мл/мин");
+    }
+    public static BodySnapshot.PartSnapshot externalBleedSource(BodySnapshot b) {
+        BodySnapshot.PartSnapshot highest=null;
+        for(var part:b.parts())if(part.bleeding()>0&&(highest==null||part.bleeding()>highest.bleeding()))highest=part;
+        return highest;
+    }
     public static boolean critical(BodySnapshot b, String field) {
         return switch (field) {
             case "BrainText" -> b.part(BodyPart.HEAD).integrity() < .5f;
+            case "BleedText" -> externalBleeding(b) > .0001f;
             case "ConscText" -> b.consciousness() < .4f;
             case "PainText" -> b.pain() > .75f;
             case "BloodText" -> b.blood() < .25f;
