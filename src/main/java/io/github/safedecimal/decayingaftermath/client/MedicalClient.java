@@ -79,6 +79,12 @@ public final class MedicalClient {
         else PAIN.advance(body.pain(),client.isPaused()?0:seconds);
         if (body.mode() != previousMode) {
             previousMode = body.mode();
+            // A blackout cuts the player off from the world: stop what is already sounding and
+            // drop queued thoughts, because nothing new may start while fainted.
+            if (body.mode() == BodySnapshot.Mode.UNCONSCIOUS) {
+                ClientAudioGate.silenceWorldSounds(client, body);
+                ThoughtTyper.reset();
+            }
             if (body.mode() == BodySnapshot.Mode.LAST_STANDING) {
                 TIMELINE.beginLastStand(); playedDrone = false;
                 sound("last_standing", 1f, 1f);
@@ -106,9 +112,14 @@ public final class MedicalClient {
             activeBeat = beat;
         }
         if (client.isPaused()) return;
-        if (ThoughtTyper.tick()) sound("thought_type", 0.45f, 1f);
-        if (ThoughtTyper.hasMessage())
-            client.gui.hud.setOverlayMessage(Component.literal(ThoughtTyper.visible()), false);
+        // Thoughts are action-bar text: a fainted player neither reads nor hears them, and
+        // nothing accumulates for the moment of waking up either.
+        boolean thoughtsAllowed = !UnconsciousPresentationPolicy.hintsHidden(body);
+        if (thoughtsAllowed) {
+            if (ThoughtTyper.tick()) sound("thought_type", 0.45f, 1f);
+            if (ThoughtTyper.hasMessage())
+                client.gui.hud.setOverlayMessage(Component.literal(ThoughtTyper.visible()), false);
+        } else ThoughtTyper.reset();
         double previousPhase = beatPhase;
         double advance = Math.min(seconds, .1) * body.bpm() / 60;
         beatPhase = (beatPhase + advance) % 1;
@@ -180,6 +191,7 @@ public final class MedicalClient {
         dyingMusic=deadMusic=null;DEATH_MUSIC.reset();
         ThoughtTyper.reset();beatPhase=0;lastTickNanos=0;playedDrone=false;
         TIMELINE.reset();CONSCIOUSNESS_ECG.reset();PAIN.reset();previousMode=BodySnapshot.Mode.CONSCIOUS;
+        VanillaMusicGate.reset();
         currentPlayer=null;waitingForLiveBody=false;
     }
     public static double beatPhase() { return beatPhase; }
