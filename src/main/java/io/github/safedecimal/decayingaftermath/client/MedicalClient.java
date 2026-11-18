@@ -27,6 +27,7 @@ public final class MedicalClient {
     private static long lastTickNanos;
     private static boolean playedDrone;
     private static MedicalLoopSound criticalLoop, unconsciousLoop;
+    private static MedicalLoopSound painLoop, exhaustedLoop, tiredLoop, dyingLoop;
     private static MedicalMusicSound dyingMusic,deadMusic;
     private static final MedicalDeathMusicState DEATH_MUSIC=new MedicalDeathMusicState();
     private static final MedicalPainState PAIN=new MedicalPainState();
@@ -87,13 +88,18 @@ public final class MedicalClient {
         }
         // LastStandSequence and blackout fades use unscaled time, even while the game is paused.
         TIMELINE.advance(body, seconds);
-        updateDeathMusic(body.mode(),seconds);
-        if(body.mode()==BodySnapshot.Mode.DYING||body.mode()==BodySnapshot.Mode.DEAD)closeCriticalLoops();
+        updateDeathMusic(body.mode(),body.consciousnessProgress(),seconds);
+        if(body.mode()==BodySnapshot.Mode.DYING||body.mode()==BodySnapshot.Mode.DEAD)
+            closeCriticalLoops();
         if (TIMELINE.lastStandActive() && TIMELINE.droneDue() && !playedDrone) {
             playedDrone = true; sound("last_standing_drone", 1f, 1f);
         }
         boolean intro = TIMELINE.lastStandActive();
-        updateCriticalLoops(body, seconds, !intro && MedicalPresentationPolicy.criticalAmbience(body));
+        boolean audioAlive = !intro && body.mode() != BodySnapshot.Mode.DEAD;
+        updateCriticalLoops(body, seconds, audioAlive && body.mode() != BodySnapshot.Mode.DYING
+                && MedicalPresentationPolicy.criticalAmbience(body));
+        updateSituationLoops(body, seconds, audioAlive && body.mode() != BodySnapshot.Mode.DYING
+                || body.mode() == BodySnapshot.Mode.DYING && !DEATH_MUSIC.preDeathStarted());
         String beat = intro ? null : MedicalPresentationPolicy.beatSound(isInventoryOpen(client), body);
         if (!Objects.equals(activeBeat, beat)) {
             if (activeBeat != null) stop(activeBeat);
@@ -130,17 +136,46 @@ public final class MedicalClient {
         if (unconsciousLoop != null) unconsciousLoop.close();
         criticalLoop = unconsciousLoop = null;
     }
-    private static void updateDeathMusic(BodySnapshot.Mode mode,double seconds) {
-        var action=DEATH_MUSIC.advance(mode);
+    private static void updateSituationLoops(BodySnapshot body, double seconds, boolean enabled) {
+        var volumes = enabled ? MedicalSituationSoundState.volumes(body)
+                : new MedicalSituationSoundState.Volumes(0, 0, 0, 0);
+        painLoop = updateSituationLoop(painLoop, "pain_drone", volumes.pain(), seconds);
+        exhaustedLoop = updateSituationLoop(exhaustedLoop, "exhausted_drone", volumes.exhausted(), seconds);
+        tiredLoop = updateSituationLoop(tiredLoop, "tired_drone", volumes.tired(), seconds);
+        dyingLoop = updateSituationLoop(dyingLoop, "dying_drone", volumes.dying(), seconds);
+    }
+    private static MedicalLoopSound updateSituationLoop(MedicalLoopSound sound, String name,
+            float target, double seconds) {
+        if (sound == null && target > .001f) sound = MedicalLoopSound.start(name, 0, 1);
+        if (sound == null) return null;
+        sound.fadeTo(target * .65f, seconds);
+        if (target <= .001f && sound.volume() <= .001f) { sound.close(); return null; }
+        return sound;
+    }
+    private static void closeSituationLoops() {
+        if (painLoop != null) painLoop.close();
+        if (exhaustedLoop != null) exhaustedLoop.close();
+        if (tiredLoop != null) tiredLoop.close();
+        if (dyingLoop != null) dyingLoop.close();
+        painLoop = exhaustedLoop = tiredLoop = dyingLoop = null;
+    }
+    private static void updateDeathMusic(BodySnapshot.Mode mode,float progress,double seconds) {
+        var action=DEATH_MUSIC.advance(mode,progress);
         if(action.stopDying()&&dyingMusic!=null) {dyingMusic.close();dyingMusic=null;}
         if(action.stopDead()&&deadMusic!=null) {deadMusic.close();deadMusic=null;}
-        if(action.startDying())dyingMusic=MedicalMusicSound.start("brain_dying_music",true);
-        if(action.playDead())deadMusic=MedicalMusicSound.start("death_music",false);
+        // DrawYourLastBreath1 is a one-shot CU clip, not a loop. It is armed only
+        // near the end of the DYING grace window by MedicalDeathMusicState.
+        if(action.startDying())dyingMusic=MedicalMusicSound.start("brain_dying_music",false);
+        if(action.playDead()) {
+            if(dyingMusic!=null) {dyingMusic.close();dyingMusic=null;}
+            deadMusic=MedicalMusicSound.start("death_music",false);
+        }
         if(dyingMusic!=null)dyingMusic.fadeTo(.8f,seconds);
     }
     private static void clearPresentation() {
         stop("heartbeat");stop("heartbeat_heavy");stop("heartbeat_monitor");activeBeat=null;
-        stop("unconscious");stop("last_standing");stop("last_standing_drone");closeCriticalLoops();
+        stop("unconscious");stop("last_standing");stop("last_standing_drone");
+        closeCriticalLoops(); closeSituationLoops();
         if(dyingMusic!=null)dyingMusic.close();if(deadMusic!=null)deadMusic.close();
         dyingMusic=deadMusic=null;DEATH_MUSIC.reset();
         ThoughtTyper.reset();beatPhase=0;lastTickNanos=0;playedDrone=false;

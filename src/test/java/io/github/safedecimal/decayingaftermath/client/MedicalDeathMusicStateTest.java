@@ -5,6 +5,12 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 class MedicalDeathMusicStateTest {
+    @Test void preDeathTrackWaitsForTheLastThirdOfDyingGrace() {
+        var state=new MedicalDeathMusicState();
+        assertFalse(state.advance(Mode.DYING,.9f).startDying());
+        assertTrue(state.advance(Mode.DYING,.3f).startDying());
+        for(int i=0;i<500;i++) {var action=state.advance(Mode.DYING,0);assertFalse(action.startDying());assertFalse(action.playDead());}
+    }
     @Test void dyingLoopStartsOnceForAnyNumberOfBodyUpdates() {
         var state=new MedicalDeathMusicState();assertTrue(state.advance(Mode.DYING).startDying());
         for(int i=0;i<500;i++) {var action=state.advance(Mode.DYING);assertFalse(action.startDying());assertFalse(action.playDead());}

@@ -126,5 +126,37 @@
         "stream": true
       }
     ]
+  },
+  "pain_drone": {
+    "sounds": [
+      {
+        "name": "decaying_aftermath:pain_drone",
+        "stream": true
+      }
+    ]
+  },
+  "dying_drone": {
+    "sounds": [
+      {
+        "name": "decaying_aftermath:dying_drone",
+        "stream": true
+      }
+    ]
+  },
+  "exhausted_drone": {
+    "sounds": [
+      {
+        "name": "decaying_aftermath:exhausted_drone",
+        "stream": true
+      }
+    ]
+  },
+  "tired_drone": {
+    "sounds": [
+      {
+        "name": "decaying_aftermath:tired_drone",
+        "stream": true
+      }
+    ]
   }
 }

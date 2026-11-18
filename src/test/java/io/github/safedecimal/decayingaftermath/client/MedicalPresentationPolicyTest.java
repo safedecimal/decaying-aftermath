@@ -58,4 +58,18 @@ class MedicalPresentationPolicyTest {
         assertTrue(MedicalPresentationPolicy.criticalAlarm(dying));assertFalse(MedicalPresentationPolicy.criticalAmbience(dying));
         assertEquals("heartbeat_monitor",MedicalPresentationPolicy.beatSound(true,dying));
     }
+    @Test void situationalDronesFollowAuthoritativePainAndEnergyOnly() {
+        var parts = new BodySnapshot.PartSnapshot[6];
+        Arrays.fill(parts, new BodySnapshot.PartSnapshot(1, 0, 0, false, false, false, false));
+        var body = new BodySnapshot(.5f, 1, 1, .8f, 0, 72, BodySnapshot.Mode.CONSCIOUS,
+                1, .2f, 1, parts);
+        var volumes = MedicalSituationSoundState.volumes(body);
+        assertTrue(volumes.pain() > 0); assertTrue(volumes.exhausted() > 0); assertTrue(volumes.tired() > 0);
+    }
+    @Test void situationalDronesStopForDyingAndDead() {
+        var dying = body(BodySnapshot.Mode.DYING,.1f,.2f,.3f,.8f,65,.1f);
+        var dead = body(BodySnapshot.Mode.DEAD,0,0,0,0,0,0);
+        assertTrue(MedicalSituationSoundState.volumes(dying).dying() > 0);
+        assertTrue(MedicalSituationSoundState.volumes(dead).silent());
+    }
 }
