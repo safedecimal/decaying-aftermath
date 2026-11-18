@@ -1,0 +1,847 @@
+{
+  "source_assembly_sha256": "48c7f2296fc4a659faae3b1822884ca5b7ff73d6767ef159e6a6c2bc0b2d38f1",
+  "source_hashes": {
+    "sharedassets0.assets": "eaba5973b39543d5d5539c76695008cfdfff50ed588fb7cff345a15a3b4eaa75",
+    "sharedassets1.assets": "befa3e57e3e7edcf40dd1b0108e7a69ab7961e9fe553fa17fdf43dbb747e3016",
+    "level1": "f8c2ea53cab0acb7b333c2165ceba3c36c3963a8ded0196771b8d4d9cc8462b3",
+    "Managed/Assembly-CSharp.dll": "48c7f2296fc4a659faae3b1822884ca5b7ff73d6767ef159e6a6c2bc0b2d38f1"
+  },
+  "source_scale": 3,
+  "canvas_reference": [
+    1920,
+    1080
+  ],
+  "canvas_match_height": 1,
+  "computer_back_anchor": [
+    19,
+    20
+  ],
+  "background": {
+    "x": 3,
+    "y": 23,
+    "width": 128,
+    "height": 164
+  },
+  "records": [
+    {
+      "name": "Background",
+      "box": {
+        "x": 3,
+        "y": 23,
+        "width": 128,
+        "height": 164
+      },
+      "authored": {
+        "m_Sprite": {
+          "m_FileID": 2,
+          "m_PathID": 402
+        },
+        "m_FillMethod": 4,
+        "m_FillAmount": 1.0,
+        "m_FillOrigin": 0
+      }
+    },
+    {
+      "name": "VITALS",
+      "box": {
+        "x": 3,
+        "y": 24,
+        "width": 128,
+        "height": 8
+      },
+      "authored": {
+        "m_text": "UNI-HEALTH v2.07",
+        "m_HorizontalAlignment": 2
+      }
+    },
+    {
+      "name": "BrainBar",
+      "box": {
+        "x": 28,
+        "y": 35,
+        "width": 96,
+        "height": 2
+      },
+      "authored": {
+        "m_Sprite": {
+          "m_FileID": 2,
+          "m_PathID": 391
+        },
+        "m_FillMethod": 0,
+        "m_FillAmount": 1.0,
+        "m_FillOrigin": 0
+      }
+    },
+    {
+      "name": "BrainText",
+      "box": {
+        "x": 25,
+        "y": 38,
+        "width": 27,
+        "height": 8
+      },
+      "authored": {
+        "m_text": "100",
+        "m_HorizontalAlignment": 1
+      }
+    },
+    {
+      "name": "TempFill",
+      "box": {
+        "x": 118,
+        "y": 66,
+        "width": 7,
+        "height": 24
+      },
+      "authored": {
+        "m_Sprite": {
+          "m_FileID": 2,
+          "m_PathID": 433
+        },
+        "m_FillMethod": 1,
+        "m_FillAmount": 1.0,
+        "m_FillOrigin": 0
+      }
+    },
+    {
+      "name": "FoodFill",
+      "box": {
+        "x": 19,
+        "y": 90,
+        "width": 61,
+        "height": 1
+      },
+      "authored": {
+        "m_Sprite": {
+          "m_FileID": 2,
+          "m_PathID": 352
+        },
+        "m_FillMethod": 0,
+        "m_FillAmount": 1.0,
+        "m_FillOrigin": 0
+      }
+    },
+    {
+      "name": "OvereatFill",
+      "box": {
+        "x": 19,
+        "y": 90,
+        "width": 61,
+        "height": 1
+      },
+      "authored": {
+        "m_Sprite": {
+          "m_FileID": 2,
+          "m_PathID": 349
+        },
+        "m_FillMethod": 0,
+        "m_FillAmount": 0.0,
+        "m_FillOrigin": 1
+      }
+    },
+    {
+      "name": "WaterFill",
+      "box": {
+        "x": 19,
+        "y": 79,
+        "width": 49,
+        "height": 1
+      },
+      "authored": {
+        "m_Sprite": {
+          "m_FileID": 2,
+          "m_PathID": 457
+        },
+        "m_FillMethod": 0,
+        "m_FillAmount": 1.0,
+        "m_FillOrigin": 0
+      }
+    },
+    {
+      "name": "OverhydrateFill",
+      "box": {
+        "x": 19,
+        "y": 79,
+        "width": 49,
+        "height": 1
+      },
+      "authored": {
+        "m_Sprite": {
+          "m_FileID": 2,
+          "m_PathID": 482
+        },
+        "m_FillMethod": 0,
+        "m_FillAmount": 0.0,
+        "m_FillOrigin": 1
+      }
+    },
+    {
+      "name": "BloodFill",
+      "box": {
+        "x": 9,
+        "y": 49,
+        "width": 2,
+        "height": 19
+      },
+      "authored": {
+        "m_Sprite": {
+          "m_FileID": 2,
+          "m_PathID": 389
+        },
+        "m_FillMethod": 1,
+        "m_FillAmount": 1.0,
+        "m_FillOrigin": 0
+      }
+    },
+    {
+      "name": "RadFill",
+      "box": {
+        "x": 108,
+        "y": 122,
+        "width": 18,
+        "height": 16
+      },
+      "authored": {
+        "m_Sprite": {
+          "m_FileID": 2,
+          "m_PathID": 337
+        },
+        "m_FillMethod": 1,
+        "m_FillAmount": 1.0,
+        "m_FillOrigin": 0
+      }
+    },
+    {
+      "name": "Mood",
+      "box": {
+        "x": 116,
+        "y": 93,
+        "width": 11,
+        "height": 11
+      },
+      "authored": {
+        "m_Sprite": {
+          "m_FileID": 2,
+          "m_PathID": 331
+        },
+        "m_FillMethod": 1,
+        "m_FillAmount": 1.0,
+        "m_FillOrigin": 0
+      }
+    },
+    {
+      "name": "ConscText",
+      "box": {
+        "x": 94,
+        "y": 40,
+        "width": 25,
+        "height": 8
+      },
+      "authored": {
+        "m_text": "100%",
+        "m_HorizontalAlignment": 4
+      }
+    },
+    {
+      "name": "OxyText",
+      "box": {
+        "x": 94,
+        "y": 154,
+        "width": 25,
+        "height": 10
+      },
+      "authored": {
+        "m_text": "100%",
+        "m_HorizontalAlignment": 4
+      }
+    },
+    {
+      "name": "ImmuneText",
+      "box": {
+        "x": 55,
+        "y": 51,
+        "width": 25,
+        "height": 6
+      },
+      "authored": {
+        "m_text": "200%",
+        "m_HorizontalAlignment": 4
+      }
+    },
+    {
+      "name": "PainText",
+      "box": {
+        "x": 94,
+        "y": 48,
+        "width": 25,
+        "height": 10
+      },
+      "authored": {
+        "m_text": "100%",
+        "m_HorizontalAlignment": 4
+      }
+    },
+    {
+      "name": "BloodText",
+      "box": {
+        "x": 22,
+        "y": 51,
+        "width": 29,
+        "height": 6
+      },
+      "authored": {
+        "m_text": "5.00l",
+        "m_HorizontalAlignment": 1
+      }
+    },
+    {
+      "name": "BPMText",
+      "box": {
+        "x": 16,
+        "y": 154,
+        "width": 17,
+        "height": 10
+      },
+      "authored": {
+        "m_text": "240 | 120/80",
+        "m_HorizontalAlignment": 1
+      }
+    },
+    {
+      "name": "BleedText",
+      "box": {
+        "x": 22,
+        "y": 62,
+        "width": 25,
+        "height": 6
+      },
+      "authored": {
+        "m_text": "",
+        "m_HorizontalAlignment": 1
+      }
+    },
+    {
+      "name": "TempText",
+      "box": {
+        "x": 94,
+        "y": 70,
+        "width": 25,
+        "height": 6
+      },
+      "authored": {
+        "m_text": "36.8'c",
+        "m_HorizontalAlignment": 4
+      }
+    },
+    {
+      "name": "HappinessText",
+      "box": {
+        "x": 90,
+        "y": 94,
+        "width": 25,
+        "height": 10
+      },
+      "authored": {
+        "m_text": "-100.0",
+        "m_HorizontalAlignment": 4
+      }
+    },
+    {
+      "name": "SicknessText",
+      "box": {
+        "x": 28,
+        "y": 96,
+        "width": 18,
+        "height": 6
+      },
+      "authored": {
+        "m_text": "100",
+        "m_HorizontalAlignment": 1
+      }
+    },
+    {
+      "name": "WeightText",
+      "box": {
+        "x": 28,
+        "y": 106,
+        "width": 25,
+        "height": 8
+      },
+      "authored": {
+        "m_text": "50.0kg",
+        "m_HorizontalAlignment": 1
+      }
+    },
+    {
+      "name": "RRText",
+      "box": {
+        "x": 9,
+        "y": 140,
+        "width": 24,
+        "height": 10
+      },
+      "authored": {
+        "m_text": "25/m",
+        "m_HorizontalAlignment": 1
+      }
+    },
+    {
+      "name": "OpiateText",
+      "box": {
+        "x": 40,
+        "y": 140,
+        "width": 24,
+        "height": 10
+      },
+      "authored": {
+        "m_text": "",
+        "m_HorizontalAlignment": 1
+      }
+    },
+    {
+      "name": "OpiateText (1)",
+      "box": {
+        "x": 75,
+        "y": 140,
+        "width": 24,
+        "height": 10
+      },
+      "authored": {
+        "m_text": "",
+        "m_HorizontalAlignment": 4
+      }
+    },
+    {
+      "name": "RadText",
+      "box": {
+        "x": 101,
+        "y": 138,
+        "width": 25,
+        "height": 10
+      },
+      "authored": {
+        "m_text": "10gy",
+        "m_HorizontalAlignment": 4
+      }
+    },
+    {
+      "name": "EnergyText",
+      "box": {
+        "x": 90,
+        "y": 105,
+        "width": 25,
+        "height": 10
+      },
+      "authored": {
+        "m_text": "100%",
+        "m_HorizontalAlignment": 4
+      }
+    },
+    {
+      "name": "WaterText",
+      "box": {
+        "x": 72,
+        "y": 76,
+        "width": 19,
+        "height": 6
+      },
+      "authored": {
+        "m_text": "250",
+        "m_HorizontalAlignment": 1
+      }
+    },
+    {
+      "name": "FoodText",
+      "box": {
+        "x": 84,
+        "y": 87,
+        "width": 18,
+        "height": 6
+      },
+      "authored": {
+        "m_text": "100",
+        "m_HorizontalAlignment": 1
+      }
+    },
+    {
+      "name": "ECG",
+      "box": {
+        "x": 7,
+        "y": 165,
+        "width": 120,
+        "height": 25
+      },
+      "authored": {}
+    },
+    {
+      "name": "PressureHover",
+      "box": {
+        "x": 37,
+        "y": 154,
+        "width": 38,
+        "height": 10
+      },
+      "authored": {
+        "m_Sprite": {
+          "m_FileID": 0,
+          "m_PathID": 0
+        },
+        "m_FillMethod": 4,
+        "m_FillAmount": 1.0,
+        "m_FillOrigin": 0
+      }
+    },
+    {
+      "name": "LungFill1",
+      "box": {
+        "x": 9,
+        "y": 124,
+        "width": 7,
+        "height": 15
+      },
+      "authored": {
+        "m_Sprite": {
+          "m_FileID": 2,
+          "m_PathID": 575
+        },
+        "m_FillMethod": 1,
+        "m_FillAmount": 1.0,
+        "m_FillOrigin": 0
+      }
+    },
+    {
+      "name": "LungFill2",
+      "box": {
+        "x": 22,
+        "y": 124,
+        "width": 7,
+        "height": 15
+      },
+      "authored": {
+        "m_Sprite": {
+          "m_FileID": 2,
+          "m_PathID": 575
+        },
+        "m_FillMethod": 1,
+        "m_FillAmount": 1.0,
+        "m_FillOrigin": 0
+      }
+    },
+    {
+      "name": "HemothoraxFill",
+      "box": {
+        "x": 8,
+        "y": 123,
+        "width": 22,
+        "height": 17
+      },
+      "authored": {
+        "m_Sprite": {
+          "m_FileID": 2,
+          "m_PathID": 326
+        },
+        "m_FillMethod": 1,
+        "m_FillAmount": 0.0,
+        "m_FillOrigin": 0
+      }
+    },
+    {
+      "name": "StaminaText",
+      "box": {
+        "x": 7,
+        "y": 122,
+        "width": 26,
+        "height": 18
+      },
+      "authored": {
+        "m_Sprite": {
+          "m_FileID": 0,
+          "m_PathID": 0
+        },
+        "m_FillMethod": 4,
+        "m_FillAmount": 1.0,
+        "m_FillOrigin": 0
+      }
+    },
+    {
+      "name": "OpiateBack",
+      "box": {
+        "x": 38,
+        "y": 121,
+        "width": 29,
+        "height": 29
+      },
+      "authored": {
+        "m_Sprite": {
+          "m_FileID": 2,
+          "m_PathID": 549
+        },
+        "m_FillMethod": 4,
+        "m_FillAmount": 1.0,
+        "m_FillOrigin": 0
+      }
+    },
+    {
+      "name": "OpiateFill",
+      "box": {
+        "x": 45,
+        "y": 126,
+        "width": 13,
+        "height": 13
+      },
+      "authored": {
+        "m_Sprite": {
+          "m_FileID": 2,
+          "m_PathID": 578
+        },
+        "m_FillMethod": 1,
+        "m_FillAmount": 0.0,
+        "m_FillOrigin": 0
+      }
+    },
+    {
+      "name": "ToxinFill",
+      "box": {
+        "x": 75,
+        "y": 121,
+        "width": 23,
+        "height": 23
+      },
+      "authored": {
+        "m_Sprite": {
+          "m_FileID": 2,
+          "m_PathID": 480
+        },
+        "m_FillMethod": 1,
+        "m_FillAmount": 0.0,
+        "m_FillOrigin": 0
+      }
+    },
+    {
+      "name": "ToxinBack",
+      "box": {
+        "x": 71,
+        "y": 121,
+        "width": 29,
+        "height": 29
+      },
+      "authored": {
+        "m_Sprite": {
+          "m_FileID": 2,
+          "m_PathID": 330
+        },
+        "m_FillMethod": 4,
+        "m_FillAmount": 1.0,
+        "m_FillOrigin": 0
+      }
+    }
+  ],
+  "sprites": [
+    {
+      "path": "textures/gui/medical/native/hemothoraxfill.png",
+      "sha256": "e095016e375b32ad90edfdf5a18ed6b300f857c2b389f167f3bf410bdb168227",
+      "dimensions": [
+        22,
+        17
+      ],
+      "path_id": 326,
+      "trim_offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "path": "textures/gui/medical/native/toxinoutline.png",
+      "sha256": "d5921874dad05efe5490293d0bbc637f9104015335ad427ceed6f3d602545828",
+      "dimensions": [
+        29,
+        29
+      ],
+      "path_id": 330,
+      "trim_offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "path": "textures/gui/medical/native/neutral.png",
+      "sha256": "fd3c543ee4c3f4c1d8d274672562351cc1b076b245ea4aa5131c322ecb7a75b2",
+      "dimensions": [
+        11,
+        11
+      ],
+      "path_id": 331,
+      "trim_offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "path": "textures/gui/medical/native/radfill.png",
+      "sha256": "eefa10b27bad215215a231f6621abb9ad99d1189a983cebb3177f5dcd08f44f3",
+      "dimensions": [
+        18,
+        16
+      ],
+      "path_id": 337,
+      "trim_offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "path": "textures/gui/medical/native/barfood.png",
+      "sha256": "e5cb435bc765468102e26b3226b29d07383901322c9245a0cf9e01d9cb881d24",
+      "dimensions": [
+        61,
+        1
+      ],
+      "path_id": 352,
+      "trim_offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "path": "textures/gui/medical/native/barblood.png",
+      "sha256": "25183728573b0a581421143ac998550a754d77b82c16dd3e89eb75bdeaa67467",
+      "dimensions": [
+        2,
+        19
+      ],
+      "path_id": 389,
+      "trim_offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "path": "textures/gui/medical/native/barbrain.png",
+      "sha256": "4349b018de7d2fcd0eea9475f6055ee674732c180e0e4152cdbd6073270ae190",
+      "dimensions": [
+        96,
+        2
+      ],
+      "path_id": 391,
+      "trim_offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "path": "textures/gui/medical/native/screenstatic.png",
+      "sha256": "b9d801c358e6850d986987a48178c61d92ac036abd0a16aa7d0c650e0acae620",
+      "dimensions": [
+        128,
+        164
+      ],
+      "path_id": 402,
+      "trim_offset": [
+        1,
+        8
+      ]
+    },
+    {
+      "path": "textures/gui/medical/native/computerback.png",
+      "sha256": "43fa23dbec27b701b51f196ab9f2bd92e3858e00b15defea0ba696e6bd093890",
+      "dimensions": [
+        159,
+        271
+      ],
+      "path_id": 420,
+      "trim_offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "path": "textures/gui/medical/native/barthermometer.png",
+      "sha256": "affa0b7eabacfc57f96ac5587ac3e807f9fc67de6bebdbaded56c99c474423d9",
+      "dimensions": [
+        7,
+        24
+      ],
+      "path_id": 433,
+      "trim_offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "path": "textures/gui/medical/native/barwater.png",
+      "sha256": "8d67f6a196a7e05f4290f2faba073842050148c12380271c807e6ab0ed13a5d9",
+      "dimensions": [
+        49,
+        1
+      ],
+      "path_id": 457,
+      "trim_offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "path": "textures/gui/medical/native/toxinoutlinedither.png",
+      "sha256": "b019db0cdfa0e8ead0f32f47bef188e7e50638cf5c6b6fd830de88d867ff6e80",
+      "dimensions": [
+        23,
+        23
+      ],
+      "path_id": 480,
+      "trim_offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "path": "textures/gui/medical/native/syringeoutline.png",
+      "sha256": "ac5e0afd18f033d4398bc13b346fbbb4795def490fd8455deabe12f2509a3de8",
+      "dimensions": [
+        29,
+        29
+      ],
+      "path_id": 549,
+      "trim_offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "path": "textures/gui/medical/native/lungfill.png",
+      "sha256": "ee4b308341b1b3568d96dbe60df0108d53ed471256335248f19311b46e32ba23",
+      "dimensions": [
+        7,
+        15
+      ],
+      "path_id": 575,
+      "trim_offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "path": "textures/gui/medical/native/syringefill.png",
+      "sha256": "b9ee0b6bc113b0a672cd4b2ed35dd12e362b004cff66e94b3bc8c092ae64966f",
+      "dimensions": [
+        13,
+        13
+      ],
+      "path_id": 578,
+      "trim_offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "path": "textures/gui/medical/native/panel.png",
+      "sha256": "4d9cc72642da16e0f6f970fb2f7de5a888fc473229e1640519a80cd5ec54197f",
+      "dimensions": [
+        133,
+        196
+      ],
+      "transform": "ComputerBack medical crop [0,0,133,196] + complete native screenStatic Sprite at authored Background position, no recoloring, resizing, icon extraction, or removal"
+    }
+  ],
+  "scope": "Exact native medical-monitor artwork and scene layout; Minecraft values bound only where supported. Unsupported CU measurements use --, not fabricated numbers. WEAR and CU character metadata are outside the medical-monitor request.",
+  "russian_hover": true
+}

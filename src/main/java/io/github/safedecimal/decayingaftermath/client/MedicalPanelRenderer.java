@@ -6,10 +6,12 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
 import net.minecraft.network.chat.Component;
+import java.util.ArrayList;
+import net.minecraft.util.FormattedCharSequence;
 
 /** CU's enabled ComputerBack monitor: original gray/green frame, live name and pulse. */
 public final class MedicalPanelRenderer {
-    private static final Identifier PANEL = id("textures/gui/medical/panel.png");
+    private static final Identifier PANEL = id("textures/gui/medical/native/panel.png");
     private static final Identifier COMPACT = id("textures/gui/medical/compact.png");
     private static final Identifier FONT = id("textures/font/monitor.png");
     private static final EcgTrace TRACE = new EcgTrace();
@@ -32,33 +34,98 @@ public final class MedicalPanelRenderer {
         }
         lastDrawNanos = now;
         graphics.pose().pushMatrix();
-        // Never stretch the source bitmap to fill the available container.
-        graphics.pose().translate(box.x() + (box.width() - 133) / 2, box.y());
+        // Uniformly enlarge the original CU artwork, glyphs, icons and ECG together.
+        graphics.pose().translate(box.x(), box.y());
+        graphics.pose().scale(box.scale(), box.scale());
         if (box.compact()) {
             graphics.blit(RenderPipelines.GUI_TEXTURED, COMPACT, 0, 0, 0f, 0f, 133, 23, 133, 23);
             text(graphics, Minecraft.getInstance().getUser().getName(), 6, 4);
             text(graphics, Integer.toString(PulseState.bpm()), 16, 12);
         } else {
-            graphics.blit(RenderPipelines.GUI_TEXTURED, PANEL, 0, 0, 0f, 0f, 133, 196, 133, 196);
-            text(graphics, Minecraft.getInstance().getUser().getName(), 6, 4);
-            for(var row:MedicalVitalsReadout.rows(ClientMedicalState.snapshot()))
-                text(graphics,Component.translatable(row.key(),row.percent()).getString(),row.x(),row.y());
-            text(graphics, Integer.toString(PulseState.bpm()), 16, 154);
-            trace(graphics, 7, 165);
+            extractMonitor(graphics, ClientMedicalState.snapshot(), Minecraft.getInstance().getUser().getName(), PulseState.bpm());
+            trace(graphics, CuMedicalGeometry.ECG.x(), CuMedicalGeometry.ECG.y());
         }
         graphics.pose().popMatrix();
     }
 
+    static void extractMonitor(GuiGraphicsExtractor graphics,
+            io.github.safedecimal.decayingaftermath.medical.BodySnapshot body, String name, int bpm) {
+        graphics.blit(RenderPipelines.GUI_TEXTURED, PANEL, 0, 0, 0f, 0f, 133, 196, 133, 196);
+        text(graphics, name, 6, 4);
+        String firmware = "UNI-HEALTH v2.08";
+        text(graphics, firmware, 3 + (128 - MedicalPanelGlyphs.width(firmware)) / 2, 24);
+        extractReadouts(graphics, body, bpm);
+    }
+
+    static void extractReadouts(GuiGraphicsExtractor graphics,
+            io.github.safedecimal.decayingaftermath.medical.BodySnapshot body) {
+        extractReadouts(graphics, body, Math.round(body.bpm()));
+    }
+
+    private static void extractReadouts(GuiGraphicsExtractor graphics,
+            io.github.safedecimal.decayingaftermath.medical.BodySnapshot body, int bpm) {
+        for (var sprite : CuMedicalGeometry.SPRITES) {
+            float amount = CuMedicalMonitor.amount(body, sprite.field());
+            if (amount <= 0) continue;
+            var r = sprite.box();
+            int visible = Math.round((sprite.vertical() ? r.height() : r.width()) * amount);
+            if (visible <= 0) continue;
+            boolean clipped = amount < 1;
+            if (clipped) {
+                // Leave an empty margin on the non-fill axis: integer GUI scissors otherwise
+                // collapse CU's one-source-pixel bars at small GUI sizes. The sprite itself
+                // still supplies exact native bounds; no extra pixels or enlarged fill are drawn.
+                if (sprite.vertical()) graphics.enableScissor(r.x()-1, r.y()+r.height()-visible, r.x()+r.width()+1, r.y()+r.height()+1);
+                else graphics.enableScissor(r.x(), r.y()-1, r.x()+visible, r.y()+r.height()+1);
+            }
+            // Full native Sprite rectangle; the scissor only clips its fill, never stretches it.
+            graphics.blit(RenderPipelines.GUI_TEXTURED, id("textures/gui/medical/native/"+sprite.name()+".png"),
+                    r.x(), r.y(), 0f, 0f, r.width(), r.height(), r.width(), r.height());
+            if (clipped) graphics.disableScissor();
+        }
+        double seconds = System.nanoTime() / 1_000_000_000.0;
+        for (var readout : CuMedicalGeometry.READOUTS) {
+            String value = CuMedicalMonitor.value(body, readout.field(), bpm);
+            var r = readout.box();
+            int x = readout.alignment() == 4 ? r.x()+r.width()-MedicalPanelGlyphs.width(value) : r.x();
+            // Native WoundView.FlashText: green normally, red/blinking for critical readouts.
+            int color = CuMedicalMonitor.critical(body,readout.field())
+                    ? (Math.sin(seconds*20)>0 ? 0xFFFF0008 : 0x00FF0008) : TEXT_COLOR;
+            text(graphics, value, x, r.y(), color);
+        }
+    }
+
+    public static void extractTooltip(GuiGraphicsExtractor graphics, MedicalPanelLayout.Box box,
+            int mouseX, int mouseY) {
+        if (box.compact() || !MedicalClient.isMedicalPanelOpen(Minecraft.getInstance())) return;
+        var body = ClientMedicalState.snapshot();
+        String field = CuMedicalMonitor.hover(body, box.localX(mouseX), box.localY(mouseY));
+        if (field == null) return;
+        String title = CuMedicalMonitor.label(field);
+        String explanation = CuMedicalMonitor.explanation(field);
+        // Explicit Russian tooltips, including when the game's language is English.
+        // Use the native Unicode font, never CU's ASCII-only monitor atlas.
+        var font = Minecraft.getInstance().font;
+        var lines = new ArrayList<FormattedCharSequence>();
+        lines.add(Component.literal(title).withColor(0x2BE080).getVisualOrderText());
+        lines.addAll(font.split(Component.literal(explanation), Math.max(80, Math.min(220, graphics.guiWidth() - 24))));
+        graphics.setTooltipForNextFrame(font, lines, mouseX, mouseY);
+    }
+
     public static void text(GuiGraphicsExtractor graphics, String value, int x, int y) {
+        text(graphics,value,x,y,TEXT_COLOR);
+    }
+
+    private static void text(GuiGraphicsExtractor graphics, String value, int x, int y, int color) {
         // CU's bitmap atlas is ASCII-only. Native Minecraft font renders Cyrillic without '?' glyphs.
         if(value.chars().anyMatch(c->c<32||c>=127)) {
-            graphics.text(Minecraft.getInstance().font,value,x,y,TEXT_COLOR,false);return;
+            graphics.text(Minecraft.getInstance().font,value,x,y,color,false);return;
         }
         // Keep original I-pixel-u pixels and advances for supported ASCII text.
         for (int index = 0; index < value.length(); index++) {
             int glyph = MedicalPanelGlyphs.index(value.charAt(index));
             graphics.blit(RenderPipelines.GUI_TEXTURED, FONT, x, y,
-                    (glyph % 16) * 8f, (glyph / 16) * 10f, 8, 10, 128, 60, TEXT_COLOR);
+                    (glyph % 16) * 8f, (glyph / 16) * 10f, 8, 10, 128, 60, color);
             x += MedicalPanelGlyphs.advance(value.charAt(index));
         }
     }

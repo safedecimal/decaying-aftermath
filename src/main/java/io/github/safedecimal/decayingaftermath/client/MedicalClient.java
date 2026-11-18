@@ -247,7 +247,7 @@ public final class MedicalClient {
         }
         // Keep the medical readouts legible above the edge-darkening during the rescue window.
         if(body.mode()==BodySnapshot.Mode.DYING&&isMedicalPanelOpen(client))
-            MedicalPanelRenderer.extract(graphics,MedicalPanelLayout.topLeft());
+            MedicalPanelRenderer.extract(graphics,MedicalPanelLayout.forScreen(graphics.guiWidth(),graphics.guiHeight()));
     }
 
     private static int color(double alpha, int rgb) {

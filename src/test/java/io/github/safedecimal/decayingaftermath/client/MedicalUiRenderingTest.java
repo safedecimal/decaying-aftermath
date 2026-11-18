@@ -22,7 +22,8 @@ import static org.junit.jupiter.api.Assertions.*;
 /** Native clipping/bounds/blit semantics without creating Minecraft, a window or a GPU. */
 class MedicalUiRenderingTest {
     private record Blit(int width, int height, int sourceWidth, int sourceHeight,
-                        int textureWidth, int textureHeight, float u, float v) {}
+                        int textureWidth, int textureHeight, float u, float v,
+                        Identifier id,int x,int y,int color,Matrix3x2f transform,ScreenRectangle clip) {}
 
     private static class Graphics extends GuiGraphicsExtractor {
         List<ColoredRectangleRenderState> fills;
@@ -60,7 +61,8 @@ class MedicalUiRenderingTest {
                                    int width, int height, int sourceWidth, int sourceHeight,
                                    int textureWidth, int textureHeight, int color) {
             // Shorter native overloads forward here with a destination-sized source region.
-            blits.add(new Blit(width, height, sourceWidth, sourceHeight, textureWidth, textureHeight, u, v));
+            blits.add(new Blit(width, height, sourceWidth, sourceHeight, textureWidth, textureHeight, u, v,
+                    id,x,y,color,new Matrix3x2f(pose()),scissorStack.peek()));
         }
 
         long visible(int color) {
@@ -87,6 +89,88 @@ class MedicalUiRenderingTest {
         var expected = new ScreenRectangle(-10, 14, 276, 219).transformAxisAligned(graphics.pose());
         ProcedureVisuals.beginWorkArea(graphics);
         assertEquals(expected, graphics.scissorStack.peek());
+    }
+
+    @Test void monitorDrawsNativeSpritesAndFillScissorsNotTheRejectedTenRowIconAtlas() throws Exception {
+        var parts = new BodySnapshot.PartSnapshot[6];
+        java.util.Arrays.fill(parts,new BodySnapshot.PartSnapshot(1,0,0,false,false,false,false));
+        var body = new BodySnapshot(1,.75f,.8f,.2f,1.25f,72,BodySnapshot.Mode.CONSCIOUS,1,.25f,.4f,parts);
+        for (int[] screen : new int[][] {{640,480},{320,240},{240,180}}) {
+            var graphics = Graphics.create(screen[0],screen[1]);
+            var box = MedicalPanelLayout.forScreen(screen[0],screen[1]);
+            graphics.pose().translate(box.x(),box.y()).scale(box.scale(),box.scale());
+            MedicalPanelRenderer.extractReadouts(graphics,body);
+            var nativeSprites = graphics.blits.stream().filter(b->b.id().toString().contains("/native/")).toList();
+            assertEquals(10,nativeSprites.size());
+            for(var sprite:nativeSprites) {
+                assertEquals(0,sprite.u());assertEquals(0,sprite.v());
+                assertEquals(sprite.textureWidth(),sprite.sourceWidth());
+                assertEquals(sprite.textureHeight(),sprite.sourceHeight());
+                var geometry=CuMedicalGeometry.SPRITES.stream().filter(s->s.box().x()==sprite.x()
+                        &&s.box().y()==sprite.y()&&sprite.id().toString().endsWith("/"+s.name()+".png")).findFirst().orElseThrow();
+                if(CuMedicalMonitor.amount(body,geometry.field())<1) {
+                    assertNotNull(sprite.clip(),geometry.field());
+                    assertTrue(sprite.clip().width()>0&&sprite.clip().height()>0,geometry.field());
+                } else assertNull(sprite.clip(),"Full native sprite must not receive a rounded GUI scissor: "+geometry.field());
+            }
+            assertFalse(graphics.blits.stream().anyMatch(b->b.id().toString().contains("vitals_icons")||b.id().toString().contains("vitals_bar")));
+            assertTrue(graphics.fills.isEmpty(),"No invented rectangular progress bars");
+        }
+    }
+
+    @Test void renderRealNativeMonitorExtractionToCpuPreviewWithoutMinecraftWindow() throws Exception {
+        var parts=new BodySnapshot.PartSnapshot[6];
+        java.util.Arrays.fill(parts,new BodySnapshot.PartSnapshot(1,0,0,false,false,false,false));
+        var body=new BodySnapshot(1,.75f,.8f,.2f,1.25f,72,BodySnapshot.Mode.CONSCIOUS,1,.25f,.4f,parts);
+        var graphics=Graphics.create(266,392);graphics.pose().scale(2,2);
+        MedicalPanelRenderer.extractMonitor(graphics,body,"PLAYER",72);
+        var canvas=new java.awt.image.BufferedImage(266,392,java.awt.image.BufferedImage.TYPE_INT_ARGB);
+        var painter=canvas.createGraphics();
+        painter.setRenderingHint(java.awt.RenderingHints.KEY_INTERPOLATION,java.awt.RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+        for(var b:graphics.blits) {
+            String path="assets/"+b.id().toString().replace(':','/');
+            java.awt.image.BufferedImage texture;
+            try(var in=getClass().getClassLoader().getResourceAsStream(path)) { assertNotNull(in,path);texture=ImageIO.read(in); }
+            var crop=new java.awt.image.BufferedImage(b.sourceWidth(),b.sourceHeight(),java.awt.image.BufferedImage.TYPE_INT_ARGB);
+            for(int x=0;x<crop.getWidth();x++) for(int y=0;y<crop.getHeight();y++) {
+                int pixel=texture.getRGB((int)b.u()+x,(int)b.v()+y),tint=b.color();
+                int alpha=(pixel>>>24)*(tint>>>24)/255;
+                int red=((pixel>>>16)&255)*((tint>>>16)&255)/255;
+                int green=((pixel>>>8)&255)*((tint>>>8)&255)/255;
+                int blue=(pixel&255)*(tint&255)/255;
+                crop.setRGB(x,y,(alpha<<24)|(red<<16)|(green<<8)|blue);
+            }
+            var m=b.transform();
+            var transform=new java.awt.geom.AffineTransform(m.m00(),m.m01(),m.m10(),m.m11(),m.m20(),m.m21());
+            painter.setTransform(transform);painter.setClip(null);
+            if(b.clip()!=null) {
+                var c=b.clip();
+                painter.setClip(transform.createInverse().createTransformedShape(new java.awt.Rectangle(c.left(),c.top(),c.width(),c.height())));
+            }
+            painter.drawImage(crop,b.x(),b.y(),b.width(),b.height(),null);
+        }
+        painter.dispose();
+        var path=java.nio.file.Path.of(System.getProperty("user.dir"),"verification","cu-exact-0.4.4","PANEL_PREVIEW.png");
+        java.nio.file.Files.createDirectories(path.getParent());ImageIO.write(canvas,"PNG",path.toFile());
+        assertEquals(266,ImageIO.read(path.toFile()).getWidth());
+    }
+
+    @Test void partiallyFilledNativeOnePixelBarsRemainVisibleAtSmallGuiSizes() throws Exception {
+        var parts=new BodySnapshot.PartSnapshot[6];
+        java.util.Arrays.fill(parts,new BodySnapshot.PartSnapshot(1,0,0,false,false,false,false));
+        var survival=new io.github.safedecimal.decayingaftermath.medical.SurvivalSnapshot(.5f,.5f,37,.5f,0,1,1,0,0,0,0,0,1,0);
+        var body=new BodySnapshot(1,.75f,.8f,.2f,1.25f,72,BodySnapshot.Mode.CONSCIOUS,1,.25f,.4f,parts,survival);
+        for(int[] size:new int[][]{{240,180},{320,240},{640,480}}) {
+            var g=Graphics.create(size[0],size[1]);var box=MedicalPanelLayout.forScreen(size[0],size[1]);
+            g.pose().translate(box.x(),box.y()).scale(box.scale(),box.scale());
+            MedicalPanelRenderer.extractReadouts(g,body);
+            var bars=g.blits.stream().filter(b->b.id().toString().endsWith("/barwater.png")||b.id().toString().endsWith("/barfood.png")).toList();
+            assertEquals(2,bars.size());
+            for(var bar:bars) {
+                assertEquals(1,bar.height());assertEquals(1,bar.sourceHeight());
+                assertTrue(bar.clip().height()>0&&bar.clip().width()>0);
+            }
+        }
     }
 
     @Test void armAndWhiteEdgesRemainVisibleAcrossGuiScalesAndPositions() throws Exception {

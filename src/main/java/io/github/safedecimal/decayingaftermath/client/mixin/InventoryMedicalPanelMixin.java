@@ -14,6 +14,8 @@ public abstract class InventoryMedicalPanelMixin {
     @Inject(method = "extractRenderState", at = @At("TAIL"))
     private void decayingAftermath$renderCornerPanel(GuiGraphicsExtractor graphics, int mouseX, int mouseY,
             float partialTick, CallbackInfo ci) {
-        MedicalPanelRenderer.extract(graphics, MedicalPanelLayout.topLeft());
+        var panel = MedicalPanelLayout.forScreen(graphics.guiWidth(), graphics.guiHeight());
+        MedicalPanelRenderer.extract(graphics, panel);
+        MedicalPanelRenderer.extractTooltip(graphics, panel, mouseX, mouseY);
     }
 }

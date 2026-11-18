@@ -219,7 +219,7 @@ public final class MedicalProcedureScreen extends Screen {
             var grip=ProcedureToolPose.grip(toolX,toolY,pivotX(),pivotY(),gripLocalX,gripLocalY,toolAngle());
             handX=grip.x();handY=grip.y();
         }
-        extractTransparentBackground(graphics);MedicalPanelRenderer.extract(graphics,MedicalPanelLayout.topLeft());
+        extractTransparentBackground(graphics);MedicalPanelRenderer.extract(graphics,MedicalPanelLayout.forScreen(width,height));
         graphics.pose().pushMatrix();graphics.pose().translate(ox,oy);graphics.pose().scale(scale,scale);ProcedureVisuals.frame(graphics);
         graphics.centeredText(font,Component.translatable(part.translationKey()).getString(),128,-1,0xFFDDE3DE);
         if(isWrap()) {
@@ -282,6 +282,7 @@ public final class MedicalProcedureScreen extends Screen {
         var mode=ClientMedicalState.snapshot().mode();
         if(mode==BodySnapshot.Mode.DYING||mode==BodySnapshot.Mode.LAST_STANDING)MedicalClient.extractHud(graphics);
         else MedicalClient.extractPain(graphics);
+        MedicalPanelRenderer.extractTooltip(graphics,MedicalPanelLayout.forScreen(width,height),mouseX,mouseY);
     }
     private int rollSize() {double scale=1-(1-remaining)*(1-remaining);return Math.max(1,(int)(78*scale));}
     private void drawBandageRoll(GuiGraphicsExtractor graphics,double x,double y,double visualAngle) {

@@ -47,7 +47,8 @@ public final class MedicalInventoryScreen extends AbstractContainerScreen<Invent
 
     @Override protected void init() {
         super.init(); leftPos=topPos=0;
-        originX=Math.min(139,Math.max(0,width-80));
+        var panel=MedicalPanelLayout.forScreen(width,height);
+        originX=Math.min(panel.x()+panel.width()+MedicalPanelLayout.GAP,Math.max(0,width-80));
         scale=Math.min(1f,Math.min((width-originX-4f)/CANVAS_W,(height-8f)/CANVAS_H));
         scale=Math.max(0.15f,scale);
         originX+=(int)Math.max(0,(width-originX-CANVAS_W*scale)/2);
@@ -65,7 +66,8 @@ public final class MedicalInventoryScreen extends AbstractContainerScreen<Invent
 
     @Override public void extractRenderState(GuiGraphicsExtractor graphics,int mouseX,int mouseY,float partialTick) {
         validateMedicalCarry();
-        MedicalPanelRenderer.extract(graphics,MedicalPanelLayout.topLeft());
+        var panel=MedicalPanelLayout.forScreen(width,height);
+        MedicalPanelRenderer.extract(graphics,panel);
         BodySnapshot body=ClientMedicalState.snapshot();
         graphics.pose().pushMatrix(); graphics.pose().translate(originX,originY); graphics.pose().scale(scale,scale);
         super.extractRenderState(graphics,(int)virtualX(mouseX),(int)virtualY(mouseY),partialTick);
@@ -84,6 +86,7 @@ public final class MedicalInventoryScreen extends AbstractContainerScreen<Invent
                 ||body.mode()==BodySnapshot.Mode.DYING)
             MedicalClient.extractHud(graphics);
         else MedicalClient.extractPain(graphics);
+        MedicalPanelRenderer.extractTooltip(graphics,panel,mouseX,mouseY);
     }
 
     @Override public void extractBackground(GuiGraphicsExtractor graphics,int mouseX,int mouseY,float partialTick) {

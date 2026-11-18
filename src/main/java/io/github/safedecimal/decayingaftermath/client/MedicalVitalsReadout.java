@@ -3,7 +3,7 @@ package io.github.safedecimal.decayingaftermath.client;
 import io.github.safedecimal.decayingaftermath.medical.BodySnapshot;
 import java.util.List;
 
-/** Ten screen-local rows inside CU's unchanged 133x196 monitor frame. */
+/** Ten live numeric readouts in source-pixel coordinates, enlarged with the CU monitor. */
 public final class MedicalVitalsReadout {
     public record Row(String key, int percent, int x, int y) { }
     private MedicalVitalsReadout() { }
