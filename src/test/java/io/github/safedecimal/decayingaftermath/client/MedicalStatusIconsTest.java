@@ -13,6 +13,31 @@ class MedicalStatusIconsTest {
     @Test void dressedBleedingIsAStatusNotAnInventoryItem() {
         assertEquals("bleeding_covered_heavy",MedicalStatusIcons.bleeding(state(.12f,true)).name());
     }
+    @Test void bleedingTintUsesSerializedGradientColorKeysRatherThanConstantPink() {
+        assertEquals(0xFF000000,MedicalStatusIcons.bleedingColor(state(0,false)));
+        assertEquals(0xFF6E6E6E,MedicalStatusIcons.bleedingColor(state(66/65535f,false)));
+        assertEquals(0xFFFFFFFF,MedicalStatusIcons.bleedingColor(state(3277/65535f,false)));
+        assertEquals(0xFFFFFF00,MedicalStatusIcons.bleedingColor(state(6554/65535f,false)));
+        assertEquals(0xFFBB8500,MedicalStatusIcons.bleedingColor(state(13107/65535f,false)));
+        assertEquals(0xFF891900,MedicalStatusIcons.bleedingColor(state(29491/65535f,false)));
+        assertEquals(0xFF340600,MedicalStatusIcons.bleedingColor(state(1,false)));
+    }
+    @Test void coveredAndUncoveredBleedingHaveIdenticalSeverityTint() {
+        for(float value:new float[]{.01f,.04f,.08f,.1f,.2f,.5f,1})
+            assertEquals(MedicalStatusIcons.bleedingColor(state(value,false)),MedicalStatusIcons.bleedingColor(state(value,true)));
+    }
+    @Test void infectionTintUsesCuPurpleProgressionForBothDirections() {
+        assertEquals(0xFFFFFFFF,MedicalStatusIcons.infectionColor(infected(0,false)));
+        assertEquals(0xFFE8BFEC,MedicalStatusIcons.infectionColor(infected(.25f,false)));
+        assertEquals(0xFFD17FDA,MedicalStatusIcons.infectionColor(infected(.5f,true)));
+        assertEquals(0xFFA300B6,MedicalStatusIcons.infectionColor(infected(1,false)));
+    }
+    @Test void splintDoesNotWhitenPendingFractureInPlaceOfMissingHealingTimer() {
+        var before=new BodySnapshot.PartSnapshot(.5f,0,0,true,false,false,false);
+        var splinted=new BodySnapshot.PartSnapshot(.5f,0,0,true,false,true,false);
+        assertEquals(0xFFFF0000,MedicalStatusIcons.fractureColor(before));
+        assertEquals(MedicalStatusIcons.fractureColor(before),MedicalStatusIcons.fractureColor(splinted));
+    }
     @Test void exactSpriteDimensionsRemainAvailable() {
         var icon=MedicalStatusIcons.bleeding(state(.21f,false));assertEquals(25,icon.width());assertEquals(40,icon.height());
     }

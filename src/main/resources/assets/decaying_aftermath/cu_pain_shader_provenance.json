@@ -1,0 +1,911 @@
+{
+  "source_assembly_sha256": "48c7f2296fc4a659faae3b1822884ca5b7ff73d6767ef159e6a6c2bc0b2d38f1",
+  "source": "PlayerCamera.HandleScreenShaders token0x060005D6; mainScreenPass Material globalgamemanagers.assets/6 -> ScreenPass Shader69 -> DXBC fragment program3",
+  "parameter": "_Pain CB1[6].x byte96",
+  "code": {
+    "smoothing": "painSmooth=Lerp(painSmooth,averagePain,dt*6)",
+    "phase": "phase+=unscaledDt*7*normalizedPain",
+    "pulse": "P=normalizedPain*(1+.15*sin(phase))",
+    "mask": "q=P*smoothstep(1.05-P^2,1.35-P^2,painimage.r+paingrain.r*P^2)",
+    "linear_rgb": "(.311980,.038973,.036393)+q*(.263464,-.028993,-.026413)"
+  },
+  "source_textures": [
+    {
+      "register": 3,
+      "shader_property": "_SampleTexture2D_7c233926384f459ea956215906aed791_Texture_1_Texture2D",
+      "file": "globalgamemanagers.assets",
+      "path_id": 16,
+      "type": "Texture2D",
+      "name": "painimage",
+      "width": 1024,
+      "height": 1024,
+      "output": "C:\\Users\\thuam\\Desktop\\projects\\decaying-aftermath\\verification\\cu-feedback-0.3.10\\pain\\pain-noise-t3.png",
+      "sha256": "f82f544f1115ee33db3a02cf62e6ba420230c4633a1d79d3e8db0dc364c3092c"
+    },
+    {
+      "register": 5,
+      "shader_property": "_SampleTexture2D_fc488d78c9744ac29c325d344d9e3721_Texture_1_Texture2D",
+      "file": "globalgamemanagers.assets",
+      "path_id": 53,
+      "type": "Texture2D",
+      "name": "paingrain",
+      "width": 512,
+      "height": 512,
+      "output": "C:\\Users\\thuam\\Desktop\\projects\\decaying-aftermath\\verification\\cu-feedback-0.3.10\\pain\\pain-noise-t5.png",
+      "sha256": "39661d03b9141e179310e8207850d7bae01fd7721064b01b4c25a0f6b3a19074"
+    }
+  ],
+  "adaptations": [
+    "256x256 authored masks with96 fine levels and one draw per frame instead of Unity fullscreen shader",
+    "Normalized screen UVs instead of projected CU world coordinates/paingrain world mapping",
+    "Small clear central 12% radius for Minecraft procedure and readout legibility",
+    "Shader linear RGB encoded sRGB into PNG; unrelated shader physiology/distortion is not transplanted"
+  ],
+  "games_executed": false,
+  "records": [
+    {
+      "path": "textures/gui/procedures/pain_mask_1.png",
+      "intensity": 0.011979166666666666,
+      "sha256": "4bf97111c972093fbf70cecad9b0d04714614e90333efc4dee1724f3fc784558",
+      "bytes": 857,
+      "center_alpha": 0,
+      "corner_alpha": 0,
+      "nonzero_alpha_pixels": 0
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_2.png",
+      "intensity": 0.02395833333333333,
+      "sha256": "4bf97111c972093fbf70cecad9b0d04714614e90333efc4dee1724f3fc784558",
+      "bytes": 857,
+      "center_alpha": 0,
+      "corner_alpha": 0,
+      "nonzero_alpha_pixels": 0
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_3.png",
+      "intensity": 0.0359375,
+      "sha256": "4bf97111c972093fbf70cecad9b0d04714614e90333efc4dee1724f3fc784558",
+      "bytes": 857,
+      "center_alpha": 0,
+      "corner_alpha": 0,
+      "nonzero_alpha_pixels": 0
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_4.png",
+      "intensity": 0.04791666666666666,
+      "sha256": "4bf97111c972093fbf70cecad9b0d04714614e90333efc4dee1724f3fc784558",
+      "bytes": 857,
+      "center_alpha": 0,
+      "corner_alpha": 0,
+      "nonzero_alpha_pixels": 0
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_5.png",
+      "intensity": 0.059895833333333336,
+      "sha256": "4bf97111c972093fbf70cecad9b0d04714614e90333efc4dee1724f3fc784558",
+      "bytes": 857,
+      "center_alpha": 0,
+      "corner_alpha": 0,
+      "nonzero_alpha_pixels": 0
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_6.png",
+      "intensity": 0.071875,
+      "sha256": "4bf97111c972093fbf70cecad9b0d04714614e90333efc4dee1724f3fc784558",
+      "bytes": 857,
+      "center_alpha": 0,
+      "corner_alpha": 0,
+      "nonzero_alpha_pixels": 0
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_7.png",
+      "intensity": 0.08385416666666666,
+      "sha256": "4bf97111c972093fbf70cecad9b0d04714614e90333efc4dee1724f3fc784558",
+      "bytes": 857,
+      "center_alpha": 0,
+      "corner_alpha": 0,
+      "nonzero_alpha_pixels": 0
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_8.png",
+      "intensity": 0.09583333333333333,
+      "sha256": "4bf97111c972093fbf70cecad9b0d04714614e90333efc4dee1724f3fc784558",
+      "bytes": 857,
+      "center_alpha": 0,
+      "corner_alpha": 0,
+      "nonzero_alpha_pixels": 0
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_9.png",
+      "intensity": 0.10781249999999999,
+      "sha256": "4bf97111c972093fbf70cecad9b0d04714614e90333efc4dee1724f3fc784558",
+      "bytes": 857,
+      "center_alpha": 0,
+      "corner_alpha": 0,
+      "nonzero_alpha_pixels": 0
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_10.png",
+      "intensity": 0.11979166666666667,
+      "sha256": "4bf97111c972093fbf70cecad9b0d04714614e90333efc4dee1724f3fc784558",
+      "bytes": 857,
+      "center_alpha": 0,
+      "corner_alpha": 0,
+      "nonzero_alpha_pixels": 0
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_11.png",
+      "intensity": 0.1317708333333333,
+      "sha256": "4bf97111c972093fbf70cecad9b0d04714614e90333efc4dee1724f3fc784558",
+      "bytes": 857,
+      "center_alpha": 0,
+      "corner_alpha": 0,
+      "nonzero_alpha_pixels": 0
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_12.png",
+      "intensity": 0.14375,
+      "sha256": "4bf97111c972093fbf70cecad9b0d04714614e90333efc4dee1724f3fc784558",
+      "bytes": 857,
+      "center_alpha": 0,
+      "corner_alpha": 0,
+      "nonzero_alpha_pixels": 0
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_13.png",
+      "intensity": 0.15572916666666667,
+      "sha256": "4bf97111c972093fbf70cecad9b0d04714614e90333efc4dee1724f3fc784558",
+      "bytes": 857,
+      "center_alpha": 0,
+      "corner_alpha": 0,
+      "nonzero_alpha_pixels": 0
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_14.png",
+      "intensity": 0.16770833333333332,
+      "sha256": "4bf97111c972093fbf70cecad9b0d04714614e90333efc4dee1724f3fc784558",
+      "bytes": 857,
+      "center_alpha": 0,
+      "corner_alpha": 0,
+      "nonzero_alpha_pixels": 0
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_15.png",
+      "intensity": 0.1796875,
+      "sha256": "4bf97111c972093fbf70cecad9b0d04714614e90333efc4dee1724f3fc784558",
+      "bytes": 857,
+      "center_alpha": 0,
+      "corner_alpha": 0,
+      "nonzero_alpha_pixels": 0
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_16.png",
+      "intensity": 0.19166666666666665,
+      "sha256": "eeaedc4d8b476c94ee05cd6997d110ac801a38e782e36d3ff53172dec139d756",
+      "bytes": 917,
+      "center_alpha": 0,
+      "corner_alpha": 0,
+      "nonzero_alpha_pixels": 7
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_17.png",
+      "intensity": 0.2036458333333333,
+      "sha256": "ba50444a95f7c56c6b356d107871409410246c0ab07df531960e7801b1cc460f",
+      "bytes": 1980,
+      "center_alpha": 0,
+      "corner_alpha": 0,
+      "nonzero_alpha_pixels": 234
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_18.png",
+      "intensity": 0.21562499999999998,
+      "sha256": "0d09201b08fef4982265039cfc25ef5e470db82a9fe68a06b3088f9b9cb1443f",
+      "bytes": 5615,
+      "center_alpha": 0,
+      "corner_alpha": 0,
+      "nonzero_alpha_pixels": 1515
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_19.png",
+      "intensity": 0.22760416666666664,
+      "sha256": "ebe02eef2dfe064d4277212ced9ef798495a06199dbb3040dc4ba7ea3c8c32fd",
+      "bytes": 10973,
+      "center_alpha": 0,
+      "corner_alpha": 0,
+      "nonzero_alpha_pixels": 5034
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_20.png",
+      "intensity": 0.23958333333333334,
+      "sha256": "cedc2e371b61c802690b7e7a570bbc2271022ba09687f73e9423523f6ef323fa",
+      "bytes": 15516,
+      "center_alpha": 0,
+      "corner_alpha": 0,
+      "nonzero_alpha_pixels": 10765
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_21.png",
+      "intensity": 0.25156249999999997,
+      "sha256": "2097943af2444f22cdc71798aa7c9c30019f2051d01c28be5f05df613a66650b",
+      "bytes": 18412,
+      "center_alpha": 0,
+      "corner_alpha": 1,
+      "nonzero_alpha_pixels": 15536
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_22.png",
+      "intensity": 0.2635416666666666,
+      "sha256": "737ebf7a65167eb58ae57ae7949a7d640f0069108aaa24d707c9b0216f3ca57b",
+      "bytes": 19508,
+      "center_alpha": 0,
+      "corner_alpha": 2,
+      "nonzero_alpha_pixels": 16645
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_23.png",
+      "intensity": 0.2755208333333333,
+      "sha256": "fdaf5006240eb98bf9cf29761643d8e3c4ccbdde3b8e075b1355f276945091bf",
+      "bytes": 20408,
+      "center_alpha": 0,
+      "corner_alpha": 2,
+      "nonzero_alpha_pixels": 17326
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_24.png",
+      "intensity": 0.2875,
+      "sha256": "12949214928873c2e9ebd34ce4f8742662bb2694085f1a325277d97f496939ad",
+      "bytes": 23146,
+      "center_alpha": 0,
+      "corner_alpha": 4,
+      "nonzero_alpha_pixels": 17914
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_25.png",
+      "intensity": 0.29947916666666663,
+      "sha256": "f058b76b0b94bd53f2fa9ff2aea259b5ca57286d2ddaff94cf290f11571a2c04",
+      "bytes": 25884,
+      "center_alpha": 0,
+      "corner_alpha": 5,
+      "nonzero_alpha_pixels": 18472
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_26.png",
+      "intensity": 0.31145833333333334,
+      "sha256": "4044e8cab9d6476413484417aa63e28ec751acd443409545a9d41f51aa6d0289",
+      "bytes": 29492,
+      "center_alpha": 0,
+      "corner_alpha": 8,
+      "nonzero_alpha_pixels": 19016
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_27.png",
+      "intensity": 0.3234375,
+      "sha256": "71398981c94008ae33580a063b40cb0d734b8b9c13c80198e9ebdbe8bbdc3d9f",
+      "bytes": 32759,
+      "center_alpha": 0,
+      "corner_alpha": 10,
+      "nonzero_alpha_pixels": 19539
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_28.png",
+      "intensity": 0.33541666666666664,
+      "sha256": "2f6b053fea6b136e3fd3af878be227b3d0d5c7d3d4ec15d2960a3edfec305be4",
+      "bytes": 35096,
+      "center_alpha": 0,
+      "corner_alpha": 13,
+      "nonzero_alpha_pixels": 20032
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_29.png",
+      "intensity": 0.3473958333333333,
+      "sha256": "de84b607686d327b8057450486e2aeec347d5f9e6d7bc8782d9ef568f765ea12",
+      "bytes": 36419,
+      "center_alpha": 0,
+      "corner_alpha": 17,
+      "nonzero_alpha_pixels": 20504
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_30.png",
+      "intensity": 0.359375,
+      "sha256": "f66646f9df176cd9080458d98ea546ba03f1993d9d98b6776027e0b4841febf3",
+      "bytes": 38743,
+      "center_alpha": 0,
+      "corner_alpha": 21,
+      "nonzero_alpha_pixels": 20964
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_31.png",
+      "intensity": 0.37135416666666665,
+      "sha256": "96dca7fc14c2a29a0b24125886ecfa11a685c3a0e58dc60672496d509a704ddb",
+      "bytes": 40878,
+      "center_alpha": 0,
+      "corner_alpha": 26,
+      "nonzero_alpha_pixels": 21407
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_32.png",
+      "intensity": 0.3833333333333333,
+      "sha256": "f5ab9c177a87575e2f69b03dbb500ecf38b705aa22a91639525d7d21a09d64d9",
+      "bytes": 42468,
+      "center_alpha": 0,
+      "corner_alpha": 31,
+      "nonzero_alpha_pixels": 21832
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_33.png",
+      "intensity": 0.39531249999999996,
+      "sha256": "171a601ce31d06332c272cb07d7aa3acc8d6140e068edf1331ada53b80b9e853",
+      "bytes": 44605,
+      "center_alpha": 0,
+      "corner_alpha": 37,
+      "nonzero_alpha_pixels": 22311
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_34.png",
+      "intensity": 0.4072916666666666,
+      "sha256": "c8126699cd3aaa167356584f3d9f8b8eb1fb382dba729243cb2f52f21a5047a1",
+      "bytes": 46103,
+      "center_alpha": 0,
+      "corner_alpha": 43,
+      "nonzero_alpha_pixels": 22801
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_35.png",
+      "intensity": 0.4192708333333333,
+      "sha256": "f1fd66362682987f985e4021f1e5018bb58085193cda49d403bd570260bdc576",
+      "bytes": 47863,
+      "center_alpha": 0,
+      "corner_alpha": 50,
+      "nonzero_alpha_pixels": 23255
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_36.png",
+      "intensity": 0.43124999999999997,
+      "sha256": "757441ab9a3734142280b48a0414723fdd5ed3e27dfcffb1a3c73b4bf87e65f3",
+      "bytes": 49571,
+      "center_alpha": 0,
+      "corner_alpha": 58,
+      "nonzero_alpha_pixels": 23776
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_37.png",
+      "intensity": 0.4432291666666666,
+      "sha256": "17efebde5031ae35cd6895c5d7dd551956daeb9b2d77234b3a95df68abfe7a50",
+      "bytes": 51087,
+      "center_alpha": 0,
+      "corner_alpha": 66,
+      "nonzero_alpha_pixels": 24286
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_38.png",
+      "intensity": 0.45520833333333327,
+      "sha256": "98489218c3543c63504eab94726a56d96aef7bc89aac5b9d79eb661e222c7538",
+      "bytes": 52768,
+      "center_alpha": 0,
+      "corner_alpha": 75,
+      "nonzero_alpha_pixels": 24884
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_39.png",
+      "intensity": 0.4671874999999999,
+      "sha256": "a8c1f4fea9eaae2856f4696f9797b10d58a6e55e06cc72376b31652db120d8c2",
+      "bytes": 54191,
+      "center_alpha": 0,
+      "corner_alpha": 83,
+      "nonzero_alpha_pixels": 25482
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_40.png",
+      "intensity": 0.4791666666666667,
+      "sha256": "1dbc283a35b53150c36b0f768883135bb56342280f860f4116db404825c7d6bb",
+      "bytes": 55219,
+      "center_alpha": 0,
+      "corner_alpha": 92,
+      "nonzero_alpha_pixels": 26137
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_41.png",
+      "intensity": 0.49114583333333334,
+      "sha256": "d49c9f372f5b51e0c66fc6856976a9d78cb367f4b63528bfa3fda12a05b9e118",
+      "bytes": 56023,
+      "center_alpha": 0,
+      "corner_alpha": 102,
+      "nonzero_alpha_pixels": 26778
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_42.png",
+      "intensity": 0.5031249999999999,
+      "sha256": "8025e32ca94051fe809bf01d49a05fd12a964b829c876b2dc8556e56d7c518a9",
+      "bytes": 56213,
+      "center_alpha": 0,
+      "corner_alpha": 110,
+      "nonzero_alpha_pixels": 27456
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_43.png",
+      "intensity": 0.5151041666666666,
+      "sha256": "8fc86fb7dae5745206ec0951cede483b393eec48be100338fbe464418411b5cd",
+      "bytes": 54588,
+      "center_alpha": 0,
+      "corner_alpha": 119,
+      "nonzero_alpha_pixels": 28148
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_44.png",
+      "intensity": 0.5270833333333332,
+      "sha256": "acaac45e777cc391d00056794175b9360acca732dd268611679819a7dcf5876e",
+      "bytes": 53294,
+      "center_alpha": 0,
+      "corner_alpha": 127,
+      "nonzero_alpha_pixels": 28924
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_45.png",
+      "intensity": 0.5390624999999999,
+      "sha256": "299bce8c70beb9e247b0d26935d200ec8b6d332bb2dcf9d7fd1440039a0f114a",
+      "bytes": 52083,
+      "center_alpha": 0,
+      "corner_alpha": 134,
+      "nonzero_alpha_pixels": 29710
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_46.png",
+      "intensity": 0.5510416666666667,
+      "sha256": "9f49acb126c06bd05378820a452e3237f2dd8c270105982d4cdae5229b1098d7",
+      "bytes": 48846,
+      "center_alpha": 0,
+      "corner_alpha": 140,
+      "nonzero_alpha_pixels": 30512
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_47.png",
+      "intensity": 0.5630208333333333,
+      "sha256": "ce6eb6bd2993f616659c310af5855df3136d5f1d888d7ce9e75b0583babda915",
+      "bytes": 46729,
+      "center_alpha": 0,
+      "corner_alpha": 144,
+      "nonzero_alpha_pixels": 31362
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_48.png",
+      "intensity": 0.575,
+      "sha256": "84703cd0fe4a3584ec0c1d2788cff0d541ceebf595c1a7f992beec3e61ec35ba",
+      "bytes": 42006,
+      "center_alpha": 0,
+      "corner_alpha": 147,
+      "nonzero_alpha_pixels": 32229
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_49.png",
+      "intensity": 0.5869791666666666,
+      "sha256": "a2bc8ce4d5f899983a42f75654488639ba0acd80fc3e0ce7c02824a45cb45f0e",
+      "bytes": 40628,
+      "center_alpha": 0,
+      "corner_alpha": 150,
+      "nonzero_alpha_pixels": 33102
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_50.png",
+      "intensity": 0.5989583333333333,
+      "sha256": "b0209efc2460474f06b36976f55d93c48e849f36859c90e88b167c0633dcfa21",
+      "bytes": 41875,
+      "center_alpha": 0,
+      "corner_alpha": 153,
+      "nonzero_alpha_pixels": 34048
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_51.png",
+      "intensity": 0.6109375,
+      "sha256": "e8d2a69266969141c007669115fa61e8bef78b02d2e8f00f9f88a436a96c3a44",
+      "bytes": 42276,
+      "center_alpha": 0,
+      "corner_alpha": 156,
+      "nonzero_alpha_pixels": 35010
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_52.png",
+      "intensity": 0.6229166666666667,
+      "sha256": "93766239b070ae1f1be7886c8d86484d852199106de95d3c62ac2bedc691e896",
+      "bytes": 43439,
+      "center_alpha": 0,
+      "corner_alpha": 159,
+      "nonzero_alpha_pixels": 36046
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_53.png",
+      "intensity": 0.6348958333333333,
+      "sha256": "debbfe79b312333caa85eb5a19ddf5ea534be8dba2a270d1f45e9bae4ad1207b",
+      "bytes": 44967,
+      "center_alpha": 0,
+      "corner_alpha": 162,
+      "nonzero_alpha_pixels": 37072
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_54.png",
+      "intensity": 0.646875,
+      "sha256": "60989068d655949be8a2895516510428e58ad3c9a39504acf6619b5d80c0a9ec",
+      "bytes": 46657,
+      "center_alpha": 0,
+      "corner_alpha": 165,
+      "nonzero_alpha_pixels": 38151
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_55.png",
+      "intensity": 0.6588541666666666,
+      "sha256": "17e03d66a137e8e18af6f9b359b15cc823b0b800fe53c927398ee79b62c9f92d",
+      "bytes": 47064,
+      "center_alpha": 0,
+      "corner_alpha": 168,
+      "nonzero_alpha_pixels": 39249
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_56.png",
+      "intensity": 0.6708333333333333,
+      "sha256": "8f1fd5a80711d92bae14dc6e5a18cb76bee62e1497ebbf44938c5fd8db724926",
+      "bytes": 49315,
+      "center_alpha": 0,
+      "corner_alpha": 171,
+      "nonzero_alpha_pixels": 40310
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_57.png",
+      "intensity": 0.6828124999999999,
+      "sha256": "080364a961985a0dee8a25f64b72a4aea41c7c16f7f77385ba2e176babed9480",
+      "bytes": 49758,
+      "center_alpha": 0,
+      "corner_alpha": 174,
+      "nonzero_alpha_pixels": 41473
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_58.png",
+      "intensity": 0.6947916666666666,
+      "sha256": "aebc8835ae9cd5dcaa347f029481a16a984e71beae30a2b9ef2566fc34d2657e",
+      "bytes": 52040,
+      "center_alpha": 0,
+      "corner_alpha": 177,
+      "nonzero_alpha_pixels": 42602
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_59.png",
+      "intensity": 0.7067708333333332,
+      "sha256": "94de681040c42b57cfe5514a8995e131c0c738a9e36febe37fc92a0441f8ef4a",
+      "bytes": 52190,
+      "center_alpha": 0,
+      "corner_alpha": 180,
+      "nonzero_alpha_pixels": 43769
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_60.png",
+      "intensity": 0.71875,
+      "sha256": "8e33577432e9c04ab446cd6e76bf400424ed0b3b9f53f0096e43571964dad10d",
+      "bytes": 53035,
+      "center_alpha": 0,
+      "corner_alpha": 183,
+      "nonzero_alpha_pixels": 44945
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_61.png",
+      "intensity": 0.7307291666666665,
+      "sha256": "96116cfab74df9927afb221020b2e03bd49d8b1675a1b7e996610645433a738a",
+      "bytes": 54810,
+      "center_alpha": 0,
+      "corner_alpha": 186,
+      "nonzero_alpha_pixels": 46095
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_62.png",
+      "intensity": 0.7427083333333333,
+      "sha256": "e7f734e69c308545e2b29d5e46bb4c6a4fd1b7d8cf68f8814f7cb27aa8eefef6",
+      "bytes": 54960,
+      "center_alpha": 0,
+      "corner_alpha": 189,
+      "nonzero_alpha_pixels": 47230
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_63.png",
+      "intensity": 0.7546874999999998,
+      "sha256": "21d1cee7104f68a251640a5a296a304232987b646536104430b6e00bcdf0fbd6",
+      "bytes": 56498,
+      "center_alpha": 0,
+      "corner_alpha": 192,
+      "nonzero_alpha_pixels": 48417
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_64.png",
+      "intensity": 0.7666666666666666,
+      "sha256": "7e3549ba46252641bf23d3e89f2660f45c8282dc08d48c4ca7b657668a354475",
+      "bytes": 56705,
+      "center_alpha": 0,
+      "corner_alpha": 195,
+      "nonzero_alpha_pixels": 49597
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_65.png",
+      "intensity": 0.7786458333333334,
+      "sha256": "0ff7ab2df395bd6847e5bac15782072298710cab4d45996b5ca6978655b3ed3e",
+      "bytes": 58913,
+      "center_alpha": 0,
+      "corner_alpha": 199,
+      "nonzero_alpha_pixels": 50799
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_66.png",
+      "intensity": 0.7906249999999999,
+      "sha256": "579f1786e0150038693c15b822461fc6e082b2150c4723135f4997f8f6ab1209",
+      "bytes": 58445,
+      "center_alpha": 0,
+      "corner_alpha": 202,
+      "nonzero_alpha_pixels": 52002
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_67.png",
+      "intensity": 0.8026041666666667,
+      "sha256": "5eadf206e39c2038c869d892fd3165d26ee0df1ecad5b666180f3f3d91ff0b0e",
+      "bytes": 57898,
+      "center_alpha": 0,
+      "corner_alpha": 205,
+      "nonzero_alpha_pixels": 53205
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_68.png",
+      "intensity": 0.8145833333333332,
+      "sha256": "925a3fb0e1e03c9f2cff3653c8c079c26e0e47b7e78b78a838b1d991cf7f8597",
+      "bytes": 57960,
+      "center_alpha": 0,
+      "corner_alpha": 208,
+      "nonzero_alpha_pixels": 54410
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_69.png",
+      "intensity": 0.8265625,
+      "sha256": "32dbb31369c308a9ee5b346cebe7470a5e02986038986109c71403ecac69e766",
+      "bytes": 58032,
+      "center_alpha": 0,
+      "corner_alpha": 211,
+      "nonzero_alpha_pixels": 55569
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_70.png",
+      "intensity": 0.8385416666666666,
+      "sha256": "97f30ffd8e8d75abba7626c82e60d4d743c3bc8ab6a7aa47bf54b4e4de8b527a",
+      "bytes": 58025,
+      "center_alpha": 0,
+      "corner_alpha": 214,
+      "nonzero_alpha_pixels": 56727
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_71.png",
+      "intensity": 0.8505208333333333,
+      "sha256": "dadf3034e124f0ef16bb0da48c5963958920cc808af1f7277a294dd44d333b8a",
+      "bytes": 57412,
+      "center_alpha": 0,
+      "corner_alpha": 217,
+      "nonzero_alpha_pixels": 57824
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_72.png",
+      "intensity": 0.8624999999999999,
+      "sha256": "e7b80eb75519a6c1ae84bbfee9407779aca08c5f39d9b910153fe3f16d914a0a",
+      "bytes": 56661,
+      "center_alpha": 0,
+      "corner_alpha": 220,
+      "nonzero_alpha_pixels": 58931
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_73.png",
+      "intensity": 0.8744791666666666,
+      "sha256": "b8cb75a64dea5526925c0e41d8cfe4b088c293a0214fad2efd000f86d3dd73de",
+      "bytes": 55287,
+      "center_alpha": 0,
+      "corner_alpha": 223,
+      "nonzero_alpha_pixels": 59880
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_74.png",
+      "intensity": 0.8864583333333332,
+      "sha256": "fa704c975d63b6b8c4afcff2664efc82b2582878c8b084985d2fa9c9a3718c2a",
+      "bytes": 53893,
+      "center_alpha": 0,
+      "corner_alpha": 226,
+      "nonzero_alpha_pixels": 60806
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_75.png",
+      "intensity": 0.8984375,
+      "sha256": "d6c4583ae63d9a47136b9e856387f2984621e12d9da69ad54e71a9d7c4f2265e",
+      "bytes": 51506,
+      "center_alpha": 0,
+      "corner_alpha": 229,
+      "nonzero_alpha_pixels": 61625
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_76.png",
+      "intensity": 0.9104166666666665,
+      "sha256": "da70805ddc15983e745f38fa09be49504d4f846da744e33d2175afb6d796c3d4",
+      "bytes": 49823,
+      "center_alpha": 0,
+      "corner_alpha": 232,
+      "nonzero_alpha_pixels": 62345
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_77.png",
+      "intensity": 0.9223958333333333,
+      "sha256": "691be5b30a333b75a82ddce6ec4b6aeb72b5a865de0ab26b7e942c6d80590488",
+      "bytes": 46326,
+      "center_alpha": 0,
+      "corner_alpha": 235,
+      "nonzero_alpha_pixels": 62926
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_78.png",
+      "intensity": 0.9343749999999998,
+      "sha256": "34b7e79e64b3974ad75ff22d81e6e96421eef2e37db8e60ba31ddf10c84b3484",
+      "bytes": 44379,
+      "center_alpha": 0,
+      "corner_alpha": 238,
+      "nonzero_alpha_pixels": 63419
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_79.png",
+      "intensity": 0.9463541666666666,
+      "sha256": "b04e21d5feb9ca73185b23a7db33bb3735ae90323c6d187eb9115e38c25f6446",
+      "bytes": 40256,
+      "center_alpha": 0,
+      "corner_alpha": 241,
+      "nonzero_alpha_pixels": 63821
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_80.png",
+      "intensity": 0.9583333333333334,
+      "sha256": "6593e0889a84dc810092f127db3ca4dca0c3325b3cec3a6b719bedbf854b23ce",
+      "bytes": 37325,
+      "center_alpha": 0,
+      "corner_alpha": 244,
+      "nonzero_alpha_pixels": 64146
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_81.png",
+      "intensity": 0.9703124999999999,
+      "sha256": "f382ae8a54d85a62e7795a14ce361b2c12cdbc6d384d3ce7a6778d9be6be0418",
+      "bytes": 33483,
+      "center_alpha": 0,
+      "corner_alpha": 247,
+      "nonzero_alpha_pixels": 64358
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_82.png",
+      "intensity": 0.9822916666666667,
+      "sha256": "9906181e31adcba4d685fe1885abf357733652f7bb896cb784ec7612e1f1f39a",
+      "bytes": 30065,
+      "center_alpha": 0,
+      "corner_alpha": 250,
+      "nonzero_alpha_pixels": 64511
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_83.png",
+      "intensity": 0.9942708333333332,
+      "sha256": "a7a4753098deae3206dad9fa1e14cb161a76e54f3bb24b2751c8b4e37e5345a3",
+      "bytes": 26408,
+      "center_alpha": 0,
+      "corner_alpha": 254,
+      "nonzero_alpha_pixels": 64617
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_84.png",
+      "intensity": 1.0062499999999999,
+      "sha256": "82a3ee5a9c667f2931d1845d27ac8ed3107be776e0527c2746a192d031d73018",
+      "bytes": 22098,
+      "center_alpha": 0,
+      "corner_alpha": 255,
+      "nonzero_alpha_pixels": 64699
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_85.png",
+      "intensity": 1.0182291666666665,
+      "sha256": "5e9196eacb7c6a32aa6a3ee14033fc4032a00b87880524f80c7670bd2c33b0b3",
+      "bytes": 17745,
+      "center_alpha": 0,
+      "corner_alpha": 255,
+      "nonzero_alpha_pixels": 64729
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_86.png",
+      "intensity": 1.0302083333333332,
+      "sha256": "23aecd48280015658c3c07dbd7bd81ec1f3600a37d2e97d377ac7738b58c308b",
+      "bytes": 14505,
+      "center_alpha": 0,
+      "corner_alpha": 255,
+      "nonzero_alpha_pixels": 64743
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_87.png",
+      "intensity": 1.0421875,
+      "sha256": "fe57019383f00f53956c9d5d9eef21330e7d645968efb386eec1688ba32b0e4e",
+      "bytes": 11785,
+      "center_alpha": 0,
+      "corner_alpha": 255,
+      "nonzero_alpha_pixels": 64749
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_88.png",
+      "intensity": 1.0541666666666665,
+      "sha256": "e2f07c7523f734459717a3d855d0be56df18f2bd6419057b36b9ee43e44cad80",
+      "bytes": 9332,
+      "center_alpha": 0,
+      "corner_alpha": 255,
+      "nonzero_alpha_pixels": 64758
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_89.png",
+      "intensity": 1.0661458333333333,
+      "sha256": "91926e63deb0068c76103eea36dada4493f4d008973de0122030862fbecbcb20",
+      "bytes": 7534,
+      "center_alpha": 0,
+      "corner_alpha": 255,
+      "nonzero_alpha_pixels": 64760
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_90.png",
+      "intensity": 1.0781249999999998,
+      "sha256": "bf754acf1ae62768d9d33b4404793912f5279d79cc98f0b4697248d87572590d",
+      "bytes": 6291,
+      "center_alpha": 0,
+      "corner_alpha": 255,
+      "nonzero_alpha_pixels": 64764
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_91.png",
+      "intensity": 1.0901041666666667,
+      "sha256": "4860c8c8066f305bda8ba093b6b106dcc3755e8b3b89ec09bacfa491414c6928",
+      "bytes": 5359,
+      "center_alpha": 0,
+      "corner_alpha": 255,
+      "nonzero_alpha_pixels": 64764
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_92.png",
+      "intensity": 1.1020833333333333,
+      "sha256": "1c2f407d0702ffca50c1c8ab2bab722839ca3bffc018b342d795b7297f9c3167",
+      "bytes": 4719,
+      "center_alpha": 0,
+      "corner_alpha": 255,
+      "nonzero_alpha_pixels": 64764
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_93.png",
+      "intensity": 1.1140625,
+      "sha256": "c28807ef739bdc2fb8bb3f665c753f1b55d131839e0c536f080b38ed49398ec1",
+      "bytes": 4405,
+      "center_alpha": 0,
+      "corner_alpha": 255,
+      "nonzero_alpha_pixels": 64764
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_94.png",
+      "intensity": 1.1260416666666666,
+      "sha256": "d41aee74a7e4e0fea4aed82be57e0f27e505e4e9360cda587e792000ab13d6e1",
+      "bytes": 4360,
+      "center_alpha": 0,
+      "corner_alpha": 255,
+      "nonzero_alpha_pixels": 64764
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_95.png",
+      "intensity": 1.1380208333333333,
+      "sha256": "f5cd531b5fbb9eddcfec26f9326612026f753d61e0697e7ca1c3b34d9c6d67ff",
+      "bytes": 4360,
+      "center_alpha": 0,
+      "corner_alpha": 255,
+      "nonzero_alpha_pixels": 64764
+    },
+    {
+      "path": "textures/gui/procedures/pain_mask_96.png",
+      "intensity": 1.15,
+      "sha256": "f5cd531b5fbb9eddcfec26f9326612026f753d61e0697e7ca1c3b34d9c6d67ff",
+      "bytes": 4360,
+      "center_alpha": 0,
+      "corner_alpha": 255,
+      "nonzero_alpha_pixels": 64764
+    }
+  ]
+}

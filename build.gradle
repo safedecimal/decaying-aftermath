@@ -98,6 +98,20 @@ tasks.register('verifyMedicalVitals', Test) {
     }
 }
 
+tasks.register('verifyCuFeedback', Test) {
+    description = 'Verify CU status colors, constrained rendered hand and pain shader adaptation.'
+    group = 'verification'
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+    useJUnitPlatform()
+    filter {
+        includeTestsMatching 'io.github.safedecimal.decayingaftermath.client.MedicalStatusIconsTest'
+        includeTestsMatching 'io.github.safedecimal.decayingaftermath.client.CuHandMotionTest'
+        includeTestsMatching 'io.github.safedecimal.decayingaftermath.client.ProcedureToolPoseTest'
+        includeTestsMatching 'io.github.safedecimal.decayingaftermath.client.MedicalPain*Test'
+    }
+}
+
 java {
     toolchain.languageVersion = JavaLanguageVersion.of(25)
     withSourcesJar()

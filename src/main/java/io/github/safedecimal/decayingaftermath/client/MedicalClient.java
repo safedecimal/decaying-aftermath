@@ -29,6 +29,7 @@ public final class MedicalClient {
     private static MedicalLoopSound criticalLoop, unconsciousLoop;
     private static MedicalMusicSound dyingMusic,deadMusic;
     private static final MedicalDeathMusicState DEATH_MUSIC=new MedicalDeathMusicState();
+    private static final MedicalPainState PAIN=new MedicalPainState();
     private static Object currentPlayer;
     private static boolean waitingForLiveBody;
     private static final MedicalPresentationTimeline TIMELINE = new MedicalPresentationTimeline();
@@ -50,7 +51,11 @@ public final class MedicalClient {
                 });
             }
         });
-        HudElementRegistry.addLast(id("medical_condition"), (graphics, delta) -> extractHud(graphics));
+        HudElementRegistry.addLast(id("medical_condition"), (graphics, delta) -> {
+            Object screen=Minecraft.getInstance().gui.screen();
+            // These two screens explicitly extract after their own contents; never composite twice.
+            if(!(screen instanceof MedicalInventoryScreen)&&!(screen instanceof MedicalProcedureScreen))extractHud(graphics);
+        });
     }
 
     private static void tick(Minecraft client) {
@@ -69,6 +74,8 @@ public final class MedicalClient {
         if (!ClientMedicalState.received()) return;
         BodySnapshot body = ClientMedicalState.snapshot();
         if(waitingForLiveBody) {if(body.mode()==BodySnapshot.Mode.DEAD)return;waitingForLiveBody=false;}
+        if(body.mode()==BodySnapshot.Mode.DEAD||!client.player.isAlive())PAIN.reset();
+        else PAIN.advance(body.pain(),client.isPaused()?0:seconds);
         if (body.mode() != previousMode) {
             previousMode = body.mode();
             if (body.mode() == BodySnapshot.Mode.LAST_STANDING) {
@@ -137,7 +144,7 @@ public final class MedicalClient {
         if(dyingMusic!=null)dyingMusic.close();if(deadMusic!=null)deadMusic.close();
         dyingMusic=deadMusic=null;DEATH_MUSIC.reset();
         ThoughtTyper.reset();beatPhase=0;lastTickNanos=0;playedDrone=false;
-        TIMELINE.reset();CONSCIOUSNESS_ECG.reset();previousMode=BodySnapshot.Mode.CONSCIOUS;
+        TIMELINE.reset();CONSCIOUSNESS_ECG.reset();PAIN.reset();previousMode=BodySnapshot.Mode.CONSCIOUS;
         currentPlayer=null;waitingForLiveBody=false;
     }
     public static double beatPhase() { return beatPhase; }
@@ -146,6 +153,7 @@ public final class MedicalClient {
         Minecraft client = Minecraft.getInstance();
         if (client.player == null || !ClientMedicalState.received()) return;
         BodySnapshot body = ClientMedicalState.snapshot();
+        extractPain(graphics);
         if (TIMELINE.black() > 0 || TIMELINE.vignette() > 0) {
             double black=MedicalPresentationPolicy.blackOverlay(body,TIMELINE.black(),isMedicalPanelOpen(client));
             graphics.fill(0, 0, graphics.guiWidth(), graphics.guiHeight(), color(black, 0));
@@ -197,6 +205,16 @@ public final class MedicalClient {
 
     private static int color(double alpha, int rgb) {
         return ((int) Math.round(Math.clamp(alpha, 0, 1) * 255) << 24) | rgb;
+    }
+
+    /** CU's shader painimage/paingrain red mix, rendered before black/fatal screens. */
+    public static void extractPain(GuiGraphicsExtractor graphics) {
+        Minecraft client=Minecraft.getInstance();
+        if(client.player==null||!client.player.isAlive()||!ClientMedicalState.received()
+                ||ClientMedicalState.snapshot().mode()==BodySnapshot.Mode.DEAD)return;
+        int index=PAIN.maskIndex()+(PAIN.maskBlend()>=.5?1:0);
+        // One shader-derived mask per frame: 96 fine levels avoid double-alpha crossfade artifacts.
+        if(index>0)blit(graphics,"pain_mask_"+index,0,0,graphics.guiWidth(),graphics.guiHeight(),256,256,0xFFFFFFFF);
     }
 
     /** Pixel-accurate top/clockwise radial mask; contiguous source-pixel rows, no coarse 32x32 mosaic. */

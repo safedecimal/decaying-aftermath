@@ -14,6 +14,13 @@ public final class MedicalStatusIcons {
     public record Placement(Icon icon,int x,int y,int size,int color) { }
     private static final String[] LEVELS = {"light", "medium", "heavy", "arterial"};
     private static final int[] WIDTHS = {13,15,23,25}, HEIGHTS = {17,22,32,40};
+    // WoundView level1/1596, serialized bleedGradient (Blend; seven color/two alpha keys).
+    // Alpha keys are both 1. Times are the native unsigned-16-bit gradient times, not guesses.
+    private static final int[] BLEED_TIMES = {0,66,3277,6554,13107,29491,65535};
+    private static final float[][] BLEED_RGB = {
+            {0,0,0},{.43396228551864624f,.43396228551864624f,.43396228551864624f},
+            {1,1,1},{1,1,0},{.7358490228652954f,.5219544768333435f,0},
+            {.5377358198165894f,.1018349751830101f,0},{.20754718780517578f,.025904959067702293f,0}};
     private MedicalStatusIcons() {}
     public static Icon bleeding(BodySnapshot.PartSnapshot part) {
         if (part.bleeding() <= .0001f) return null;
@@ -25,6 +32,28 @@ public final class MedicalStatusIcons {
         if(part.infection()<.25f)return null;
         return new Icon(part.disinfected()?"infection_decreasing":"infection_increasing",24,22);
     }
+    /** Same BleedImageFromLimb gradient for covered/uncovered and procedure/body icons. */
+    public static int bleedingColor(BodySnapshot.PartSnapshot part) {
+        float value=part.bleeding();int upper=1;
+        while(upper<BLEED_TIMES.length-1&&value>BLEED_TIMES[upper]/65535f)upper++;
+        float lowerTime=BLEED_TIMES[upper-1]/65535f,upperTime=BLEED_TIMES[upper]/65535f;
+        float t=Math.clamp((value-lowerTime)/(upperTime-lowerTime),0,1);
+        float[] a=BLEED_RGB[upper-1],b=BLEED_RGB[upper];
+        return 0xFF000000|channel(a[0]+(b[0]-a[0])*t)<<16
+                |channel(a[1]+(b[1]-a[1])*t)<<8|channel(a[2]+(b[2]-a[2])*t);
+    }
+    /** WoundView.UpdateView: Color32.Lerp(white, (163,0,182,255), infectionAmount/100). */
+    public static int infectionColor(BodySnapshot.PartSnapshot part) {
+        float t=part.infection();
+        return 0xFF000000|((int)(255+(163-255)*t))<<16
+                |((int)(255-255*t))<<8|(int)(255+(182-255)*t);
+    }
+    public static int fractureColor(BodySnapshot.PartSnapshot part) {
+        // CU uses boneHealTimer, not splinted. No timer is transmitted by this body model:
+        // a pending fracture remains red until healed instead of whitening on splint placement.
+        return part.fractured()?0xFFFF0000:0xFFFFFFFF;
+    }
+    private static int channel(float value) {return (int)(Math.clamp(value,0,1)*255);}
     public static List<Placement> placements(BodySnapshot.PartSnapshot part,MinecraftBodyLayout.Box box) {
         List<Icon> icons=new ArrayList<>();Icon bleed=bleeding(part),infection=infection(part);
         if(bleed!=null)icons.add(bleed);if(part.fractured())icons.add(new Icon("fracture",21,32));
@@ -47,8 +76,8 @@ public final class MedicalStatusIcons {
                 y+=(row*2-rows+1)*(size+2)/2;
             }
             Icon icon=icons.get(index);
-            int tint=icon.name().startsWith("infection_")?0xFFFFFFFF
-                    :icon.name().equals("fracture")?(part.splinted()?0xFFF2F2F2:0xFFFF8282):0xFFF08888;
+            int tint=icon.name().startsWith("infection_")?infectionColor(part)
+                    :icon.name().equals("fracture")?fractureColor(part):bleedingColor(part);
             result.add(new Placement(icon,x,y,size,tint));
         }
         return List.copyOf(result);

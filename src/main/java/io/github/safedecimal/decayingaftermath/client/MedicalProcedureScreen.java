@@ -27,7 +27,7 @@ public final class MedicalProcedureScreen extends Screen {
     private int ox,oy;
     private double pointerX=128,pointerY=225,offsetX,offsetY,objectX=47,objectY=90;
     private double previousObjectX=47,previousObjectY=90,gripLocalX,gripLocalY;
-    private double angle,deviceAngle=-18,potionTilt,syringeAngle;
+    private double angle,previousAngle,deviceAngle=-18,potionTilt,syringeAngle;
     private boolean syringeInserted;
     private double syringeLockX;
     private float delivered;
@@ -40,7 +40,7 @@ public final class MedicalProcedureScreen extends Screen {
         this.previous=previous;this.slot=slot;this.part=part;this.kind=kind;
         budget=new ProcedureBudget(0,MedicalSupplyPolicy.ticksPerFill(kind));
         if(kind.injection()) {objectX=116;objectY=128+168*.25-SYRINGE_HEIGHT;}
-        if(isWrap()) {objectX=128;objectY=31;}
+        if(isWrap()) {objectX=128;objectY=31;hand.outsideRadius(250);}
         previousObjectX=objectX;previousObjectY=objectY;
     }
     @Override protected void init() {
@@ -76,7 +76,7 @@ public final class MedicalProcedureScreen extends Screen {
         if(mode==BodySnapshot.Mode.UNCONSCIOUS||mode==BodySnapshot.Mode.DEAD) {onClose();return;}
         syncSupply();
         if(sourceExhausted) {if(MedicalSupplyPolicy.installation(kind)&&completed)finish();else onClose();return;}
-        previousObjectX=objectX;previousObjectY=objectY;hand.beginTick();
+        previousObjectX=objectX;previousObjectY=objectY;previousAngle=angle;hand.beginTick();
         for(int i=0;i<3&&!ended;i++) {
             hand.step(pointerX,pointerY,isWrap()&&holding,ClientMedicalState.snapshot().pain(),
                     ClientMedicalState.snapshot().consciousness(),ClientMedicalState.snapshot().energy());
@@ -114,8 +114,9 @@ public final class MedicalProcedureScreen extends Screen {
     }
     private void interact(double seconds) {
         if(isWrap()) {
-            objectX=hand.x()+offsetX;objectY=hand.y()+offsetY;
             int turns=wrap.turns();double rotation=wrap.advance(hand.x(),hand.y());angle=wrap.angle();
+            var grip=ProcedureToolPose.grip(0,0,0,0,gripLocalX,gripLocalY,angle*3);
+            objectX=hand.x()-grip.x();objectY=hand.y()-grip.y();
             queueUse(MedicalSupplyPolicy.wrapCost(rotation));
             if(wrap.turns()>turns)MedicalClient.sound("procedure_bandage",.65f,1);
         } else if(kind.injection()) {
@@ -193,7 +194,13 @@ public final class MedicalProcedureScreen extends Screen {
         if(!ended)cursor.hide(minecraft.getWindow().handle());
         double toolX=ProcedureToolPose.interpolate(previousObjectX,objectX,partialTick),toolY=ProcedureToolPose.interpolate(previousObjectY,objectY,partialTick);
         double handX=hand.visualX(partialTick),handY=hand.visualY(partialTick);
-        if(draggingTool()) {
+        double visualAngle=previousAngle+(((angle-previousAngle+540)%360)-180)*Math.clamp(partialTick,0,1);
+        if(draggingTool()&&isWrap()) {
+            // The rotating roll follows the constrained physical hand, never the other way round.
+            // Linear interpolation of roll positions or a rotating off-center grip cuts through the disk.
+            var grip=ProcedureToolPose.grip(0,0,0,0,gripLocalX,gripLocalY,visualAngle*3);
+            toolX=handX-grip.x();toolY=handY-grip.y();
+        } else if(draggingTool()) {
             var grip=ProcedureToolPose.grip(toolX,toolY,pivotX(),pivotY(),gripLocalX,gripLocalY,toolAngle());
             handX=grip.x();handY=grip.y();
         }
@@ -207,8 +214,8 @@ public final class MedicalProcedureScreen extends Screen {
             double radians=Math.toRadians(angle);
             graphics.pose().pushMatrix();graphics.pose().translate(128,128);graphics.pose().rotate((float)radians);
             MedicalClient.blit(graphics,"bandage_pointer",-101,-101,202,202,300,300,0xFFFFFFFF);graphics.pose().popMatrix();
-            if(!holding)drawBandageRoll(graphics,toolX,toolY);
-            MedicalStatusIcons.draw(graphics,MedicalStatusIcons.bleeding(ClientMedicalState.snapshot().part(part)),128,128,32,0xFFF08888);
+            if(!holding)drawBandageRoll(graphics,toolX,toolY,visualAngle);
+            MedicalStatusIcons.draw(graphics,MedicalStatusIcons.bleeding(ClientMedicalState.snapshot().part(part)),128,128,32,MedicalStatusIcons.bleedingColor(ClientMedicalState.snapshot().part(part)));
         } else if(kind.injection()) {
             MedicalClient.blit(graphics,"syringe_ground",-22,(int)Math.round(SYRINGE_ENTRY_Y),300,44,200,29,0xFFFFFFFF);
             CuMedicalHand.line(graphics,122,(int)SYRINGE_ENTRY_Y,134,(int)SYRINGE_ENTRY_Y);
@@ -234,7 +241,7 @@ public final class MedicalProcedureScreen extends Screen {
         CuMedicalHand.extract(graphics,handX,handY,handAngle,holding||injecting);
         // Held items stay readable in front of the larger opaque arm, at the same frame-time grip.
         if(draggingTool()) {
-            if(isWrap())drawBandageRoll(graphics,toolX,toolY);
+            if(isWrap())drawBandageRoll(graphics,toolX,toolY,visualAngle);
             else if(kind.injection())drawSyringe(graphics,toolX,toolY);
             else if(!isPotion())drawDevice(graphics,toolX,toolY,kind==TreatmentKind.SPLINT?27:45);
         }
@@ -250,10 +257,11 @@ public final class MedicalProcedureScreen extends Screen {
         graphics.centeredText(font,Component.translatable("decaying_aftermath.procedure.cancel").getString(),width/2,Math.min(height-12,(int)(oy+272*scale+6)),0xFFB8C0BA);
         var mode=ClientMedicalState.snapshot().mode();
         if(mode==BodySnapshot.Mode.DYING||mode==BodySnapshot.Mode.LAST_STANDING)MedicalClient.extractHud(graphics);
+        else MedicalClient.extractPain(graphics);
     }
     private int rollSize() {double scale=1-(1-remaining)*(1-remaining);return Math.max(1,(int)(78*scale));}
-    private void drawBandageRoll(GuiGraphicsExtractor graphics,double x,double y) {
-        int size=rollSize();graphics.pose().pushMatrix();graphics.pose().translate((float)x,(float)y);graphics.pose().rotate((float)Math.toRadians(angle*3));
+    private void drawBandageRoll(GuiGraphicsExtractor graphics,double x,double y,double visualAngle) {
+        int size=rollSize();graphics.pose().pushMatrix();graphics.pose().translate((float)x,(float)y);graphics.pose().rotate((float)Math.toRadians(visualAngle*3));
         MedicalClient.blit(graphics,"bandage_roll",-size/2,-size/2,size,size,104,104,0xFFFFFFFF);graphics.pose().popMatrix();
     }
     private void drawDevice(GuiGraphicsExtractor graphics,double x,double y,int width) {

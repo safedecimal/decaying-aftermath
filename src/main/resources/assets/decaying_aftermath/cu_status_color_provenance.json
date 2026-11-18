@@ -1,0 +1,104 @@
+{
+  "source": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Casualties Unknown\\CasualtiesUnknown_Data",
+  "sha256": {
+    "resources.assets": "81a5f55001875f37d450197151d7b0d3b349e70c47a5adeb0006f9dc4744df64",
+    "sharedassets0.assets": "eaba5973b39543d5d5539c76695008cfdfff50ed588fb7cff345a15a3b4eaa75",
+    "sharedassets1.assets": "befa3e57e3e7edcf40dd1b0108e7a69ab7961e9fe553fa17fdf43dbb747e3016",
+    "globalgamemanagers.assets": "b5d703000e77d787527b6ebf01528cf5e5961d4beacf9a5f0e346be10e71c141",
+    "level1": "f8c2ea53cab0acb7b333c2165ceba3c36c3963a8ded0196771b8d4d9cc8462b3"
+  },
+  "assembly_sha256": "48c7f2296fc4a659faae3b1822884ca5b7ff73d6767ef159e6a6c2bc0b2d38f1",
+  "component": {
+    "file": "level1",
+    "path_id": 1596
+  },
+  "bleedGradient": {
+    "key0": {
+      "r": 0.0,
+      "g": 0.0,
+      "b": 0.0,
+      "a": 1.0
+    },
+    "key1": {
+      "r": 0.43396228551864624,
+      "g": 0.43396228551864624,
+      "b": 0.43396228551864624,
+      "a": 1.0
+    },
+    "key2": {
+      "r": 1.0,
+      "g": 1.0,
+      "b": 1.0,
+      "a": 0.0
+    },
+    "key3": {
+      "r": 1.0,
+      "g": 1.0,
+      "b": 0.0,
+      "a": 0.0
+    },
+    "key4": {
+      "r": 0.7358490228652954,
+      "g": 0.5219544768333435,
+      "b": 0.0,
+      "a": 0.0
+    },
+    "key5": {
+      "r": 0.5377358198165894,
+      "g": 0.1018349751830101,
+      "b": 0.0,
+      "a": 0.0
+    },
+    "key6": {
+      "r": 0.20754718780517578,
+      "g": 0.025904959067702293,
+      "b": 0.0,
+      "a": 0.0
+    },
+    "key7": {
+      "r": 0.0,
+      "g": 0.0,
+      "b": 0.0,
+      "a": 0.0
+    },
+    "ctime0": 0,
+    "ctime1": 66,
+    "ctime2": 3277,
+    "ctime3": 6554,
+    "ctime4": 13107,
+    "ctime5": 29491,
+    "ctime6": 65535,
+    "ctime7": 0,
+    "atime0": 0,
+    "atime1": 65535,
+    "atime2": 0,
+    "atime3": 0,
+    "atime4": 0,
+    "atime5": 0,
+    "atime6": 0,
+    "atime7": 0,
+    "m_Mode": 0,
+    "m_ColorSpace": -1,
+    "m_NumColorKeys": 7,
+    "m_NumAlphaKeys": 2
+  },
+  "code_sites": [
+    "WoundView.BleedImageFromLimb: bleedGradient.Evaluate(totalBleedAmount * .01)",
+    "WoundView.UpdateView: infection Color32.Lerp(white, (163,0,182,255), infectionAmount*.01)",
+    "WoundView.UpdateView: fracture (1,1-boneHealTimer*.01,1-boneHealTimer*.01)"
+  ],
+  "runtime_executed": false,
+  "decompilation": {
+    "type": "WoundView",
+    "tool": "C:\\Users\\thuam\\Desktop\\projects\\decaying-aftermath\\.tools\\dnSpyEx\\dnSpy.Console.exe",
+    "tool_sha256": "c10bbb9a5f319467761a92769dbe65ca6b4a166f9f7e44222fb85be151f388fa",
+    "exit": 0,
+    "stdout_sha256": "546c27f20fb7915fd0844756d2c560c0e61773fc79470494af2b3898df071fb0",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "adaptations": [
+    "Minecraft bleeding/infection quantities are normalized and use CU values /100.",
+    "Color channel float-to-byte conversion truncates after Clamp01, as Unity Color32 does.",
+    "The snapshot has no boneHealTimer. A pending fracture uses red until healed; a splint no longer whitens it. This is explicit adaptation, not a reconstruction of the missing timer."
+  ]
+}

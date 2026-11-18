@@ -83,6 +83,7 @@ public final class MedicalInventoryScreen extends AbstractContainerScreen<Invent
         if(body.mode()==BodySnapshot.Mode.UNCONSCIOUS||body.mode()==BodySnapshot.Mode.LAST_STANDING
                 ||body.mode()==BodySnapshot.Mode.DYING)
             MedicalClient.extractHud(graphics);
+        else MedicalClient.extractPain(graphics);
     }
 
     @Override public void extractBackground(GuiGraphicsExtractor graphics,int mouseX,int mouseY,float partialTick) {

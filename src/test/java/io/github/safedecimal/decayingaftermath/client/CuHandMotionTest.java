@@ -10,7 +10,7 @@ class CuHandMotionTest {
         for(int i=0;i<600;i++) {
             quiet.step(128,128,false,0);painful.step(128,128,false,1);replay.step(128,128,false,1);
             moved|=Math.abs(painful.x()-128)>.1;
-            assertTrue(Math.abs(painful.x()-128)<8&&Math.abs(painful.y()-128)<8);
+            assertTrue(Math.abs(painful.x()-128)<20&&Math.abs(painful.y()-128)<20);
             assertEquals(painful.x(),replay.x(),.000001);
         }
         assertTrue(moved);assertEquals(128,quiet.x());assertEquals(128,quiet.y());
@@ -50,5 +50,52 @@ class CuHandMotionTest {
             int now=reach80(1,energy);assertTrue(now>=prior);assertTrue(now<1000);prior=now;
         }
         assertTrue(reach80(.2f,1)>reach80(1,1));
+    }
+    @Test void exactCenterDoesNotBypassTheBandageDisk() {
+        var hand=new CuHandMotion();hand.outsideRadius(250);
+        assertEquals(62.5,Math.hypot(hand.x()-128,hand.y()-128),1e-6);
+        for(float partial:new float[]{0,.25f,.5f,.75f,1})
+            assertTrue(Math.hypot(hand.visualX(partial)-128,hand.visualY(partial)-128)>=62.5-1e-6);
+    }
+    @Test void frameInterpolationNeverCutsThroughTheBandageDisk() throws Exception {
+        var hand=new CuHandMotion();hand.outsideRadius(250);
+        for(String name:new String[]{"x","previousX","y","previousY"}) {
+            var field=CuHandMotion.class.getDeclaredField(name);field.setAccessible(true);
+            field.setDouble(hand,name.equals("previousX")||name.equals("y")?250:0);
+        }
+        for(int i=0;i<=100;i++)
+            assertTrue(Math.hypot(hand.visualX(i/100f)-128,hand.visualY(i/100f)-128)>=62.5-1e-6);
+    }
+    @Test void collisionRetainsTangentialMovementAndAllowsReachingTheRoll() {
+        var hand=new CuHandMotion();hand.outsideRadius(250);
+        for(int i=0;i<300;i++) {hand.beginTick();hand.step(158,32,false);hand.outsideRadius(250);}
+        assertEquals(158,hand.x(),.001);assertEquals(32,hand.y(),.001);
+        for(int i=0;i<600;i++) {
+            double theta=i*Math.PI/300;hand.beginTick();
+            hand.step(128+Math.sin(theta)*64,128-Math.cos(theta)*64,true);hand.outsideRadius(250);
+            for(float partial:new float[]{0,.25f,.5f,.75f,1})
+                assertTrue(Math.hypot(hand.visualX(partial)-128,hand.visualY(partial)-128)>=62.5-1e-6);
+        }
+    }
+    @Test void heldPainTremorIsVisibleAndQuietHandStaysQuiet() {
+        double painful=heldRange(1),quiet=heldRange(0);
+        assertTrue(painful>5&&painful<25);assertEquals(0,quiet,1e-6);
+    }
+    private static double heldRange(float pain) {
+        var hand=new CuHandMotion();double min=1000,max=-1000;
+        for(int i=0;i<1200;i++) {
+            hand.step(128,32,true,pain,1,1);hand.outsideRadius(250);
+            if(i>600) {min=Math.min(min,hand.x());max=Math.max(max,hand.x());}
+        }
+        return max-min;
+    }
+    @Test void anOutsideEndpointCannotSweepThroughToTheOtherSide() throws Exception {
+        var hand=new CuHandMotion();
+        for(String name:new String[]{"x","stepX","y","stepY"}) {
+            var field=CuHandMotion.class.getDeclaredField(name);field.setAccessible(true);
+            field.setDouble(hand,name.equals("x")?-500:name.equals("stepX")?500:0);
+        }
+        hand.outsideRadius(250);
+        assertEquals(190.5,hand.x(),1e-6);assertEquals(128,hand.y(),1e-6);
     }
 }
