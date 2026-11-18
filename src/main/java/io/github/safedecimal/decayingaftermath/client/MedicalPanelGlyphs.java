@@ -19,7 +19,7 @@ public final class MedicalPanelGlyphs {
     }
 
     public static int advance(char character) {
-        return ADVANCE[index(character)];
+        return character=='°'?4:ADVANCE[index(character)];
     }
 
     public static int width(String value) {

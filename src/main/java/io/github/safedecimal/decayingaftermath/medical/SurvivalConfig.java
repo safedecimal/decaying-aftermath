@@ -15,6 +15,8 @@ public final class SurvivalConfig {
     public boolean metabolism=true,temperature=true,encumbrance=true;
     public float carryingCapacity=48,backpackCapacityBonus=24,blockMass=.25f,ordinaryItemMass=.05f;
     public Map<String,Float> itemMass=new HashMap<>();
+    /** Explicit block emissions in Gy/second; vanilla blocks are not radioactive by default. */
+    public Map<String,Float> radiationSources=new HashMap<>();
     private static volatile SurvivalConfig current=new SurvivalConfig();
     private static final Gson GSON=new GsonBuilder().setPrettyPrinting().create();
     private SurvivalConfig() { }
@@ -38,6 +40,12 @@ public final class SurvivalConfig {
                 if(id==null||!id.matches("[a-z0-9_.-]+:[a-z0-9_./-]+")||mass==null)
                     throw new IllegalArgumentException("Invalid itemMass entry");
                 checked(mass,0,1000,"itemMass."+id);
+            });
+            if(loaded.radiationSources==null)throw new IllegalArgumentException("radiationSources must be an object");
+            loaded.radiationSources.forEach((id,rate)->{
+                if(id==null||!id.matches("[a-z0-9_.-]+:[a-z0-9_./-]+")||rate==null)
+                    throw new IllegalArgumentException("Invalid radiationSources entry");
+                checked(rate,0,100,"radiationSources."+id);
             });
             current=loaded;
         } catch(Exception ex) {

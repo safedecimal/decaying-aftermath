@@ -3,7 +3,14 @@ package io.github.safedecimal.decayingaftermath.medical;
 /** Fictional game reserves/concentrations. No real medication doses or clinical measurements. */
 public record SurvivalSnapshot(float hydration, float nutrition, float temperature, float fatigue,
         float toxin, float plasma, float redCells, float antibiotic, float stimulant, float antagonist,
-        float coagulant, float internalBleeding, float lungFunction, float encumbrance,float gutInfection) {
+        float coagulant, float internalBleeding, float lungFunction, float encumbrance,float gutInfection, float bodyMassKg, float radiationGy, float bloodLostLiters) {
+    public static final float DEFAULT_BODY_MASS_KG=75;
+    public SurvivalSnapshot(float hydration,float nutrition,float temperature,float fatigue,float toxin,
+            float plasma,float redCells,float antibiotic,float stimulant,float antagonist,float coagulant,
+            float internalBleeding,float lungFunction,float encumbrance,float gutInfection) {
+        this(hydration,nutrition,temperature,fatigue,toxin,plasma,redCells,antibiotic,stimulant,antagonist,
+                coagulant,internalBleeding,lungFunction,encumbrance,gutInfection,DEFAULT_BODY_MASS_KG,0,0);
+    }
     public SurvivalSnapshot(float hydration,float nutrition,float temperature,float fatigue,float toxin,
             float plasma,float redCells,float antibiotic,float stimulant,float antagonist,float coagulant,
             float internalBleeding,float lungFunction,float encumbrance) {
@@ -19,10 +26,14 @@ public record SurvivalSnapshot(float hydration, float nutrition, float temperatu
         internalBleeding=range(internalBleeding,0,6); lungFunction=range(lungFunction,0,1);
         encumbrance=range(encumbrance,0,10);
         gutInfection=range(gutInfection,0,1);
+        bodyMassKg=range(bodyMassKg,35,250); radiationGy=range(radiationGy,0,100);
+        bloodLostLiters=range(bloodLostLiters,0,10000);
     }
     public static SurvivalSnapshot legacy(float blood) {
         return new SurvivalSnapshot(1,1,37,0,0,blood,blood,0,0,0,0,0,1,0);
     }
+    /** Digestive sickness, chemical poisoning and radiation sickness; never wound infection. */
+    public float nausea() { return Math.clamp(Math.max(gutInfection,Math.max(toxin,radiationGy*.1f)),0,1); }
     public float bloodVolume() { return plasma*.55f+redCells*.45f; }
     /** Saline can improve perfusion, but cannot recreate lost erythrocytes. */
     public float oxygenDelivery() { return Math.min(1,bloodVolume()/.5f)*Math.min(1,redCells/.5f)*lungFunction; }

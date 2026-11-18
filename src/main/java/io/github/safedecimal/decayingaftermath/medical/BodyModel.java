@@ -115,38 +115,23 @@ public final class BodyModel {
         if(!embedded)foreignBodies[part.ordinal()]=existing;
     }
 
-    /** Side-effect-free validation used BEFORE reserving or consuming an inventory supply. */
+    /** Supplies may be wasted. Only a dead target rejects a procedure. */
     public boolean canTreat(BodyPart part,TreatmentKind treatment) {
-        Objects.requireNonNull(part); Objects.requireNonNull(treatment);
-        if(mode==Mode.DEAD || treatment.requiresLimb()&&!part.isLimb()
-                || treatment.requiresTorso()&&part!=BodyPart.TORSO) return false;
-        int i=part.ordinal();
-        return switch(treatment) {
-            case BANDAGE,PRESSURE_DRESSING -> bleeding[i]>0 || openWounds[i]&&integrity[i]<1;
-            case SPLINT -> fractured[i]&&!splinted[i];
-            case TOURNIQUET -> bleeding[i]>0&&!tourniquet[i];
-            case ANTISEPTIC -> openWounds[i];
-            case ANESTHETIC,HEALING_POTION -> integrity[i]<1||localPain[i]>0;
-            case REGENERATION_POTION -> integrity[i]<1;
-            case ICE_PACK -> !coldInjuries[i]&&survival.temperature()>35&&(burns[i]>0||localPain[i]>0);
-            case CHEST_DRAIN -> lungCollapse>.01f&&!chestDrain;
-            case REMOVE_FOREIGN_BODY -> foreignBodies[i];
-            default -> survival.canTreat(treatment);
-        };
+        Objects.requireNonNull(part);Objects.requireNonNull(treatment);return mode!=Mode.DEAD;
     }
 
-    /** Returns whether this procedure was valid. Invalid anatomy does not consume a medical item. */
+    /** Accepted does not imply useful: wrong placement consumes supplies without treatment benefit. */
     public boolean treat(BodyPart part, TreatmentKind treatment, float amount) {
         Objects.requireNonNull(part, "part"); Objects.requireNonNull(treatment, "treatment");
         if (mode == Mode.DEAD || !Float.isFinite(amount) || amount <= 0) return false;
         if (!canTreat(part,treatment)) return false;
+        if(treatment.requiresLimb()&&!part.isLimb()||treatment.requiresTorso()&&part!=BodyPart.TORSO)return true;
         int i = part.ordinal();
         amount = treatment == TreatmentKind.BANDAGE || treatment == TreatmentKind.PRESSURE_DRESSING
                 ? Math.clamp(amount, 0, 12) : unit(amount);
         switch (treatment) {
             case POTION -> { return false; } // Non-medicinal status effects belong to the server adapter.
             case BANDAGE -> {
-                if (bleeding[i] <= 0 && integrity[i] >= 1) return false;
                 // Item.bandage: per full turn +2.5 skin-care points, +3.75 bleed-care
                 // points, -5 pain. Limb.Update spends that buffer at 1.25 points/s.
                 // One turn never instantly blocks bleeding; winding must continue.
@@ -157,18 +142,15 @@ public final class BodyModel {
                 careTicks[i] = Math.min(12000, careTicks[i] + Math.round(amount * 100));
             }
             case PRESSURE_DRESSING -> {
-                if (bleeding[i] <= 0 && integrity[i] >= 1) return false;
                 bleeding[i] = Math.max(0, bleeding[i] - .7f * amount);
                 bandaged[i] = true;
                 careTicks[i] = Math.min(2400, careTicks[i] + Math.round(amount * 2400));
             }
             case SPLINT -> {
-                if (!fractured[i]) return false;
                 splinted[i] = true;
                 localPain[i] = Math.max(0, localPain[i] - .25f * amount);
             }
             case TOURNIQUET -> {
-                if (bleeding[i] <= 0) return false;
                 float residual=bleeding[i];
                 bleeding[i] = Math.max(0, bleeding[i] - amount);
                 if (amount >= .5f) { suppressedBleeding[i]=residual; tourniquet[i] = true; bleeding[i] = 0; }
@@ -182,24 +164,20 @@ public final class BodyModel {
             case CHEST_DRAIN -> chestDrain=true;
             case REMOVE_FOREIGN_BODY -> foreignBodies[i]=false;
             case ANESTHETIC -> {
-                if (integrity[i] >= 1 && localPain[i] <= 0) return false;
                 // CU localanesthetic: selected limb only, timed analgesia, no opiate
                 // burden and no tissue/infection healing. Fractions are game supply.
                 anestheticTicks[i] = Math.min(12000, anestheticTicks[i] + Math.round(amount * 1200));
             }
             case ANTISEPTIC -> {
-                if (integrity[i] >= 1 && infection[i] <= 0) return false;
                 disinfectionTicks[i] = Math.min(12000, disinfectionTicks[i] + Math.round(amount * 6000));
             }
             case HEALING_POTION -> {
-                if (integrity[i] >= 1 && localPain[i] <= 0) return false;
                 // Outside Last Standing even potion care is gradual and reserve-dependent.
                 skinHealAmount[i]=Math.min(10,skinHealAmount[i]+.16f*amount);
                 careTicks[i]=Math.min(2400,careTicks[i]+Math.round(amount*1200));
                 localPain[i]=Math.max(0,localPain[i]-.08f*amount);
             }
             case REGENERATION_POTION -> {
-                if (integrity[i] >= 1) return false;
                 regenerationTicks[i] = Math.min(1200, regenerationTicks[i] + Math.round(amount * 1200));
             }
         }
@@ -289,7 +267,7 @@ public final class BodyModel {
                 if(splinted[i]) boneHealing[i]++;
                 else if(moving) boneHealing[i]=Math.max(0,boneHealing[i]-2);
                 int needed=BONE_HEAL_TICKS*(integrity[i]<.4f?2:1);
-                if(boneHealing[i]>=needed) { fractured[i]=false; splinted[i]=false; boneHealing[i]=0; }
+                if(boneHealing[i]>=needed) { fractured[i]=false; boneHealing[i]=0; }
             }
             if(burns[i]>0 && integrity[i]>.7f && perfused && infection[i]<.25f)
                 burns[i]=Math.max(0,burns[i]-.000004f);
@@ -340,6 +318,7 @@ public final class BodyModel {
     }
 
     public void consume(float nutrition,float hydration) { if(mode!=Mode.DEAD) survival.feed(nutrition,hydration); }
+    public void irradiate(float doseGy) { if(mode!=Mode.DEAD)survival.irradiate(doseGy); }
     public void poison(float amount) { if(mode!=Mode.DEAD) survival.poison(amount); }
     public void drinkContaminated(float pathogens,float chemicals){if(mode!=Mode.DEAD)survival.drinkContaminated(pathogens,chemicals);}
     public void caffeinate(float amount){if(mode!=Mode.DEAD)survival.caffeinate(amount);}
@@ -359,6 +338,14 @@ public final class BodyModel {
         bleeding[i] = suppressedBleeding[i];suppressedBleeding[i]=0;
         evaluateAndAlign(false);
         return true;
+    }
+
+    public boolean removeSplint(BodyPart part) {
+        int i=Objects.requireNonNull(part).ordinal();
+        if(!splinted[i]||mode==Mode.DEAD)return false;
+        splinted[i]=false;
+        // Removal never heals a fracture or discards its existing recovery progress.
+        evaluateAndAlign(false);return true;
     }
 
     public BodySnapshot snapshot() {

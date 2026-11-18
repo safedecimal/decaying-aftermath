@@ -1,6 +1,7 @@
 package io.github.safedecimal.decayingaftermath.client;
 
 import io.github.safedecimal.decayingaftermath.medical.BodyPart;
+import io.github.safedecimal.decayingaftermath.medical.MedicalPhysiology;
 import io.github.safedecimal.decayingaftermath.medical.BodySnapshot;
 import java.util.List;
 import java.util.Locale;
@@ -13,19 +14,19 @@ public final class CuMedicalMonitor {
         return switch (field) {
             case "BrainText" -> Integer.toString(Math.round(b.part(BodyPart.HEAD).integrity() * 100));
             case "ConscText" -> percent(b.consciousness());
-            case "ImmuneText" -> "--%";
+            case "ImmuneText" -> percent(MedicalPhysiology.immunity(b));
             case "PainText" -> percent(b.pain());
             case "BloodText" -> percent(b.blood());
-            case "BPMText" -> bpm + " | --/--";
-            case "BleedText" -> bleeding(b) > 0 ? percent(bleeding(b)) : "";
-            case "TempText" -> String.format(Locale.ROOT,"%.1f'c",b.survival().temperature());
-            case "HappinessText" -> "--";
-            case "SicknessText" -> percent(infection(b));
-            case "WeightText" -> "--kg";
-            case "RRText" -> "--/m";
+            case "BPMText" -> bpm+"|"+MedicalPhysiology.systolic(b)+"/"+MedicalPhysiology.diastolic(b);
+            case "BleedText" -> String.format(Locale.ROOT,"%.2fL",b.survival().bloodLostLiters());
+            case "TempText" -> String.format(Locale.ROOT,"%.1f°C",b.survival().temperature());
+            case "HappinessText" -> percent(MedicalPhysiology.mood(b));
+            case "SicknessText" -> percent(b.survival().nausea());
+            case "WeightText" -> String.format(Locale.ROOT,"%.1fkg",b.survival().bodyMassKg());
+            case "RRText" -> MedicalPhysiology.respiratoryRate(b)+"/m";
             case "OpiateText" -> b.drug() > 0 ? percent(b.drug()) : "";
             case "OpiateText (1)" -> b.survival().toxin() > 0 ? percent(b.survival().toxin()) : "";
-            case "RadText" -> "--gy";
+            case "RadText" -> String.format(Locale.ROOT,"%.2fgy",b.survival().radiationGy());
             case "EnergyText" -> percent(b.energy());
             case "WaterText" -> Integer.toString(Math.round(b.survival().hydration() * 100));
             case "FoodText" -> Integer.toString(Math.round(b.survival().nutrition() * 100));
@@ -41,9 +42,9 @@ public final class CuMedicalMonitor {
             case "TempFill" -> (s.temperature() - 28) * .08f; // Exact native WoundView formula.
             case "WaterFill" -> s.hydration();
             case "FoodFill" -> s.nutrition();
-            case "LungFill1" -> (1 - s.fatigue()) * 2;
-            case "LungFill2" -> (1 - s.fatigue()) * 2 - 1;
-            case "HemothoraxFill" -> 0; // No separate thoracic blood measurement is transmitted.
+            case "LungFill1" -> b.energy() * 2;
+            case "LungFill2" -> b.energy() * 2 - 1;
+            case "HemothoraxFill" -> s.internalBleeding();
             case "OpiateBack" -> b.drug() > 0 ? 1 : 0;
             case "OpiateFill" -> b.drug() / 3;
             case "ToxinBack" -> s.toxin() > 0 ? 1 : 0;
@@ -63,18 +64,15 @@ public final class CuMedicalMonitor {
             case "WaterText" -> b.survival().hydration() < .1f;
             case "FoodText" -> b.survival().nutrition() < .1f;
             case "TempText" -> b.survival().temperature() < 30 || b.survival().temperature() > 41;
-            case "SicknessText" -> infection(b) > .7f;
+            case "SicknessText" -> b.survival().nausea() > .7f;
+            case "ImmuneText" -> MedicalPhysiology.immunity(b) < .25f;
+            case "RRText" -> MedicalPhysiology.respiratoryRate(b) < 8 || MedicalPhysiology.respiratoryRate(b) > 30;
+            case "RadText" -> b.survival().radiationGy() >= 1;
+            case "BPMText" -> MedicalPhysiology.systolic(b) < 90 || MedicalPhysiology.systolic(b) > 180;
             case "OpiateText" -> b.drug() >= 2.4f;
             case "OpiateText (1)" -> b.survival().toxin() > .9f;
             default -> false;
         };
-    }
-    private static float bleeding(BodySnapshot b) {
-        float total = 0; for (var part : b.parts()) total += part.bleeding(); return total;
-    }
-    private static float infection(BodySnapshot b) {
-        float max = b.survival().gutInfection();
-        for (var part : b.parts()) max = Math.max(max, part.infection()); return max;
     }
     public static String label(String field) {
         return switch (field) {
@@ -84,14 +82,14 @@ public final class CuMedicalMonitor {
             case "PainText" -> "Боль";
             case "BloodText", "BloodFill" -> "Кровь";
             case "BPMText" -> "Пульс и давление";
-            case "BleedText" -> "Кровотечение";
+            case "BleedText" -> "Потеря крови";
             case "TempText", "TempFill" -> "Температура тела";
             case "HappinessText", "Mood" -> "Настроение";
-            case "SicknessText" -> "Инфекция";
+            case "SicknessText" -> "Тошнота / отравление";
             case "WeightText" -> "Масса тела";
             case "RRText" -> "Частота дыхания";
             case "LungFill1", "LungFill2" -> "Выносливость";
-            case "HemothoraxFill" -> "Кровь в грудной полости";
+            case "HemothoraxFill" -> "Внутреннее кровотечение";
             case "OpiateText", "OpiateBack", "OpiateFill" -> "Препараты";
             case "OpiateText (1)", "ToxinBack", "ToxinFill" -> "Токсины";
             case "RadText" -> "Радиация";
@@ -103,14 +101,29 @@ public final class CuMedicalMonitor {
         };
     }
     public static String explanation(String field) {
-        return switch (field) {
-            case "ImmuneText", "HappinessText", "Mood", "WeightText", "RRText", "RadText", "HemothoraxFill" -> "Этот показатель CU не передаётся медицинской моделью Minecraft. Прочерк означает отсутствие данных, а не нулевое значение.";
-            case "BrainText", "BrainBar" -> "Целостность головы в медицинской модели Minecraft. Значок и шкала взяты из панели CU.";
-            case "BPMText" -> "Пульс — текущее сердцебиение. Давление в этой модели не передаётся. Ниже — игровая ЭКГ.";
-            case "LungFill1", "LungFill2" -> "Игровая выносливость: запас, обратный усталости. Лёгкие заполняются последовательно, как в CU.";
-            case "TempText", "TempFill" -> "Температура в градусах Цельсия. Шкала использует исходную формулу CU.";
-            case "OpiateText", "OpiateBack", "OpiateFill", "OpiateText (1)", "ToxinBack", "ToxinFill" -> "Условная игровая нагрузка. Значок появляется только при ненулевом количестве; значение может превышать 100%.";
-            default -> "Живой показатель медицинской модели Minecraft. Проценты — условные игровые величины, не клиническое измерение.";
+        return switch(field) {
+            case "BPMText" -> "Удары/мин; давление, мм рт. ст.";
+            case "BleedText" -> "Потеряно крови, л.";
+            case "TempText", "TempFill" -> "Температура, °C.";
+            case "WeightText" -> "Масса, кг.";
+            case "RRText" -> "Вдохи в минуту.";
+            case "RadText" -> "Накопленная доза, Гр.";
+            default -> label(field);
+        };
+    }
+    public static String tooltipValue(BodySnapshot b,String field,int bpm) {
+        return switch(field) {
+            case "LungFill1", "LungFill2" -> percent(b.energy());
+            case "HemothoraxFill" -> percent(b.survival().internalBleeding());
+            case "BrainBar" -> value(b,"BrainText",bpm);
+            case "TempFill" -> value(b,"TempText",bpm);
+            case "BloodFill" -> value(b,"BloodText",bpm);
+            case "WaterFill" -> value(b,"WaterText",bpm)+"%";
+            case "FoodFill" -> value(b,"FoodText",bpm)+"%";
+            case "OpiateBack", "OpiateFill" -> percent(b.drug());
+            case "ToxinBack", "ToxinFill" -> percent(b.survival().toxin());
+            case "Mood" -> value(b,"HappinessText",bpm);
+            default -> value(b,field,bpm);
         };
     }
     private record Hit(String field, CuMedicalGeometry.Rect box) { }
@@ -127,7 +140,9 @@ public final class CuMedicalMonitor {
             new Hit("SicknessText",new CuMedicalGeometry.Rect(14,96,12,11)),
             new Hit("WeightText",new CuMedicalGeometry.Rect(14,107,13,9)),
             new Hit("EnergyText",new CuMedicalGeometry.Rect(119,106,12,9)),
-            new Hit("LungFill1",new CuMedicalGeometry.Rect(7,120,24,20)),
+            new Hit("HemothoraxFill",new CuMedicalGeometry.Rect(16,120,5,20)),
+            new Hit("LungFill1",new CuMedicalGeometry.Rect(7,120,10,20)),
+            new Hit("LungFill2",new CuMedicalGeometry.Rect(21,120,10,20)),
             new Hit("RadText",new CuMedicalGeometry.Rect(106,121,24,17)),
             new Hit("BPMText",new CuMedicalGeometry.Rect(7,153,9,11)),
             new Hit("OxyText",new CuMedicalGeometry.Rect(119,153,12,11)));

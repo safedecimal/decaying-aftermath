@@ -79,8 +79,11 @@ public final class MedicalPanelRenderer {
                 else graphics.enableScissor(r.x(), r.y()-1, r.x()+visible, r.y()+r.height()+1);
             }
             // Full native Sprite rectangle; the scissor only clips its fill, never stretches it.
+            boolean mirror=sprite.field().equals("LungFill2");
+            if(mirror) { graphics.pose().pushMatrix();graphics.pose().translate(r.x()+r.width(),r.y()).scale(-1,1); }
             graphics.blit(RenderPipelines.GUI_TEXTURED, id("textures/gui/medical/native/"+sprite.name()+".png"),
-                    r.x(), r.y(), 0f, 0f, r.width(), r.height(), r.width(), r.height());
+                    mirror?0:r.x(), mirror?0:r.y(), 0f, 0f, r.width(), r.height(), r.width(), r.height());
+            if(mirror)graphics.pose().popMatrix();
             if (clipped) graphics.disableScissor();
         }
         double seconds = System.nanoTime() / 1_000_000_000.0;
@@ -91,7 +94,7 @@ public final class MedicalPanelRenderer {
             // Native WoundView.FlashText: green normally, red/blinking for critical readouts.
             int color = CuMedicalMonitor.critical(body,readout.field())
                     ? (Math.sin(seconds*20)>0 ? 0xFFFF0008 : 0x00FF0008) : TEXT_COLOR;
-            text(graphics, value, x, r.y(), color);
+            text(graphics, value, x, r.y()+(readout.field().equals("TempText")?-2:0), color);
         }
     }
 
@@ -102,13 +105,13 @@ public final class MedicalPanelRenderer {
         String field = CuMedicalMonitor.hover(body, box.localX(mouseX), box.localY(mouseY));
         if (field == null) return;
         String title = CuMedicalMonitor.label(field);
-        String explanation = CuMedicalMonitor.explanation(field);
+        String value = CuMedicalMonitor.tooltipValue(body,field,PulseState.bpm());
         // Explicit Russian tooltips, including when the game's language is English.
         // Use the native Unicode font, never CU's ASCII-only monitor atlas.
         var font = Minecraft.getInstance().font;
         var lines = new ArrayList<FormattedCharSequence>();
         lines.add(Component.literal(title).withColor(0x2BE080).getVisualOrderText());
-        lines.addAll(font.split(Component.literal(explanation), Math.max(80, Math.min(220, graphics.guiWidth() - 24))));
+        lines.add(Component.literal(value).getVisualOrderText());
         graphics.setTooltipForNextFrame(font, lines, mouseX, mouseY);
     }
 
@@ -118,11 +121,16 @@ public final class MedicalPanelRenderer {
 
     private static void text(GuiGraphicsExtractor graphics, String value, int x, int y, int color) {
         // CU's bitmap atlas is ASCII-only. Native Minecraft font renders Cyrillic without '?' glyphs.
-        if(value.chars().anyMatch(c->c<32||c>=127)) {
+        if(value.chars().anyMatch(c->c<32||(c>=127&&c!='°'))) {
             graphics.text(Minecraft.getInstance().font,value,x,y,color,false);return;
         }
         // Keep original I-pixel-u pixels and advances for supported ASCII text.
         for (int index = 0; index < value.length(); index++) {
+            if(value.charAt(index)=='°') {
+                graphics.fill(x,y+1,x+3,y+2,color);graphics.fill(x,y+3,x+3,y+4,color);
+                graphics.fill(x,y+2,x+1,y+3,color);graphics.fill(x+2,y+2,x+3,y+3,color);
+                x+=MedicalPanelGlyphs.advance('°');continue;
+            }
             int glyph = MedicalPanelGlyphs.index(value.charAt(index));
             graphics.blit(RenderPipelines.GUI_TEXTURED, FONT, x, y,
                     (glyph % 16) * 8f, (glyph / 16) * 10f, 8, 10, 128, 60, color);

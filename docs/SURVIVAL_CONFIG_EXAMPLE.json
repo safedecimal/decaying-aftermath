@@ -6,5 +6,6 @@
   "backpackCapacityBonus": 24.0,
   "blockMass": 0.25,
   "ordinaryItemMass": 0.05,
-  "itemMass": {}
+  "itemMass": {},
+  "radiationSources": {}
 }

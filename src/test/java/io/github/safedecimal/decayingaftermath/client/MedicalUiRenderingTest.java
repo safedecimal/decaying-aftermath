@@ -101,7 +101,7 @@ class MedicalUiRenderingTest {
             graphics.pose().translate(box.x(),box.y()).scale(box.scale(),box.scale());
             MedicalPanelRenderer.extractReadouts(graphics,body);
             var nativeSprites = graphics.blits.stream().filter(b->b.id().toString().contains("/native/")).toList();
-            assertEquals(10,nativeSprites.size());
+            assertEquals(CuMedicalGeometry.SPRITES.stream().filter(s->CuMedicalMonitor.amount(body,s.field())>0).count(),nativeSprites.size());
             for(var sprite:nativeSprites) {
                 assertEquals(0,sprite.u());assertEquals(0,sprite.v());
                 assertEquals(sprite.textureWidth(),sprite.sourceWidth());
@@ -114,14 +114,14 @@ class MedicalUiRenderingTest {
                 } else assertNull(sprite.clip(),"Full native sprite must not receive a rounded GUI scissor: "+geometry.field());
             }
             assertFalse(graphics.blits.stream().anyMatch(b->b.id().toString().contains("vitals_icons")||b.id().toString().contains("vitals_bar")));
-            assertTrue(graphics.fills.isEmpty(),"No invented rectangular progress bars");
+            assertEquals(4,graphics.fills.size(),"Only the four degree-sign edges, no rectangular progress bars");
         }
     }
 
     @Test void renderRealNativeMonitorExtractionToCpuPreviewWithoutMinecraftWindow() throws Exception {
         var parts=new BodySnapshot.PartSnapshot[6];
         java.util.Arrays.fill(parts,new BodySnapshot.PartSnapshot(1,0,0,false,false,false,false));
-        var body=new BodySnapshot(1,.75f,.8f,.2f,1.25f,72,BodySnapshot.Mode.CONSCIOUS,1,.25f,.4f,parts);
+        var body=new BodySnapshot(1,.75f,.8f,.2f,1.25f,72,BodySnapshot.Mode.CONSCIOUS,1,.75f,.4f,parts);
         var graphics=Graphics.create(266,392);graphics.pose().scale(2,2);
         MedicalPanelRenderer.extractMonitor(graphics,body,"PLAYER",72);
         var canvas=new java.awt.image.BufferedImage(266,392,java.awt.image.BufferedImage.TYPE_INT_ARGB);
@@ -150,9 +150,31 @@ class MedicalUiRenderingTest {
             painter.drawImage(crop,b.x(),b.y(),b.width(),b.height(),null);
         }
         painter.dispose();
-        var path=java.nio.file.Path.of(System.getProperty("user.dir"),"verification","cu-exact-0.4.4","PANEL_PREVIEW.png");
+        var path=java.nio.file.Path.of(System.getProperty("user.dir"),"verification","medical-complete-0.4.5","PANEL_PREVIEW.png");
         java.nio.file.Files.createDirectories(path.getParent());ImageIO.write(canvas,"PNG",path.toFile());
         assertEquals(266,ImageIO.read(path.toFile()).getWidth());
+    }
+
+    @Test void rightLungMirrorsTheSourceShapeInsideItsOwnClipAtAllGuiScales() throws Exception {
+        var parts=new BodySnapshot.PartSnapshot[6];
+        java.util.Arrays.fill(parts,new BodySnapshot.PartSnapshot(1,0,0,false,false,false,false));
+        var body=new BodySnapshot(1,1,1,0,0,72,BodySnapshot.Mode.CONSCIOUS,1,.75f,1,parts);
+        for(int[] size:new int[][]{{240,180},{320,240},{640,480},{1920,1080}}) {
+            var g=Graphics.create(size[0],size[1]);var box=MedicalPanelLayout.forScreen(size[0],size[1]);
+            g.pose().translate(box.x(),box.y()).scale(box.scale(),box.scale());
+            var canvasTransform=new Matrix3x2f(g.pose());
+            MedicalPanelRenderer.extractReadouts(g,body);
+            var lungs=g.blits.stream().filter(b->b.id().toString().endsWith("/lungfill.png")).toList();
+            assertEquals(2,lungs.size());
+            var left=lungs.get(0);var right=lungs.get(1);
+            assertTrue(left.transform().m00()>0);assertTrue(right.transform().m00()<0);
+            assertEquals(0,right.x());assertEquals(0,right.y());
+            var rightEdge=right.transform().transformPosition(new org.joml.Vector2f(0,0));
+            var expectedEdge=canvasTransform.transformPosition(new org.joml.Vector2f(29,124));
+            assertEquals(expectedEdge.x,rightEdge.x,.001f);assertEquals(expectedEdge.y,rightEdge.y,.001f);
+            assertNotNull(right.clip());assertTrue(right.clip().width()>0&&right.clip().height()>0);
+            assertEquals(canvasTransform,g.pose(),"Mirror transform must not leak into later sprites/text");
+        }
     }
 
     @Test void partiallyFilledNativeOnePixelBarsRemainVisibleAtSmallGuiSizes() throws Exception {

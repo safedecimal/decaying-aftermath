@@ -47,14 +47,14 @@ public final class MedicalNetwork {
     }
     private static void handle(ServerPlayer player,MedicalActionPayload request) {
         if(request.action()==MedicalActionPayload.END) {SESSIONS.remove(player.getUUID());return;}
-        if(request.action()==MedicalActionPayload.REMOVE_TOURNIQUET) {
-            if(request.amount()!=0||request.kind()!=TreatmentKind.TOURNIQUET.ordinal()
+        if(request.action()==MedicalActionPayload.REMOVE_TOURNIQUET||request.action()==MedicalActionPayload.REMOVE_SPLINT) {
+            TreatmentKind device=request.action()==MedicalActionPayload.REMOVE_TOURNIQUET?TreatmentKind.TOURNIQUET:TreatmentKind.SPLINT;
+            if(request.amount()!=0||request.kind()!=device.ordinal()
                     ||request.part()<0||request.part()>=BodyPart.values().length
                     ||player.containerMenu!=player.inventoryMenu||!player.inventoryMenu.getCarried().isEmpty()
                     ||!ServerMedicalSystem.canAct(player))return;
             SESSIONS.remove(player.getUUID());
-            BodyPart part=BodyPart.values()[request.part()];BodyModel body=ServerMedicalSystem.get(player);
-            if(part.isLimb()&&body.removeTourniquet(part)) {ServerMedicalSystem.mirrorHealth(player);sync(player,body.snapshot());}
+            BodyPart part=BodyPart.values()[request.part()];removeDevice(player,part,device);
             return;
         }
         if(!Float.isFinite(request.amount())||request.amount()<0||request.amount()>1
@@ -67,8 +67,7 @@ public final class MedicalNetwork {
         BodyPart part=BodyPart.values()[request.part()];TreatmentKind kind=TreatmentKind.values()[request.kind()];
         long now=player.level().getGameTime();
         if(request.action()==MedicalActionPayload.BEGIN) {
-            if(stack.isEmpty()||MedicalItems.treatment(stack)!=kind||(kind.requiresLimb()&&!part.isLimb())||remainingFill(stack)<=MedicalSupplyPolicy.EMPTY)return;
-            if(!ServerMedicalSystem.get(player).canTreat(part,kind)) {thought(player,"decaying_aftermath.thought.not_needed");return;}
+            if(stack.isEmpty()||MedicalItems.treatment(stack)!=kind||remainingFill(stack)<=MedicalSupplyPolicy.EMPTY)return;
             Session prior=SESSIONS.get(player.getUUID());
             if(prior!=null&&now-prior.start<40)return;
             SESSIONS.put(player.getUUID(),new Session(request.slot(),part,kind,stack.copy(),now,remainingFill(stack)));
@@ -94,7 +93,6 @@ public final class MedicalNetwork {
             sync(player,body.snapshot());return;
         }
         if(request.action()!=MedicalActionPayload.APPLY||stack.isEmpty()||MedicalItems.treatment(stack)!=kind)return;
-        if(!body.canTreat(part,kind)) {SESSIONS.remove(player.getUUID());thought(player,"decaying_aftermath.thought.not_needed");return;}
         boolean creative=player.getAbilities().instabuild;
         // Repair old one-item stacks and free medical-only clutter before looking for split space.
         // The source is excluded: its signature and the client's selected slot must remain stable.
@@ -133,6 +131,20 @@ public final class MedicalNetwork {
             else SESSIONS.remove(player.getUUID());
         }
         slot.setChanged();player.inventoryMenu.broadcastChanges();sync(player,body.snapshot());
+    }
+    /** Server-owned one-time removal. Return the installed device, or drop it if inventory is full. */
+    public static boolean removeDevice(ServerPlayer player,BodyPart part,TreatmentKind device) {
+        if(!ServerMedicalSystem.canAct(player))return false;
+        BodyModel body=ServerMedicalSystem.get(player);
+        boolean removed=device==TreatmentKind.TOURNIQUET?body.removeTourniquet(part)
+                :device==TreatmentKind.SPLINT&&body.removeSplint(part);
+        if(!removed)return false;
+        if(!player.getAbilities().instabuild) {
+            ItemStack returned=new ItemStack(device==TreatmentKind.TOURNIQUET?MedicalItems.TOURNIQUET:MedicalItems.SPLINT);
+            if(!player.getInventory().add(returned))player.drop(returned,false,net.minecraft.util.Prediction.SERVER_ONLY);
+        }
+        ServerMedicalSystem.mirrorHealth(player);player.inventoryMenu.broadcastChanges();sync(player,body.snapshot());
+        return true;
     }
     /** A counted partial stack contains equal-fill units, not one partial plus magically full units. */
     private static ItemStack unused(ItemStack stack,int count) {

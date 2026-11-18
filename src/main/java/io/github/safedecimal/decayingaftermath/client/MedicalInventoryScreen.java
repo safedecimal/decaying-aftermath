@@ -71,6 +71,11 @@ public final class MedicalInventoryScreen extends AbstractContainerScreen<Invent
         BodySnapshot body=ClientMedicalState.snapshot();
         graphics.pose().pushMatrix(); graphics.pose().translate(originX,originY); graphics.pose().scale(scale,scale);
         super.extractRenderState(graphics,(int)virtualX(mouseX),(int)virtualY(mouseY),partialTick);
+        for(var button:DeviceRemovalControls.buttons(body.part(selected))) {
+            boolean hover=button.contains(virtualX(mouseX),virtualY(mouseY));
+            graphics.fill(button.x(),button.y(),button.x()+button.width(),button.y()+button.height(),hover?0xFF44654E:0xFF283A2E);
+            graphics.text(font,Component.translatable(button.translationKey()),button.x()+3,button.y()+1,0xFFB8F5C6,false);
+        }
         graphics.pose().popMatrix();
         extractBodyTooltip(graphics,mouseX,mouseY);
         if(pendingSlot>=0) {
@@ -129,9 +134,9 @@ public final class MedicalInventoryScreen extends AbstractContainerScreen<Invent
                     +(part.anesthetized()?Component.translatable("decaying_aftermath.status.anesthetized").getString():"")
                     +(part.burn()>.01f?Component.translatable("decaying_aftermath.status.burn").getString():"")
                     +(part.coldInjury()?Component.translatable("decaying_aftermath.status.cold_injury").getString():"")
-                    +(part.internalBleeding()>.001f?Component.translatable("decaying_aftermath.status.internal_bleeding").getString():"")
                     +(part.foreignBody()?Component.translatable("decaying_aftermath.status.foreign_body").getString():"")
-                    +(part.tourniquet()?Component.translatable("decaying_aftermath.status.remove_tourniquet").getString():""));
+                    +(part.tourniquet()?Component.translatable("decaying_aftermath.status.remove_tourniquet").getString():"")
+                    +(part.splinted()?Component.translatable("decaying_aftermath.status.remove_splint").getString():""));
             graphics.setTooltipForNextFrame(font,text,mouseX,mouseY);
         }
     }
@@ -170,14 +175,25 @@ public final class MedicalInventoryScreen extends AbstractContainerScreen<Invent
         if(ClientMedicalState.snapshot().mode()==BodySnapshot.Mode.UNCONSCIOUS) return true;
         if(recipeBook.isVisible()&&recipeBook.mouseClicked(event,doubleClick)) return true;
         MouseButtonEvent e=virtual(event);
+        if(event.button()==1&&pendingSlot<0&&menu.getCarried().isEmpty()) {
+            TreatmentKind remove=DeviceRemovalControls.at(ClientMedicalState.snapshot().part(selected),e.x(),e.y());
+            if(remove!=null) {
+                if(remove==TreatmentKind.TOURNIQUET)ClientMedicalState.removeTourniquet(selected);
+                else ClientMedicalState.removeSplint(selected);
+                consumeMedicalRelease=true;return true;
+            }
+        }
         if(e.x()>=MedicalInventoryLayout.RECIPE_X-2&&e.x()<MedicalInventoryLayout.RECIPE_X+18
                 &&e.y()>=MedicalInventoryLayout.RECIPE_Y-2&&e.y()<MedicalInventoryLayout.RECIPE_Y+18) {
             clearMedicalCarry();recipeBook.toggleVisibility();return true;
         }
         BodyPart part=partAt(e.x(),e.y());
         if(part!=null&&event.button()==3&&(event.modifiers()&1)!=0&&menu.getCarried().isEmpty()
-                &&ClientMedicalState.snapshot().part(part).tourniquet()) {
-            clearMedicalCarry();ClientMedicalState.removeTourniquet(part);return true;
+                &&(ClientMedicalState.snapshot().part(part).tourniquet()||ClientMedicalState.snapshot().part(part).splinted())) {
+            clearMedicalCarry();
+            if(ClientMedicalState.snapshot().part(part).tourniquet())ClientMedicalState.removeTourniquet(part);
+            else ClientMedicalState.removeSplint(part);
+            consumeMedicalRelease=true;return true;
         }
         if(clickCarry&&(event.button()==1||event.button()==3)&&event.modifiers()==0) {
             if(part!=null) return startProcedure(part);
@@ -231,16 +247,6 @@ public final class MedicalInventoryScreen extends AbstractContainerScreen<Invent
     private boolean startProcedure(BodyPart part) {
         TreatmentKind kind=MedicalItems.treatment(dragged);
         if(kind==null) {clearMedicalCarry();return true;}
-        if((kind==TreatmentKind.SPLINT||kind==TreatmentKind.TOURNIQUET)
-                &&(part==BodyPart.HEAD||part==BodyPart.TORSO)) {
-            ThoughtTyper.enqueue(Component.translatable("decaying_aftermath.thought.needs_limb").getString());return true;
-        }
-        if(kind.requiresTorso()&&part!=BodyPart.TORSO) {
-            ThoughtTyper.enqueue(Component.translatable("decaying_aftermath.thought.needs_torso").getString());return true;
-        }
-        if(!BodyModel.restore(ClientMedicalState.snapshot()).canTreat(part,kind)) {
-            ThoughtTyper.enqueue(Component.translatable("decaying_aftermath.thought.not_needed").getString());return true;
-        }
         int source=pendingSlot;selected=part;clearMedicalCarry();
         minecraft.gui.setScreen(new MedicalProcedureScreen(this,source,part,kind));return true;
     }

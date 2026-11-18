@@ -1,0 +1,33 @@
+package io.github.safedecimal.decayingaftermath.medical;
+
+/** Deterministic vitals from the synchronized body's perfusion, reserves and drug burden. */
+public final class MedicalPhysiology {
+    private MedicalPhysiology() { }
+    public static float immunity(BodySnapshot b) {
+        var s=b.survival();float infection=s.gutInfection();
+        for(var p:b.parts())infection=Math.max(infection,p.infection());
+        return Math.clamp(1-infection*.45f-(1-s.nutrition())*.25f-s.fatigue()*.1f-s.toxin()*.1f-s.radiationGy()*.08f,0,1);
+    }
+    public static float mood(BodySnapshot b) {
+        var s=b.survival();
+        return Math.clamp(1-b.pain()*.6f-(1-b.energy())*.15f-s.fatigue()*.15f
+                -(1-s.nutrition())*.1f-(1-s.hydration())*.1f-s.nausea()*.25f,0,1);
+    }
+    public static int respiratoryRate(BodySnapshot b) {
+        if(b.mode()==BodySnapshot.Mode.DEAD)return 0;
+        var s=b.survival();float opiate=b.drug()/(1+s.antagonist()*4);
+        return Math.round(Math.clamp(16+(1-b.oxygen())*26+(1-b.energy())*10+b.pain()*5
+                +s.thermalStress()*8-Math.max(0,opiate-.7f)*16,0,60));
+    }
+    private static float perfusion(BodySnapshot b) {
+        return Math.clamp(b.blood()/.8f,0,1)*( .8f+.2f*b.oxygen());
+    }
+    public static int systolic(BodySnapshot b) {
+        if(b.mode()==BodySnapshot.Mode.DEAD)return 0;
+        return Math.round(Math.clamp((120+b.pain()*20+b.survival().stimulant()*12)*perfusion(b),0,220));
+    }
+    public static int diastolic(BodySnapshot b) {
+        if(b.mode()==BodySnapshot.Mode.DEAD)return 0;
+        return Math.round(Math.clamp((80+b.pain()*10+b.survival().stimulant()*6)*perfusion(b),0,140));
+    }
+}

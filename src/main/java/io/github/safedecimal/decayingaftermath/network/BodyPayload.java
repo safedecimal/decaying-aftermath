@@ -7,7 +7,7 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
 
 public record BodyPayload(BodySnapshot snapshot) implements CustomPacketPayload {
-    public static final Type<BodyPayload> TYPE = new Type<>(Identifier.fromNamespaceAndPath("decaying_aftermath", "body_v3"));
+    public static final Type<BodyPayload> TYPE = new Type<>(Identifier.fromNamespaceAndPath("decaying_aftermath", "body_v4"));
     public static final StreamCodec<RegistryFriendlyByteBuf, BodyPayload> CODEC = CustomPacketPayload.codec(BodyPayload::write, BodyPayload::read);
     @Override public Type<BodyPayload> type() { return TYPE; }
     private void write(RegistryFriendlyByteBuf b) {
@@ -29,6 +29,7 @@ public record BodyPayload(BodySnapshot snapshot) implements CustomPacketPayload 
         b.writeFloat(s.toxin());b.writeFloat(s.plasma());b.writeFloat(s.redCells());b.writeFloat(s.antibiotic());
         b.writeFloat(s.stimulant());b.writeFloat(s.antagonist());b.writeFloat(s.coagulant());b.writeFloat(s.internalBleeding());
         b.writeFloat(s.lungFunction());b.writeFloat(s.encumbrance());b.writeFloat(s.gutInfection());
+        b.writeFloat(s.bodyMassKg());b.writeFloat(s.radiationGy());b.writeFloat(s.bloodLostLiters());
     }
     private static BodyPayload read(RegistryFriendlyByteBuf b) {
         float condition=b.readFloat(), blood=b.readFloat(), oxygen=b.readFloat(), pain=b.readFloat(), drug=b.readFloat(), bpm=b.readFloat();
@@ -38,7 +39,8 @@ public record BodyPayload(BodySnapshot snapshot) implements CustomPacketPayload 
         var parts=new BodySnapshot.PartSnapshot[BodyPart.values().length];
         for (int i=0;i<parts.length;i++) parts[i]=new BodySnapshot.PartSnapshot(b.readFloat(),b.readFloat(),b.readFloat(),b.readBoolean(),b.readBoolean(),b.readBoolean(),b.readBoolean(),b.readFloat(),b.readBoolean(),b.readBoolean(),b.readFloat(),b.readFloat(),b.readFloat(),b.readBoolean(),b.readBoolean(),b.readFloat(),b.readBoolean());
         var s=new SurvivalSnapshot(b.readFloat(),b.readFloat(),b.readFloat(),b.readFloat(),b.readFloat(),b.readFloat(),b.readFloat(),
-                b.readFloat(),b.readFloat(),b.readFloat(),b.readFloat(),b.readFloat(),b.readFloat(),b.readFloat(),b.readFloat());
+                b.readFloat(),b.readFloat(),b.readFloat(),b.readFloat(),b.readFloat(),b.readFloat(),b.readFloat(),b.readFloat(),
+                b.readFloat(),b.readFloat(),b.readFloat());
         return new BodyPayload(new BodySnapshot(condition,blood,oxygen,pain,drug,bpm,BodySnapshot.Mode.values()[mode],progress,energy,consciousness,parts,s));
     }
 }

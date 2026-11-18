@@ -35,7 +35,7 @@ class SurvivalModelTest {
     }
     @Test void coldInjuryRejectsIceAndColdFluidIsNotMagicallyHeatedByCooling() {
         BodyModel b=new BodyModel();b.damage(LEFT_ARM,8,DamageKind.FROSTBITE);
-        assertTrue(b.snapshot().part(LEFT_ARM).coldInjury());assertFalse(b.canTreat(LEFT_ARM,ICE_PACK));
+        assertTrue(b.snapshot().part(LEFT_ARM).coldInjury());assertTrue(b.canTreat(LEFT_ARM,ICE_PACK));
         var cold=new SurvivalSnapshot(1,1,30,0,0,1,1,0,0,0,0,0,1,0);
         SurvivalModel m=new SurvivalModel(cold);m.cool(1);assertEquals(30,m.temperature());
     }

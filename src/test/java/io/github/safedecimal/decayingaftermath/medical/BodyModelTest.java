@@ -61,7 +61,7 @@ class BodyModelTest {
         assertEquals(before, model.snapshot().part(LEFT_ARM).integrity());
         ticks(model, 1200);
         assertTrue(model.snapshot().part(LEFT_ARM).integrity() > before);
-        assertFalse(model.treat(HEAD, BANDAGE, 1));
+        assertTrue(model.treat(HEAD, BANDAGE, 1));
     }
 
     @Test void splintReducesPainWithoutRepairingFractureOrTissue() {
@@ -73,8 +73,8 @@ class BodyModelTest {
         assertTrue(after.fractured()); assertTrue(after.splinted());
         assertEquals(before.integrity(), after.integrity());
         assertTrue(after.pain() < before.pain());
-        assertFalse(model.treat(HEAD, SPLINT, 1));
-        assertFalse(model.treat(RIGHT_LEG, SPLINT, 1));
+        assertTrue(model.treat(HEAD, SPLINT, 1));
+        assertTrue(model.treat(RIGHT_LEG, SPLINT, 1));
     }
 
     @Test void healingAndRegenerationPotionsTreatOnlySelectedTissue() {
@@ -174,7 +174,7 @@ class BodyModelTest {
 
     @Test void tourniquetIsTemporaryAndHasConsequencesIfLeftOn() {
         BodyModel model = new BodyModel(); model.damage(LEFT_LEG, 12);
-        assertFalse(model.treat(HEAD, TOURNIQUET, 1));
+        assertTrue(model.treat(HEAD, TOURNIQUET, 1));
         assertTrue(model.treat(LEFT_LEG, TOURNIQUET, 1));
         float before = model.snapshot().part(LEFT_LEG).integrity();
         ticks(model, 1201);

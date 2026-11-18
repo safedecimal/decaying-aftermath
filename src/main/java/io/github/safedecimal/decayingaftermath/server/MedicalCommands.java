@@ -26,7 +26,7 @@ public final class MedicalCommands {
                     if(p.integrity()<.999f||p.infection()>0||p.fractured()||p.foreignBody())
                         context.getSource().sendSuccess(()->Component.translatable("decaying_aftermath.report.part",
                                 Component.translatable(part.translationKey()),Math.round(p.integrity()*100),
-                                Math.round(p.bleeding()*100),Math.round(p.internalBleeding()*100),Math.round(p.infection()*100),
+                                Math.round(p.bleeding()*100),Math.round(p.infection()*100),
                                 Component.translatable(p.fractured()?"decaying_aftermath.report.fractured":"decaying_aftermath.report.no_fracture"),
                                 Component.translatable(p.foreignBody()?"decaying_aftermath.report.foreign":"decaying_aftermath.report.no_foreign")),false);
                 }
@@ -35,12 +35,18 @@ public final class MedicalCommands {
             var remove=Commands.literal("remove_tourniquet");
             for(BodyPart part:BodyPart.values())if(part.isLimb())remove.then(Commands.literal(part.name().toLowerCase(Locale.ROOT)).executes(context->{
                 var player=context.getSource().getPlayerOrException();
-                if(!ServerMedicalSystem.canAct(player)||!ServerMedicalSystem.get(player).removeTourniquet(part))return 0;
-                ServerMedicalSystem.mirrorHealth(player);MedicalNetwork.sync(player,ServerMedicalSystem.get(player).snapshot());
+                if(!MedicalNetwork.removeDevice(player,part,io.github.safedecimal.decayingaftermath.medical.TreatmentKind.TOURNIQUET))return 0;
                 context.getSource().sendSuccess(()->Component.translatable("decaying_aftermath.report.tourniquet_removed",
                         Component.translatable(part.translationKey())),false);return 1;
             }));
-            root.then(remove);dispatcher.register(root);
+            var removeSplint=Commands.literal("remove_splint");
+            for(BodyPart part:BodyPart.values())if(part.isLimb())removeSplint.then(Commands.literal(part.name().toLowerCase(Locale.ROOT)).executes(context->{
+                var player=context.getSource().getPlayerOrException();
+                if(!MedicalNetwork.removeDevice(player,part,io.github.safedecimal.decayingaftermath.medical.TreatmentKind.SPLINT))return 0;
+                context.getSource().sendSuccess(()->Component.translatable("decaying_aftermath.report.splint_removed",
+                        Component.translatable(part.translationKey())),false);return 1;
+            }));
+            root.then(remove);root.then(removeSplint);dispatcher.register(root);
         });
     }
 }

@@ -39,17 +39,17 @@ class CuMedicalMonitorTest {
         assertEquals("40%",CuMedicalMonitor.value(body(),"ConscText",72));
         assertEquals("25%",CuMedicalMonitor.value(body(),"EnergyText",72));
         assertEquals("125%",CuMedicalMonitor.value(body(),"OpiateText",72));
-        assertEquals("72 | --/--",CuMedicalMonitor.value(body(),"BPMText",72));
-        assertEquals("--kg",CuMedicalMonitor.value(body(),"WeightText",72));
-        assertEquals("--gy",CuMedicalMonitor.value(body(),"RadText",72));
-        assertEquals("--%",CuMedicalMonitor.value(body(),"ImmuneText",72));
-        assertEquals("",CuMedicalMonitor.value(body(),"BleedText",72));
+        assertEquals("72|112/74",CuMedicalMonitor.value(body(),"BPMText",72));
+        assertEquals("75.0kg",CuMedicalMonitor.value(body(),"WeightText",72));
+        assertEquals("0.00gy",CuMedicalMonitor.value(body(),"RadText",72));
+        assertEquals("100%",CuMedicalMonitor.value(body(),"ImmuneText",72));
+        assertEquals("0.00L",CuMedicalMonitor.value(body(),"BleedText",72));
     }
     @Test void fillFormulaeAreNativeAndConditionalSyringeAndToxinIconsFollowRealValues() {
         assertEquals(.72f,CuMedicalMonitor.amount(body(),"TempFill"),.0001f);
         assertEquals(.75f,CuMedicalMonitor.amount(body(),"BloodFill"));
-        assertEquals(1,CuMedicalMonitor.amount(body(),"LungFill1"));
-        assertEquals(1,CuMedicalMonitor.amount(body(),"LungFill2"));
+        assertEquals(.5f,CuMedicalMonitor.amount(body(),"LungFill1"));
+        assertEquals(0,CuMedicalMonitor.amount(body(),"LungFill2"));
         assertEquals(1,CuMedicalMonitor.amount(body(),"OpiateBack"));
         assertEquals(1.25f/3,CuMedicalMonitor.amount(body(),"OpiateFill"),.0001f);
         assertEquals(0,CuMedicalMonitor.amount(body(),"ToxinBack"));

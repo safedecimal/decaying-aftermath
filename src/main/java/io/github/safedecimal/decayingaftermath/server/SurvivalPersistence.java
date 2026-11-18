@@ -12,6 +12,8 @@ public final class SurvivalPersistence {
         out.putFloat("hydration",v.hydration());out.putFloat("nutrition",v.nutrition());out.putFloat("temperature",v.temperature());
         out.putFloat("fatigue",v.fatigue());out.putFloat("toxin",v.toxin());out.putFloat("plasma",v.plasma());out.putFloat("red_cells",v.redCells());
         out.putFloat("antibiotic",v.antibiotic());out.putFloat("stimulant",v.stimulant());out.putFloat("antagonist",v.antagonist());
+        out.putFloat("body_mass_kg",v.bodyMassKg());out.putFloat("radiation_gy",v.radiationGy());
+        out.putFloat("blood_lost_liters",v.bloodLostLiters());
         out.putFloat("coagulant",v.coagulant());out.putFloat("gut_infection",v.gutInfection());
         out.putFloat("pending_food",s.pendingFood());out.putFloat("pending_water",s.pendingWater());
         out.putFloat("pending_germs",s.pendingGerms());out.putInt("incubation",s.incubationTicks());
@@ -44,7 +46,9 @@ public final class SurvivalPersistence {
                 number(s,"temperature",37,25,45),number(s,"fatigue",0,0,1),number(s,"toxin",0,0,3),
                 number(s,"plasma",blood,0,1),number(s,"red_cells",blood,0,1),number(s,"antibiotic",0,0,3),
                 number(s,"stimulant",0,0,3),number(s,"antagonist",0,0,3),number(s,"coagulant",0,0,3),
-                internal,1-collapse,0,number(s,"gut_infection",0,0,1));
+                internal,1-collapse,0,number(s,"gut_infection",0,0,1),
+                number(s,"body_mass_kg",SurvivalSnapshot.DEFAULT_BODY_MASS_KG,35,250),
+                number(s,"radiation_gy",0,0,100),number(s,"blood_lost_liters",0,0,10000));
         WoundState wounds=new WoundState(burns,bleed,open,foreign,bone,cool,collapse,s.getBooleanOr("chest_drain",false),suppressed,cold);
         var survival=new SurvivalModel.SavedState(snapshot,number(s,"pending_food",0,0,1),number(s,"pending_water",0,0,1),
                 number(s,"pending_germs",0,0,1),Math.clamp(s.getIntOr("incubation",0),0,12000));

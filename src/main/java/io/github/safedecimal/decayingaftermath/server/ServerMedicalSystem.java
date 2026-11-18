@@ -168,6 +168,7 @@ public final class ServerMedicalSystem {
         else {
             Integer slept=SLEEP_TICKS.remove(player);if(slept!=null&&slept>=100)model.finishNightSleep();
         }
+        model.irradiate(ServerRadiationSources.dosePerTick(player));
         model.tick(ServerSurvivalEnvironment.sample(player,CARRIED_MASS.getOrDefault(player,0f)));
         BodySnapshot snapshot = model.snapshot();
         if(snapshot.energy()<.08f||snapshot.survival().encumbrance()>1.8f)player.setSprinting(false);
