@@ -79,11 +79,8 @@ public final class MedicalPanelRenderer {
                 else graphics.enableScissor(r.x(), r.y()-1, r.x()+visible, r.y()+r.height()+1);
             }
             // Full native Sprite rectangle; the scissor only clips its fill, never stretches it.
-            boolean mirror=sprite.field().equals("LungFill2");
-            if(mirror) { graphics.pose().pushMatrix();graphics.pose().translate(r.x()+r.width(),r.y()).scale(-1,1); }
             graphics.blit(RenderPipelines.GUI_TEXTURED, id("textures/gui/medical/native/"+sprite.name()+".png"),
-                    mirror?0:r.x(), mirror?0:r.y(), 0f, 0f, r.width(), r.height(), r.width(), r.height());
-            if(mirror)graphics.pose().popMatrix();
+                    r.x(), r.y(), 0f, 0f, r.width(), r.height(), r.width(), r.height());
             if (clipped) graphics.disableScissor();
         }
         var external=CuMedicalMonitor.externalBleedSource(body);

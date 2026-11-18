@@ -220,25 +220,46 @@ class MedicalUiRenderingTest {
         assertTrue(limb.blits.stream().filter(b->b.id().toString().contains("/bleeding_")).allMatch(b->((b.color()>>>16)&255)>=192));
     }
 
-    @Test void rightLungMirrorsTheSourceShapeInsideItsOwnClipAtAllGuiScales() throws Exception {
+    @Test void staminaDrawsLeftLungFirstAndBothLungsFaceForwardAtFullEnergy() throws Exception {
         var parts=new BodySnapshot.PartSnapshot[6];
         java.util.Arrays.fill(parts,new BodySnapshot.PartSnapshot(1,0,0,false,false,false,false));
-        var body=new BodySnapshot(1,1,1,0,0,72,BodySnapshot.Mode.CONSCIOUS,1,.75f,1,parts);
         for(int[] size:new int[][]{{240,180},{320,240},{640,480},{1920,1080}}) {
-            var g=Graphics.create(size[0],size[1]);var box=MedicalPanelLayout.forScreen(size[0],size[1]);
-            g.pose().translate(box.x(),box.y()).scale(box.scale(),box.scale());
-            var canvasTransform=new Matrix3x2f(g.pose());
-            MedicalPanelRenderer.extractReadouts(g,body);
-            var lungs=g.blits.stream().filter(b->b.id().toString().endsWith("/lungfill.png")).toList();
-            assertEquals(2,lungs.size());
-            var left=lungs.get(0);var right=lungs.get(1);
-            assertTrue(left.transform().m00()>0);assertTrue(right.transform().m00()<0);
-            assertEquals(0,right.x());assertEquals(0,right.y());
-            var rightEdge=right.transform().transformPosition(new org.joml.Vector2f(0,0));
-            var expectedEdge=canvasTransform.transformPosition(new org.joml.Vector2f(29,124));
-            assertEquals(expectedEdge.x,rightEdge.x,.001f);assertEquals(expectedEdge.y,rightEdge.y,.001f);
-            assertNotNull(right.clip());assertTrue(right.clip().width()>0&&right.clip().height()>0);
-            assertEquals(canvasTransform,g.pose(),"Mirror transform must not leak into later sprites/text");
+            var box=MedicalPanelLayout.forScreen(size[0],size[1]);
+            for(float energy:new float[]{0,.25f,.5f,.75f,1}) {
+                var g=Graphics.create(size[0],size[1]);
+                g.pose().translate(box.x(),box.y()).scale(box.scale(),box.scale());
+                var body=new BodySnapshot(1,1,1,0,0,72,BodySnapshot.Mode.CONSCIOUS,1,energy,1,parts);
+                MedicalPanelRenderer.extractReadouts(g,body);
+                var lungs=g.blits.stream().filter(b->b.id().getPath().contains("/lungfill")).toList();
+                assertEquals(energy==0?0:energy<=.5f?1:2,lungs.size());
+                if(energy==0) continue;
+                var left=lungs.getFirst();
+                assertTrue(left.id().getPath().endsWith("/lungfill.png"));
+                assertEquals(9,left.x());assertEquals(124,left.y());
+                assertEquals(energy<.5f,left.clip()!=null);
+                if(energy<=.5f) continue;
+                var right=lungs.getLast();
+                assertTrue(right.id().getPath().endsWith("/lungfill_right.png"));
+                assertEquals(22,right.x());assertEquals(124,right.y());
+                assertEquals(left.transform(),right.transform(),"Keep the right quad's winding for back-face culling");
+                if(energy==1) assertNull(right.clip());
+                else {
+                    assertNotNull(right.clip());
+                    assertTrue(right.clip().width()>0&&right.clip().height()>0);
+                }
+            }
+        }
+    }
+
+    @Test void rightLungTextureMirrorsTheOriginalPixels() throws Exception {
+        String path="/assets/decaying_aftermath/textures/gui/medical/native/lungfill";
+        try(var leftIn=getClass().getResourceAsStream(path+".png");
+            var rightIn=getClass().getResourceAsStream(path+"_right.png")) {
+            assertNotNull(leftIn);assertNotNull(rightIn);
+            var left=ImageIO.read(leftIn);var right=ImageIO.read(rightIn);
+            assertEquals(left.getWidth(),right.getWidth());assertEquals(left.getHeight(),right.getHeight());
+            for(int y=0;y<left.getHeight();y++) for(int x=0;x<left.getWidth();x++)
+                assertEquals(left.getRGB(x,y),right.getRGB(right.getWidth()-1-x,y));
         }
     }
 

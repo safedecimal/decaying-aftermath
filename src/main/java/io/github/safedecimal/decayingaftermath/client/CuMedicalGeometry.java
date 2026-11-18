@@ -40,7 +40,8 @@ public final class CuMedicalGeometry {
         new Sprite("WaterFill","barwater",new Rect(19,79,49,1),false),
         new Sprite("BloodFill","barblood",new Rect(9,49,2,19),true),
         new Sprite("LungFill1","lungfill",new Rect(9,124,7,15),true),
-        new Sprite("LungFill2","lungfill",new Rect(22,124,7,15),true),
+        // Mirror in the texture so the right lung keeps the GUI quad's front-facing winding.
+        new Sprite("LungFill2","lungfill_right",new Rect(22,124,7,15),true),
         new Sprite("HemothoraxFill","hemothoraxfill",new Rect(8,123,22,17),true),
         new Sprite("OpiateBack","syringeoutline",new Rect(38,121,29,29),false),
         new Sprite("OpiateFill","syringefill",new Rect(45,126,13,13),true),
