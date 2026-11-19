@@ -19,6 +19,14 @@ public final class MedicalPhysiology {
         return Math.round(Math.clamp(16+(1-b.oxygen())*26+(1-b.energy())*10+b.pain()*5
                 +s.thermalStress()*8-Math.max(0,opiate-.7f)*16,0,60));
     }
+    public static float sepsis(float infectionSum,float maxInfection) {
+        return Math.clamp(Math.max((infectionSum-1)/3,Math.max(0,(maxInfection-.75f)/.25f)*.6f),0,1);
+    }
+    // BodyModel debits this fraction once per server tick; convert to percentage points/second.
+    static final float BLOOD_LOSS_PER_TICK_PER_SEVERITY = .00065f;
+    public static float bloodLossPointsPerSecond(float totalBleeding) {
+        return totalBleeding * BLOOD_LOSS_PER_TICK_PER_SEVERITY * 20 * 100;
+    }
     private static float perfusion(BodySnapshot b) {
         return Math.clamp(b.blood()/.8f,0,1)*( .8f+.2f*b.oxygen());
     }

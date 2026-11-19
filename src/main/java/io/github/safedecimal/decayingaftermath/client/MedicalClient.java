@@ -78,7 +78,7 @@ public final class MedicalClient {
             }
             if (body.mode() == BodySnapshot.Mode.LAST_STANDING) {
                 TIMELINE.beginLastStand(); playedDrone = false;
-                sound("last_standing", 1f, 1f);
+                if (!MedicalPresentationPolicy.criticalAlarm(body)) sound("last_standing", 1f, 1f);
             } else if (body.mode() == BodySnapshot.Mode.DEAD || body.mode()==BodySnapshot.Mode.DYING) {
                 stop("last_standing"); stop("last_standing_drone");
             }
@@ -97,7 +97,10 @@ public final class MedicalClient {
                 && MedicalPresentationPolicy.criticalAmbience(body));
         updateSituationLoops(body, seconds, audioAlive && body.mode() != BodySnapshot.Mode.DYING
                 || body.mode() == BodySnapshot.Mode.DYING && !DEATH_MUSIC.preDeathStarted());
-        String beat = intro ? null : MedicalPresentationPolicy.beatSound(isInventoryOpen(client), body);
+        // CU's heavy-monitor recording is selected only while its WoundView is open.
+        boolean woundView = client.gui.screen() instanceof MedicalInventoryScreen;
+        String beat = intro && !MedicalPresentationPolicy.criticalAlarm(body)
+                ? null : MedicalPresentationPolicy.beatSound(woundView, body);
         if (!Objects.equals(activeBeat, beat)) {
             if (activeBeat != null) stop(activeBeat);
             activeBeat = beat;
@@ -117,9 +120,8 @@ public final class MedicalClient {
         beatPhase = (beatPhase + advance) % 1;
         CONSCIOUSNESS_ECG.follow(seconds, body.bpm(), beatPhase);
         // Body.Update emits its one selected heartbeat at heartProg > .3, not a second alarm layer.
-        if (beat != null && (previousPhase < .3 && beatPhase >= .3
-                || beatPhase < previousPhase && beatPhase >= .3)) {
-            HEARTBEAT_FOV.onBeat(clockNanos.getAsLong());
+        if (beat != null && MedicalPresentationPolicy.crossedBeat(previousPhase, advance)) {
+            HEARTBEAT_FOV.onBeat(now);
             sound(beat, beat.equals("heartbeat_monitor") ? .4f : .55f, 1f);
         }
     }

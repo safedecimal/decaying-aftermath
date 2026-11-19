@@ -26,6 +26,16 @@ class MedicalPresentationPolicyTest {
         assertFalse(MedicalPresentationPolicy.criticalAlarm(body(BodySnapshot.Mode.CONSCIOUS, .3f, .29f, 1, 0, 72, 0)));
         assertFalse(MedicalPresentationPolicy.criticalAlarm(body(BodySnapshot.Mode.CONSCIOUS, .3f, .3f, 1, 0, 72, .1f)));
     }
+    @Test void unverifiedTemperatureDoesNotSelectTheCriticalHeartbeat() {
+        var parts = new BodySnapshot.PartSnapshot[6];
+        Arrays.fill(parts, new BodySnapshot.PartSnapshot(1, 0, 0, false, false, false, false));
+        var cold = new BodySnapshot(.8f, 1, 1, 0, 0, 72, BodySnapshot.Mode.CONSCIOUS,
+                1, 1, 1, parts,
+                new io.github.safedecimal.decayingaftermath.medical.SurvivalSnapshot(
+                        1, 1, 25, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0));
+        assertFalse(MedicalPresentationPolicy.criticalAlarm(cold));
+        assertEquals("heartbeat", MedicalPresentationPolicy.beatSound(true, cold));
+    }
     @Test void painOrSedationFaintIsNotAutomaticallyAnEcgAlarmOrCriticalLoop() {
         var faint=body(BodySnapshot.Mode.UNCONSCIOUS,.6f,.9f,.9f,.95f,72,0);
         assertFalse(MedicalPresentationPolicy.criticalAlarm(faint));assertFalse(MedicalPresentationPolicy.criticalAmbience(faint));

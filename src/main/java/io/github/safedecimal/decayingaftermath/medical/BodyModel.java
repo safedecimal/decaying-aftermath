@@ -278,7 +278,7 @@ public final class BodyModel {
             // A dry applied dressing remains actual care, not hunger/vanilla HP regen.
             receivingCare |= bandaged[i] && bleeding[i] <= .001f;
         }
-        survival.tick(environment,totalBleeding*.00065f,sepsis());
+        survival.tick(environment,totalBleeding*MedicalPhysiology.BLOOD_LOSS_PER_TICK_PER_SEVERITY,sepsis());
         blood=survival.bloodVolume();
         if(chestDrain) lungCollapse=Math.max(0,lungCollapse-.0006f);
         drug = Math.max(0, drug - .0002f);
@@ -558,7 +558,7 @@ public final class BodyModel {
     private float totalInternalBleeding(){float sum=0;for(float value:internalBleeding)sum+=value;return sum;}
     private float sepsis() {
         float sum=0,maximum=0;for(float value:infection){sum+=value;maximum=Math.max(maximum,value);}
-        return unit(Math.max((sum-1)/3,Math.max(0,(maximum-.75f)/.25f)*.6f));
+        return MedicalPhysiology.sepsis(sum,maximum);
     }
     private float limbPain(int i) { return anestheticTicks[i] > 0 ? 0 : localPain[i]; }
     private float consciousness() {

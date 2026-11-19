@@ -12,19 +12,27 @@ public final class MedicalPresentationPolicy {
 
     public static boolean criticalAlarm(BodySnapshot body) {
         if (body.mode() == BodySnapshot.Mode.DEAD || body.bpm() <= 0) return false;
-        // CU: oxygen < 50%, or active bleeding with blood volume < 30%.
-        // Pain/sedation unconsciousness alone is NOT isCriticallyDying.
-        // Blood pressure, fibrillation, temperature etc. are not invented from condition().
-        boolean bleeding = java.util.Arrays.stream(body.parts()).anyMatch(part -> part.bleeding() > 0);
-        return body.oxygen() < .5f || (body.blood() < .3f && bleeding)
+        // Match the recorded CU branches; unverified vitals must not select the heavy track.
+        float bleeding = 0;
+        for (var part:body.parts()) bleeding += part.bleeding() + part.internalBleeding();
+        return body.oxygen() < .5f || hemorrhageCritical(body.blood(), bleeding)
                 || body.mode() == BodySnapshot.Mode.LAST_STANDING || body.mode() == BodySnapshot.Mode.DYING;
     }
 
-    /** One recording per beat, never physical pulse + monitor simultaneously. */
-    public static String beatSound(boolean inventoryOpen, BodySnapshot body) {
+    static boolean hemorrhageCritical(float blood,float totalBleeding) {
+        return blood < .3f && totalBleeding > 0;
+    }
+
+    /** One recording per beat: the monitor replaces the heavy thump only on the wound view. */
+    public static String beatSound(boolean woundViewOpen, BodySnapshot body) {
         if (body.mode() == BodySnapshot.Mode.DEAD || body.bpm() <= 0) return null;
-        if (criticalAlarm(body)) return inventoryOpen ? "heartbeat_monitor" : "heartbeat_heavy";
-        return inventoryPulse(inventoryOpen, body) ? "heartbeat" : null;
+        if (criticalAlarm(body)) return woundViewOpen ? "heartbeat_monitor" : "heartbeat_heavy";
+        return woundViewOpen ? "heartbeat" : null;
+    }
+
+    static boolean crossedBeat(double phase,double advance) {
+        // Compare the unwrapped phase so a tick straddling the cycle boundary cannot miss a beat.
+        return Math.floor(phase+advance-.3)>Math.floor(phase-.3);
     }
 
     /** MusicManager.Update: two crossfading looping sources, not an unconscious-entry one-shot. */
