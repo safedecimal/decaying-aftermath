@@ -38,6 +38,18 @@ public final class CuProcedureGeometry {
         return mouth.x()>=b.x()+2&&mouth.x()<=b.x()+b.width()-2
                 &&mouth.y()>=b.y()-42&&mouth.y()<b.y()+b.height()-8;
     }
+    /** Antiseptic targets a visible nozzle zone just above the selected part. */
+    public static Bounds antisepticZone(BodyPart part) {
+        var wound=part(part,111,80,34,116);
+        return new Bounds(wound.x()-2,wound.y()-27,wound.width()+4,32);
+    }
+    public static boolean contains(Bounds bounds,Point point) {
+        return point.x()>=bounds.x()&&point.x()<bounds.x()+bounds.width()
+                &&point.y()>=bounds.y()&&point.y()<bounds.y()+bounds.height();
+    }
+    public static float antisepticFlow(double tilt) {
+        return Double.isFinite(tilt)?(float)Math.clamp((tilt-30)/20,0,1):0;
+    }
     public static float pourStrength(double tilt) {
         if(!Double.isFinite(tilt))return 0;
         return (float)Math.clamp(Math.min((tilt-35)/20,(85-tilt)/15),0,1);

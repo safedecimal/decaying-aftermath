@@ -23,8 +23,11 @@ import net.minecraft.world.item.crafting.display.RecipeDisplay;
 /** Real InventoryMenu slots around a front-view cubic Minecraft player using their skin. */
 public final class MedicalInventoryScreen extends AbstractContainerScreen<InventoryMenu> implements RecipeUpdateListener {
     private static final int CANVAS_W=MedicalInventoryLayout.WIDTH, CANVAS_H=MedicalInventoryLayout.HEIGHT;
+    private static final float CURSOR_SCALE=.28f;
     private int[][] originalPositions;
     private final CraftingRecipeBookComponent recipeBook;
+    private final ProcedureCursor cursor=new ProcedureCursor();
+    private float cursorRotation;
     private float scale=1;
     private int originX,originY;
     private int pendingSlot=-1;
@@ -74,6 +77,8 @@ public final class MedicalInventoryScreen extends AbstractContainerScreen<Invent
         BodySnapshot body=ClientMedicalState.snapshot();
         graphics.pose().pushMatrix(); graphics.pose().translate(originX,originY); graphics.pose().scale(scale,scale);
         super.extractRenderState(graphics,(int)virtualX(mouseX),(int)virtualY(mouseY),partialTick);
+        Slot grabSource=grabSourceAt(mouseX,mouseY,body);
+        if(grabSource!=null) extractGrabMarker(graphics,grabSource);
         for(var button:DeviceRemovalControls.buttons(body.part(selected))) {
             boolean hover=button.contains(virtualX(mouseX),virtualY(mouseY));
             graphics.fill(button.x(),button.y(),button.x()+button.width(),button.y()+button.height(),hover?0xFF44654E:0xFF283A2E);
@@ -95,6 +100,33 @@ public final class MedicalInventoryScreen extends AbstractContainerScreen<Invent
             MedicalClient.extractHud(graphics);
         else MedicalClient.extractPain(graphics);
         MedicalPanelRenderer.extractTooltip(graphics,panel,mouseX,mouseY);
+        if(minecraft.gui.screen()==this&&minecraft.isWindowActive()) {
+            graphics.nextStratum();
+            graphics.pose().pushMatrix();
+            graphics.pose().translate(mouseX,mouseY);
+            graphics.pose().scale(CURSOR_SCALE,CURSOR_SCALE);
+            CuMedicalHand.extract(graphics,0,0,cursorRotation,pendingSlot>=0||!menu.getCarried().isEmpty());
+            graphics.pose().popMatrix();
+            cursor.hide(minecraft.getWindow().handle());
+        } else cursor.restore();
+    }
+
+    private Slot grabSourceAt(int mouseX,int mouseY,BodySnapshot body) {
+        if(body.mode()==BodySnapshot.Mode.UNCONSCIOUS||pendingSlot>=0||!menu.getCarried().isEmpty()) return null;
+        double x=virtualX(mouseX),y=virtualY(mouseY);
+        if(partAt(x,y)!=null||DeviceRemovalControls.at(body.part(selected),x,y)!=null) return null;
+        Slot slot=slotAt(x,y);
+        return slot!=null&&slot.hasItem()&&slot.mayPickup(minecraft.player)?slot:null;
+    }
+
+    private static void extractGrabMarker(GuiGraphicsExtractor graphics,Slot slot) {
+        // Bracket the actual pickup hitbox without tinting the item itself.
+        int color=0xFF92EBC5;
+        for(int dx=-4;dx<=4;dx+=8) for(int dy=-4;dy<=4;dy+=8) {
+            int x=slot.x+(dx>0?-1:16),y=slot.y+(dy>0?-1:16);
+            graphics.fill(Math.min(x,x+dx),y,Math.max(x,x+dx)+1,y+1,color);
+            graphics.fill(x,Math.min(y,y+dy),x+1,Math.max(y,y+dy)+1,color);
+        }
     }
 
     @Override public void extractBackground(GuiGraphicsExtractor graphics,int mouseX,int mouseY,float partialTick) {
@@ -270,7 +302,11 @@ public final class MedicalInventoryScreen extends AbstractContainerScreen<Invent
         return x<0||y<0||x>=CANVAS_W||y>=CANVAS_H;
     }
     @Override public boolean mouseScrolled(double x,double y,double horizontal,double vertical) {
-        return super.mouseScrolled(virtualX(x),virtualY(y),horizontal,vertical);
+        // Bundle item selection and ordinary scrolling keep their existing priority.
+        if(super.mouseScrolled(virtualX(x),virtualY(y),horizontal,vertical)) return true;
+        if(vertical==0||!minecraft.hasShiftDown()||recipeBook.isVisible()) return false;
+        cursorRotation=(float)Math.IEEEremainder(cursorRotation+Math.toRadians(15)*vertical,Math.PI*2);
+        return true;
     }
     @Override public boolean keyPressed(KeyEvent event) {
         if(pendingSlot>=0) {clearMedicalCarry();if(event.key()==256) return true;}
@@ -285,6 +321,7 @@ public final class MedicalInventoryScreen extends AbstractContainerScreen<Invent
     @Override public void recipesUpdated() {recipeBook.recipesUpdated();}
     @Override public void fillGhostRecipe(RecipeDisplay display) {recipeBook.fillGhostRecipe(display);}
     @Override public void removed() {
+        cursor.restore();
         clearMedicalCarry();consumeMedicalRelease=false;
         if(originalPositions!=null)
             for(int i=0;i<originalPositions.length;i++) position(i,originalPositions[i][0],originalPositions[i][1]);

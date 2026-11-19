@@ -292,8 +292,8 @@ class MedicalUiRenderingTest {
             ProcedureVisuals.beginWorkArea(graphics);
             CuMedicalHand.extract(graphics, point[0], point[1], syringe ? (float) Math.toRadians(65) : 0, false);
             String context = screen[0] + "x" + screen[1] + " at " + point[0] + "," + point[1] + ", syringe=" + syringe;
-            assertTrue(graphics.visible(0xFF000000) > 0, context);
-            assertTrue(graphics.visible(0xFFEAEAEA) > 0, context);
+            assertTrue(graphics.visible(CuMedicalHand.HAND_FACE) > 0, context);
+            assertTrue(graphics.visible(CuMedicalHand.HAND_EDGE) > 0, context);
         }
     }
 
@@ -302,14 +302,14 @@ class MedicalUiRenderingTest {
         ProcedureVisuals.beginWorkArea(graphics);
         CuMedicalHand.extract(graphics, 128, 128, 0, true);
         // Tessellated faces need multiple rectangles; draw-call count is not anatomy.
-        assertTrue(graphics.fills.stream().anyMatch(r -> r.col1() == 0xFF000000));
-        assertTrue(graphics.fills.stream().allMatch(r -> r.col1() == 0xFF000000 || r.col1() == 0xFFEAEAEA));
-        assertNoBlackOverflow(graphics, -CuMedicalHand.WIDTH / 2, -CuMedicalHand.WIDTH / 2,
-                CuMedicalHand.WIDTH, CuMedicalHand.HEIGHT, CuMedicalHand.DEPTH);
+        assertTrue(graphics.fills.stream().anyMatch(r -> r.col1() == CuMedicalHand.HAND_FACE));
+        assertTrue(graphics.fills.stream().allMatch(r -> r.col1() == CuMedicalHand.HAND_FACE || r.col1() == 0xC8A9F0C6));
+        assertNoBlackOverflow(graphics, -CuMedicalHand.GRIP_X, -CuMedicalHand.GRIP_Y,
+                CuMedicalHand.WIDTH, CuMedicalHand.HEIGHT, CuMedicalHand.DEPTH, CuMedicalHand.HAND_FACE);
         assertTrue(graphics.blits.isEmpty());
     }
 
-    private void assertNoBlackOverflow(Graphics graphics, int x, int y, int width, int height, int depth) {
+    private void assertNoBlackOverflow(Graphics graphics, int x, int y, int width, int height, int depth, int face) {
         var pixels = new HashMap<Long, Integer>();
         for (var fill : graphics.fills) {
             for (int py = fill.y0(); py < fill.y1(); py++) for (int px = fill.x0(); px < fill.x1(); px++)
@@ -320,7 +320,7 @@ class MedicalUiRenderingTest {
         silhouette.lineTo(x + width + depth, y + depth);
         silhouette.lineTo(x + width + depth, y + height + depth);
         silhouette.lineTo(x + depth, y + height + depth); silhouette.lineTo(x, y + height); silhouette.closePath();
-        long outside = pixels.entrySet().stream().filter(p -> p.getValue() == 0xFF000000)
+        long outside = pixels.entrySet().stream().filter(p -> p.getValue() == face)
                 .filter(p -> !silhouette.contains((int) (p.getKey() >> 32) + .5, (int) (long) p.getKey() + .5)).count();
         assertEquals(0, outside, "Black fill must not protrude past the slanted cuboid silhouette");
     }
@@ -328,7 +328,7 @@ class MedicalUiRenderingTest {
     @Test void cuboidFacesDoNotLeaveFlatBlackCornerTabs() throws Exception {
         var graphics = Graphics.create(640, 420);
         CuMedicalHand.cube(graphics, 0, 0, 24, 72, 6);
-        assertNoBlackOverflow(graphics, 0, 0, 24, 72, 6);
+        assertNoBlackOverflow(graphics, 0, 0, 24, 72, 6, 0xFF000000);
     }
 
     @Test void largerHandRetainsSteveFourByTwelveProportions() {

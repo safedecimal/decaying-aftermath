@@ -21,6 +21,11 @@ public final class ProcedureVisuals {
         var b=CuProcedureGeometry.part(part,x,y,w,h);
         CuMedicalHand.cube(g,b.x(),b.y(),b.width(),b.height(),5,0xFF171B18,0xFF9CA89E);
     }
+    public static void grip(GuiGraphicsExtractor g,double x,double y,boolean ready) {
+        int px=(int)Math.round(x),py=(int)Math.round(y),color=ready?0xFF90F4B0:0xFFFFD88A;
+        g.outline(px-5,py-5,11,11,color);
+        g.fill(px-1,py-1,px+2,py+2,color);
+    }
     public static void rail(GuiGraphicsExtractor g,int y,float threaded,float tension,boolean active) {
         g.fill(92,y-6,155,y+7,0xFF050505);
         g.fill(94,y-2,151,y+3,active?0xFF8B9490:0xFF454B47);

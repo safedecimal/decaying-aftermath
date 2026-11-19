@@ -35,6 +35,20 @@ class CuProcedureGeometryTest {
         assertEquals(1,CuProcedureGeometry.pourStrength(60));assertTrue(CuProcedureGeometry.pourStrength(40)<.5);
         assertEquals(0,CuProcedureGeometry.pourStrength(Double.NaN));
     }
+    @Test void antisepticWindowAcceptsTheVisibleNozzleAndRejectsAnOutsidePoint() {
+        for(var part:BodyPart.values()) {
+            var zone=CuProcedureGeometry.antisepticZone(part);
+            var mouthOffset=CuProcedureGeometry.bottleMouth(0,0,60);
+            var centeredMouth=CuProcedureGeometry.bottleMouth(zone.x()+zone.width()/2.-mouthOffset.x(),
+                    zone.y()+10-mouthOffset.y(),60);
+            assertTrue(CuProcedureGeometry.contains(zone,centeredMouth));
+            assertFalse(CuProcedureGeometry.contains(zone,new CuProcedureGeometry.Point(zone.x()-1,centeredMouth.y())));
+        }
+        assertEquals(0,CuProcedureGeometry.antisepticFlow(30));
+        assertEquals(.5f,CuProcedureGeometry.antisepticFlow(40));
+        assertEquals(1,CuProcedureGeometry.antisepticFlow(90));
+        assertEquals(0,CuProcedureGeometry.antisepticFlow(Double.NaN));
+    }
     @Test void everyPartUsesTheSameBoundsForDrawingAndAim() {
         for(BodyPart part:BodyPart.values()) {
             var b=CuProcedureGeometry.part(part,111,80,34,116);

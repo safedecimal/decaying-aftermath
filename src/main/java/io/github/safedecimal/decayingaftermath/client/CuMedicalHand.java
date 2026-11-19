@@ -6,11 +6,14 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 public final class CuMedicalHand {
     public static final int WIDTH=36,HEIGHT=108,DEPTH=9;
     private static final int BLACK=0xFF000000,WHITE=0xFFEAEAEA;
+    // Center of the palm/end face, including the cuboid's projected depth.
+    static final int GRIP_X=(WIDTH+DEPTH)/2, GRIP_Y=DEPTH/2;
+    static final int HAND_FACE=0x88000000, HAND_EDGE=0xB8EAEAEA;
     private CuMedicalHand() {}
     public static void extract(GuiGraphicsExtractor g,double x,double y,float rotation,boolean grasp) {
         g.pose().pushMatrix();g.pose().translate((float)x,(float)y);g.pose().rotate(rotation);
         // Minecraft's 4x12 arm ratio. Holding changes the tool interaction, not the arm's shape.
-        cube(g,-WIDTH/2,-WIDTH/2,WIDTH,HEIGHT,DEPTH);
+        cube(g,-GRIP_X,-GRIP_Y,WIDTH,HEIGHT,DEPTH,HAND_FACE,grasp?0xC8A9F0C6:HAND_EDGE);
         g.pose().popMatrix();
     }
     public static void cube(GuiGraphicsExtractor g,int x,int y,int w,int h,int depth) {

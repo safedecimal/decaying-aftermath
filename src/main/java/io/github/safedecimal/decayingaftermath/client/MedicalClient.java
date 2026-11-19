@@ -20,6 +20,7 @@ import java.util.function.LongSupplier;
 public final class MedicalClient {
     private static boolean registered;
     private static double beatPhase;
+    private static final HeartbeatFovPulse HEARTBEAT_FOV = new HeartbeatFovPulse();
     private static String activeBeat;
     private static BodySnapshot.Mode previousMode = BodySnapshot.Mode.CONSCIOUS;
     private static LongSupplier clockNanos = System::nanoTime;
@@ -101,6 +102,7 @@ public final class MedicalClient {
             if (activeBeat != null) stop(activeBeat);
             activeBeat = beat;
         }
+        if (beat == null || client.isPaused()) HEARTBEAT_FOV.reset();
         if (client.isPaused()) return;
         // Thoughts are action-bar text: a fainted player neither reads nor hears them, and
         // nothing accumulates for the moment of waking up either.
@@ -117,6 +119,7 @@ public final class MedicalClient {
         // Body.Update emits its one selected heartbeat at heartProg > .3, not a second alarm layer.
         if (beat != null && (previousPhase < .3 && beatPhase >= .3
                 || beatPhase < previousPhase && beatPhase >= .3)) {
+            HEARTBEAT_FOV.onBeat(clockNanos.getAsLong());
             sound(beat, beat.equals("heartbeat_monitor") ? .4f : .55f, 1f);
         }
     }
@@ -179,12 +182,23 @@ public final class MedicalClient {
         closeCriticalLoops(); closeSituationLoops();
         if(dyingMusic!=null)dyingMusic.close();if(deadMusic!=null)deadMusic.close();
         dyingMusic=deadMusic=null;DEATH_MUSIC.reset();
+        HEARTBEAT_FOV.reset();
         ThoughtTyper.reset();beatPhase=0;lastTickNanos=0;playedDrone=false;
         TIMELINE.reset();CONSCIOUSNESS_ECG.reset();PAIN.reset();previousMode=BodySnapshot.Mode.CONSCIOUS;
         VanillaMusicGate.reset();
         currentPlayer=null;waitingForLiveBody=false;
     }
     public static double beatPhase() { return beatPhase; }
+
+    public static float heartbeatFov(Minecraft client, float vanillaFov) {
+        if (client.level == null || client.player == null || client.player != currentPlayer
+                || !client.player.isAlive() || client.isPaused() || !ClientMedicalState.received()) {
+            return vanillaFov;
+        }
+        BodySnapshot body = ClientMedicalState.snapshot();
+        if (body.mode() == BodySnapshot.Mode.DEAD || body.bpm() <= 0) return vanillaFov;
+        return HEARTBEAT_FOV.apply(vanillaFov, client.options.fovEffectScale().get(), clockNanos.getAsLong());
+    }
 
     public static void extractHud(GuiGraphicsExtractor graphics) {
         Minecraft client = Minecraft.getInstance();

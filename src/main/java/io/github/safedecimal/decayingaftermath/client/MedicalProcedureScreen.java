@@ -1,5 +1,6 @@
 package io.github.safedecimal.decayingaftermath.client;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import io.github.safedecimal.decayingaftermath.medical.*;
 import io.github.safedecimal.decayingaftermath.network.MedicalNetwork;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -28,6 +29,7 @@ public final class MedicalProcedureScreen extends Screen {
     private double pointerX=128,pointerY=225,offsetX,offsetY,objectX=47,objectY=90;
     private double previousObjectX=47,previousObjectY=90,gripLocalX,gripLocalY;
     private double angle,previousAngle,deviceAngle=-18,potionTilt,syringeAngle;
+    private float handRotation;
     private boolean syringeInserted;
     private double syringeLockX;
     private float delivered;
@@ -59,6 +61,7 @@ public final class MedicalProcedureScreen extends Screen {
     private ItemStack source() {return minecraft.player==null?ItemStack.EMPTY:minecraft.player.inventoryMenu.getSlot(slot).getItem();}
     private boolean isWrap() {return MedicalSupplyPolicy.wrap(kind);}
     private boolean isPotion() {return kind==TreatmentKind.HEALING_POTION||kind==TreatmentKind.REGENERATION_POTION||kind==TreatmentKind.POTION||kind==TreatmentKind.ANTISEPTIC;}
+    private boolean isAntiseptic() {return kind==TreatmentKind.ANTISEPTIC;}
     private boolean draggingTool() {return holding&&(isWrap()||kind.injection()||isPotion()||stage==0);}
     private double pivotX() {return isWrap()?0:kind.injection()?11.5:isPotion()||kind.simpleTool()?16:kind==TreatmentKind.SPLINT?13.5:22.5;}
     private double pivotY() {return isWrap()?0:kind.injection()?SYRINGE_HEIGHT:isPotion()||kind.simpleTool()?16:24.5;}
@@ -67,6 +70,40 @@ public final class MedicalProcedureScreen extends Screen {
         offsetX=objectX-x;offsetY=objectY-y;
         var grip=ProcedureToolPose.localGrip(x,y,objectX,objectY,pivotX(),pivotY(),toolAngle());
         gripLocalX=grip.x();gripLocalY=grip.y();
+    }
+    private int toolWidth() {return kind.injection()?23:isPotion()||kind.simpleTool()?32:kind==TreatmentKind.SPLINT?27:45;}
+    private int toolHeight() {return kind.injection()?123:isPotion()||kind.simpleTool()?32:49;}
+    private boolean canGrab(double x,double y,double toolX,double toolY,double rollAngle) {
+        if(isWrap())return Math.hypot(x-toolX,y-toolY)<=rollSize()/2.0+4;
+        if(kind.injection()||isPotion()||stage==0) {
+            var local=ProcedureToolPose.localGrip(x,y,toolX,toolY,pivotX(),pivotY(),toolAngle());
+            return Math.abs(local.x()+pivotX()-toolWidth()/2.0)<=toolWidth()/2.0+4
+                    && Math.abs(local.y()+pivotY()-toolHeight()/2.0)<=toolHeight()/2.0+4;
+        }
+        if(kind==TreatmentKind.SPLINT||stage==1)
+            return Math.abs(x-strapX())<20&&Math.abs(y-strapY())<16;
+        return CuProcedureGeometry.windlassGrip(x,y,rollAngle);
+    }
+    private int strapX() {return (stage%2)==1?96:148;}
+    private int strapY() {return stage<3?112:164;}
+    private void drawGrip(GuiGraphicsExtractor g,double x,double y,double rollAngle,boolean ready) {
+        if(isWrap()) {
+            // Point on the roll facing away from the wrap disk, reachable even on a full roll.
+            double r=Math.atan2(y-128,x-128);
+            double edge=Math.max(0,rollSize()/2.0-5);
+            double px=x+Math.cos(r)*edge,py=y+Math.sin(r)*edge;
+            // Keep the marker in the scissored surface when the roll starts near its top edge.
+            ProcedureVisuals.grip(g,Math.clamp(px,-4,259),Math.clamp(py,20,226),ready);
+        } else if(kind.injection()||isPotion()||stage==0) {
+            var p=ProcedureToolPose.grip(x,y,pivotX(),pivotY(),toolWidth()/2.0-pivotX(),
+                    (kind.injection()?toolHeight()*.36:toolHeight()/2.0)-pivotY(),toolAngle());
+            ProcedureVisuals.grip(g,p.x(),p.y(),ready);
+        } else if(kind==TreatmentKind.SPLINT||stage==1) {
+            ProcedureVisuals.grip(g,strapX(),strapY(),ready);
+        } else {
+            double a=Math.toRadians(rollAngle);
+            for(int side:new int[]{-1,1})ProcedureVisuals.grip(g,128+side*22*Math.cos(a),128+side*22*Math.sin(a),ready);
+        }
     }
     private void target(double x,double y) {pointerX=Math.clamp((x-ox)/scale,-3,259);pointerY=Math.clamp((y-oy)/scale,-3,259);}
     @Override public void mouseMoved(double x,double y) {target(x,y);}
@@ -147,12 +184,18 @@ public final class MedicalProcedureScreen extends Screen {
                 if(toolWork>=1-MedicalSupplyPolicy.EMPTY&&MedicalSupplyPolicy.installation(kind)){completed=true;holding=false;}
             }else errorTicks=8;
         } else if(isPotion()) {
-            objectX=Math.clamp(hand.x()+offsetX,15,210);objectY=Math.clamp(hand.y()+offsetY,15,205);
-            boolean aimed=CuProcedureGeometry.overWound(part,CuProcedureGeometry.bottleMouth(objectX,objectY,potionTilt));
-            float rate=CuProcedureGeometry.pourStrength(potionTilt);
-            if(aimed&&rate>0) {stage=1;queueUse((float)(seconds*rate/6));}else {stage=0;if(holding&&potionTilt>=35)errorTicks=8;}
+            // Keep the acquired point under the hand when turning the bottle, not just when translating it.
+            var grip=ProcedureToolPose.grip(0,0,pivotX(),pivotY(),gripLocalX,gripLocalY,potionTilt);
+            objectX=Math.clamp(hand.x()-grip.x(),15,210);objectY=Math.clamp(hand.y()-grip.y(),15,205);
+            var mouth=CuProcedureGeometry.bottleMouth(objectX,objectY,potionTilt);
+            boolean aimed=isAntiseptic()?CuProcedureGeometry.contains(CuProcedureGeometry.antisepticZone(part),mouth)
+                    :CuProcedureGeometry.overWound(part,mouth);
+            float rate=isAntiseptic()?CuProcedureGeometry.antisepticFlow(potionTilt):CuProcedureGeometry.pourStrength(potionTilt);
+            if(aimed&&rate>0) {stage=1;queueUse((float)(seconds*rate/6));}
+            else {stage=0;if(!isAntiseptic()&&rate>0)errorTicks=8;}
         } else if(stage==0) {
-            objectX=Math.clamp(hand.x()+offsetX,15,215);objectY=Math.clamp(hand.y()+offsetY,15,205);
+            var grip=ProcedureToolPose.grip(0,0,pivotX(),pivotY(),gripLocalX,gripLocalY,toolAngle());
+            objectX=Math.clamp(hand.x()-grip.x(),15,215);objectY=Math.clamp(hand.y()-grip.y(),15,205);
         } else if(kind==TreatmentKind.SPLINT||stage==1) {
             var pull=fasteners.pull(stage,hand.x(),hand.y(),seconds);queueUse(pull.fraction()*initialFill);
             if(pull.offRail())errorTicks=8;
@@ -172,21 +215,10 @@ public final class MedicalProcedureScreen extends Screen {
         if(event.button()==3&&kind.injection()&&syringeInserted&&holding) {injecting=true;return true;}
         if(event.button()!=1)return false;
         double x=hand.x(),y=hand.y();
-        if(isWrap()) {
-            int size=rollSize();holding=Math.hypot(x-objectX,y-objectY)<=size/2.0+4;
-            if(holding) {captureGrip(x,y);wrap.grab(x,y);}return holding;
-        }
-        if(kind.injection()||isPotion()||stage==0) {
-            int w=kind.injection()?23:isPotion()||kind.simpleTool()?32:kind==TreatmentKind.SPLINT?27:45;
-            int h=kind.injection()?123:isPotion()||kind.simpleTool()?32:49;
-            holding=CuProcedureGeometry.toolGrip(x,y,objectX,objectY,w,h,isPotion()?potionTilt:kind==TreatmentKind.SPLINT?deviceAngle:0,4);
-            if(holding)captureGrip(x,y);return holding;
-        }
-        if(kind==TreatmentKind.SPLINT||stage==1) {
-            int row=stage<3?112:164,start=(stage%2)==1?96:148;
-            holding=Math.abs(x-start)<20&&Math.abs(y-row)<16;return holding;
-        }
-        holding=CuProcedureGeometry.windlassGrip(x,y,angle);wrap.grab(x,y);return holding;
+        if(completed||!(holding=canGrab(x,y,objectX,objectY,angle)))return false;
+        if(draggingTool())captureGrip(x,y);
+        if(isWrap()||kind==TreatmentKind.TOURNIQUET&&stage==2)wrap.grab(x,y);
+        return true;
     }
     @Override public boolean mouseDragged(MouseButtonEvent event,double dx,double dy) {target(event.x(),event.y());return holding&&!ended;}
     @Override public boolean mouseReleased(MouseButtonEvent event) {
@@ -201,6 +233,9 @@ public final class MedicalProcedureScreen extends Screen {
     }
     @Override public boolean mouseScrolled(double x,double y,double horizontal,double vertical) {
         target(x,y);
+        if(vertical!=0&&(InputConstants.isKeyDown(InputConstants.KEY_LSHIFT)||InputConstants.isKeyDown(InputConstants.KEY_RSHIFT))) {
+            handRotation=(float)Math.IEEEremainder(handRotation+Math.toRadians(vertical*12),2*Math.PI);return true;
+        }
         if(holding&&kind==TreatmentKind.SPLINT&&stage==0) {deviceAngle=Math.clamp(deviceAngle+vertical*3,-45,45);return true;}
         if(holding&&isPotion()) {potionTilt=Math.clamp(potionTilt+vertical*8,0,110);return true;}
         return false;
@@ -237,6 +272,11 @@ public final class MedicalProcedureScreen extends Screen {
             if(!holding)drawSyringe(graphics,toolX,toolY);
         } else if(isPotion()) {
             drawSelectedPart(graphics,111,80,34,116);
+            if(isAntiseptic()) {
+                var zone=CuProcedureGeometry.antisepticZone(part);
+                graphics.fill(zone.x(),zone.y(),zone.x()+zone.width(),zone.y()+zone.height(),0x242ED5C7);
+                graphics.outline(zone.x(),zone.y(),zone.width(),zone.height(),holding&&stage==1?0xFF8EF2BC:0xFFA4CCC6);
+            }
         } else if(kind.simpleTool()) {
             drawSelectedPart(graphics,111,80,34,116);
             if(!holding)drawSimpleTool(graphics,toolX,toolY);
@@ -257,16 +297,18 @@ public final class MedicalProcedureScreen extends Screen {
             }
         }
         ProcedureVisuals.beginWorkArea(graphics);
-        float handAngle=hand.rotation(isWrap())+(kind.injection()?(float)Math.toRadians(65):0);
+        float handAngle=handRotation+hand.rotation(isWrap())+(kind.injection()?(float)Math.toRadians(65):0);
         CuMedicalHand.extract(graphics,handX,handY,handAngle,holding||injecting);
-        // Held items stay readable in front of the larger opaque arm, at the same frame-time grip.
+        // Held items stay readable in front of the translucent arm, at the same frame-time grip.
         if(draggingTool()) {
             if(isWrap())drawBandageRoll(graphics,toolX,toolY,visualAngle);
             else if(kind.injection())drawSyringe(graphics,toolX,toolY);
             else if(kind.simpleTool())drawSimpleTool(graphics,toolX,toolY);
             else if(!isPotion())drawDevice(graphics,toolX,toolY,kind==TreatmentKind.SPLINT?27:45);
         }
-        if(isPotion())drawPotion(graphics,toolX,toolY);graphics.disableScissor();
+        if(isPotion())drawPotion(graphics,toolX,toolY);
+        if(!holding&&!completed)drawGrip(graphics,toolX,toolY,visualAngle,canGrab(hand.x(),hand.y(),objectX,objectY,angle));
+        graphics.disableScissor();
         Component supplyLabel=kind.reusable()?Component.translatable("decaying_aftermath.procedure.reusable")
                 :Component.translatable("decaying_aftermath.procedure.remaining",(int)Math.ceil(remaining*100-.00001f));
         graphics.centeredText(font,supplyLabel.getString(),128,244,0xFFE4E9E4);
@@ -274,7 +316,7 @@ public final class MedicalProcedureScreen extends Screen {
         graphics.fill(89,259,167,261,0xFF414A43);graphics.fill(89,259,89+Math.round(78*bar),261,0xFFC3CFC4);
         if(errorTicks>0)graphics.centeredText(font,Component.translatable("decaying_aftermath.procedure.guide.steady").getString(),128,222,0xFFF08888);
         graphics.pose().popMatrix();
-        var lines=ProcedureVisuals.lines(guide(),280,font::width);
+        var lines=ProcedureVisuals.lines(guide()+" "+Component.translatable("decaying_aftermath.procedure.rotate_hand").getString(),280,font::width);
         graphics.pose().pushMatrix();graphics.pose().translate(ox,oy);graphics.pose().scale(scale,scale);
         int gy=-lines.size()*11-17;for(String line:lines) {graphics.centeredText(font,line,128,gy,0xFFE4E9E4);gy+=11;}
         graphics.pose().popMatrix();
@@ -314,13 +356,14 @@ public final class MedicalProcedureScreen extends Screen {
         graphics.pose().pushMatrix();graphics.pose().translate((float)x+16,(float)y+16);graphics.pose().rotate((float)Math.toRadians(potionTilt));graphics.pose().scale(2,2);graphics.item(source(),-8,-8);graphics.pose().popMatrix();
         if(stage==1&&holding) {
             var mouth=CuProcedureGeometry.bottleMouth(x,y,potionTilt);var wound=CuProcedureGeometry.part(part,111,80,34,116);
-            int bottom=wound.y()+wound.height()-4,span=Math.max(1,bottom-(int)mouth.y());
-            for(int i=0;i<5;i++) {int dy=(int)mouth.y()+3+(elapsed+i*7)%span;graphics.fill((int)mouth.x()-1,dy,(int)mouth.x()+2,Math.min(dy+3,bottom),0xFFB0BDB3);}
+            int bottom=isAntiseptic()?Math.max((int)mouth.y()+10,wound.y()+9):wound.y()+wound.height()-4;
+            int span=Math.max(1,bottom-(int)mouth.y()-3);
+            for(int i=0;i<5;i++) {int dy=(int)mouth.y()+3+(elapsed*3+i*7)%span;graphics.fill((int)mouth.x()-1,dy,(int)mouth.x()+2,Math.min(dy+3,bottom),isAntiseptic()?0xFF83E5D6:0xFFB0BDB3);}
         }
     }
     private void drawSelectedPart(GuiGraphicsExtractor graphics,int x,int y,int w,int h) {ProcedureVisuals.part(graphics,part,x,y,w,h);}
     private String guide() {
-        String suffix=isWrap()?"wrap":kind.injection()?"syringe":isPotion()?"potion":kind.simpleTool()?"tool":kind==TreatmentKind.SPLINT?(stage==0?"splint_align":"splint_straps"):(stage==0?"tourniquet_fit":"tourniquet_tighten");
+        String suffix=isWrap()?"wrap":kind.injection()?"syringe":isAntiseptic()?"antiseptic":isPotion()?"potion":kind.simpleTool()?"tool":kind==TreatmentKind.SPLINT?(stage==0?"splint_align":"splint_straps"):(stage==0?"tourniquet_fit":"tourniquet_tighten");
         return Component.translatable("decaying_aftermath.procedure.guide."+suffix).getString();
     }
     private void finish() {

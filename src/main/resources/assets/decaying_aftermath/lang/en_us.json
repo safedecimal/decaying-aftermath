@@ -32,6 +32,8 @@
   "decaying_aftermath.procedure.cancel": "Esc: leave; used material is not restored",
   "decaying_aftermath.procedure.guide.wrap": "Grab the roll and wind clockwise. Multiple layers provide gradual bleed care. Keep winding; the percentage is remaining material.",
   "decaying_aftermath.procedure.guide.syringe": "LMB: align and insert the needle. Hold RMB for the plunger, then withdraw straight.",
+  "decaying_aftermath.procedure.rotate_hand": "Shift + wheel: rotate the hand.",
+  "decaying_aftermath.procedure.guide.antiseptic": "Grab the bottle at the marker. Aim its nozzle inside the box and tilt with the wheel. Green means it is pouring.",
   "decaying_aftermath.procedure.guide.potion": "LMB: bring the bottle to the wound. Mouse wheel: tilt; keep the pouring angle steady.",
   "decaying_aftermath.procedure.guide.splint_align": "Align the splint with both marks. Mouse wheel: rotate. Release to fit.",
   "decaying_aftermath.procedure.guide.splint_straps": "Thread each strap to the right, then pull it left to tension. Stay on the rail.",

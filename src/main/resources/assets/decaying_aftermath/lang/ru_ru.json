@@ -32,6 +32,8 @@
   "decaying_aftermath.procedure.cancel": "Esc: выйти; использованный материал не возвращается",
   "decaying_aftermath.procedure.guide.wrap": "Возьмите рулон и мотайте по часовой стрелке. Нужно несколько слоёв: кровотечение уменьшается постепенно. Продолжайте наматывать; процент — остаток рулона.",
   "decaying_aftermath.procedure.guide.syringe": "ЛКМ: выровнять и ввести иглу. Удерживайте ПКМ для поршня, затем извлеките прямо.",
+  "decaying_aftermath.procedure.rotate_hand": "Shift + колесо: повернуть руку.",
+  "decaying_aftermath.procedure.guide.antiseptic": "Возьмите флакон за метку. Наведите горлышко в рамку и наклоните колесом. Зелёная рамка: антисептик льётся.",
   "decaying_aftermath.procedure.guide.potion": "ЛКМ: поднесите бутылку к ране. Колесо: наклон; удерживайте подходящий угол для струи.",
   "decaying_aftermath.procedure.guide.splint_align": "Совместите шину с обеими метками. Колесо: повернуть. Отпустите для установки.",
   "decaying_aftermath.procedure.guide.splint_straps": "Проденьте каждый ремень вправо, затем тяните влево для натяжения. Не уходите с направляющей.",
