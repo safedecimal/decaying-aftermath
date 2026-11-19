@@ -5,7 +5,18 @@ import java.util.Objects;
 /** Game-only quantities are normalized except BPM and the cumulative 0..3 drug burden. */
 public record BodySnapshot(float condition, float blood, float oxygen, float pain, float drug,
         float bpm, Mode mode, float consciousnessProgress, float energy, float consciousness,
-        PartSnapshot[] parts, SurvivalSnapshot survival, BloodGroup bloodGroup) {
+        PartSnapshot[] parts, SurvivalSnapshot survival, BloodGroup bloodGroup, int cardiacTicks) {
+    public BodySnapshot(float condition, float blood, float oxygen, float pain, float drug,
+            float bpm, Mode mode, float consciousnessProgress, float energy, float consciousness,
+            PartSnapshot[] parts, SurvivalSnapshot survival, BloodGroup group) {
+        this(condition,blood,oxygen,pain,drug,bpm,mode,consciousnessProgress,energy,consciousness,parts,survival,group,0);
+    }
+    public boolean cardiacArrest() { return cardiacTicks < 0; }
+    public boolean racingHeart() { return CardiacRhythm.unstable(cardiacTicks); }
+    public BodySnapshot withCardiacTicks(int ticks) {
+        return new BodySnapshot(condition,blood,oxygen,pain,drug,bpm,mode,consciousnessProgress,
+                energy,consciousness,parts,survival,bloodGroup,ticks);
+    }
     // Append modes: saved pre-0.3.9 ordinal 3 must continue to mean DEAD.
     public enum Mode { CONSCIOUS, UNCONSCIOUS, LAST_STANDING, DEAD, DYING }
 
@@ -19,7 +30,7 @@ public record BodySnapshot(float condition, float blood, float oxygen, float pai
 
     public BodySnapshot withBloodGroup(BloodGroup group) {
         return new BodySnapshot(condition,blood,oxygen,pain,drug,bpm,mode,consciousnessProgress,
-                energy,consciousness,parts,survival,Objects.requireNonNull(group));
+                energy,consciousness,parts,survival,Objects.requireNonNull(group),cardiacTicks);
     }
 
     public BodySnapshot(float condition, float blood, float oxygen, float pain, float drug,
@@ -38,7 +49,9 @@ public record BodySnapshot(float condition, float blood, float oxygen, float pai
 
     public BodySnapshot {
         condition = unit(condition); blood = unit(blood); oxygen = unit(oxygen); pain = unit(pain);
-        drug = finiteClamp(drug, 0, 3); bpm = finiteClamp(bpm, 0, 220);
+        drug = finiteClamp(drug, 0, 3);
+        cardiacTicks = mode == Mode.DEAD ? 0 : CardiacRhythm.sanitize(cardiacTicks);
+        bpm = cardiacTicks < 0 ? 0 : finiteClamp(bpm, 0, 220);
         consciousnessProgress = unit(consciousnessProgress);
         energy = unit(energy); consciousness = unit(consciousness);
         Objects.requireNonNull(mode, "mode");

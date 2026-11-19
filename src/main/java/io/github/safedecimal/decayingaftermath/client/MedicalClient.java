@@ -122,7 +122,7 @@ public final class MedicalClient {
         } else ThoughtTyper.reset();
         double previousPhase = beatPhase;
         double advance = Math.min(seconds, .1) * body.bpm() / 60;
-        beatPhase = (beatPhase + advance) % 1;
+        beatPhase = body.bpm() <= 0 ? 0 : (beatPhase + advance) % 1;
         CONSCIOUSNESS_ECG.follow(seconds, body.bpm(), beatPhase);
         // Body.Update emits its one selected heartbeat at heartProg > .3, not a second alarm layer.
         if (MedicalPresentationPolicy.crossedBeat(previousPhase, advance)) {
@@ -246,6 +246,10 @@ public final class MedicalClient {
         if (client.player == null || !ClientMedicalState.received()) return;
         BodySnapshot body = ClientMedicalState.snapshot();
         extractPain(graphics);
+        if(body.racingHeart() && client.gui.screen()==null && body.mode()==BodySnapshot.Mode.CONSCIOUS) {
+            graphics.centeredText(client.font,Component.translatable("decaying_aftermath.defib.racing",
+                    Math.round(body.bpm())).getString(),graphics.guiWidth()/2,graphics.guiHeight()-68,0xFFFFAE72);
+        }
         if (TIMELINE.black() > 0 || TIMELINE.vignette() > 0) {
             double relief = body.mode() == BodySnapshot.Mode.UNCONSCIOUS ? blackoutRelief : 0;
             double black = MedicalPresentationPolicy.blackOverlay(body, TIMELINE.black() - relief, isMedicalPanelOpen(client));
@@ -257,6 +261,9 @@ public final class MedicalClient {
         if (alpha > 0) {
             var box = ConsciousnessLayout.at(graphics.guiWidth(), graphics.guiHeight());
             extractRecoveryRing(graphics, box, body, alpha);
+            if(body.cardiacArrest()) graphics.centeredText(client.font,
+                    Component.translatable("decaying_aftermath.defib.arrest",(-body.cardiacTicks()+19)/20).getString(),
+                    graphics.guiWidth()/2,Math.max(3,box.y()-13),0xFFF19486);
             // Blackout feedback belongs to the world HUD, not to an inventory screen.
             if (body.mode() == BodySnapshot.Mode.UNCONSCIOUS) {
                 for (int column = 0; column < CONSCIOUSNESS_ECG.width(); column++) {
@@ -295,7 +302,7 @@ public final class MedicalClient {
         blit(graphics, "unconscious_ring", box.x(), box.y(), box.diameter(), box.diameter(),
                 149, 149, color(alpha * .35, 0xFFFFFF));
         radialTexture(graphics, "unconscious_ring", box.x(), box.y(), box.diameter(),
-                149, body.consciousnessProgress(), color(alpha, 0xFFFFFF));
+                149, body.cardiacArrest() ? -body.cardiacTicks()/(float)io.github.safedecimal.decayingaftermath.medical.CardiacRhythm.RESCUE : body.consciousnessProgress(), color(alpha, 0xFFFFFF));
     }
 
     private static int color(double alpha, int rgb) {

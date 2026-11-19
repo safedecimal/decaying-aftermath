@@ -55,6 +55,7 @@ public final class MedicalPanelRenderer {
         String firmware = "UNI-HEALTH v2.08";
         text(graphics, firmware, 3 + (128 - MedicalPanelGlyphs.width(firmware)) / 2, 24);
         extractReadouts(graphics, body, bpm);
+        if(body.racingHeart()) text(graphics,"RHYTHM ALERT",6,14,0xFFFFA763);
     }
 
     static void extractReadouts(GuiGraphicsExtractor graphics,

@@ -9,6 +9,7 @@ public final class DecayingAftermathClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         ClientMedicalState.register();
+        DefibScreen.register();
         ClientMedicalVisuals.register();
         MedicalClient.register();
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {

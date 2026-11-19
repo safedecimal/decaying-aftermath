@@ -87,7 +87,7 @@ public final class ServerMedicalSystem {
     }
     public static boolean canAct(ServerPlayer player) {
         if (player.isCreative() || player.isSpectator()) return true;
-        Mode mode = get(player).snapshot().mode();
+        Mode mode = get(player).mode();
         return player.isAlive() && (mode == Mode.CONSCIOUS || mode == Mode.LAST_STANDING || mode == Mode.DYING);
     }
     public static void tryStandUp(ServerPlayer player) {
@@ -97,6 +97,12 @@ public final class ServerMedicalSystem {
         if (!body.tryStandUp()) return;
         mirrorHealth(player);
         syncBody(player, body.snapshot());
+    }
+    public static boolean defibrillate(ServerPlayer player) {
+        BodyModel body=get(player);
+        if(!body.defibrillate())return false;
+        mirrorHealth(player);syncBody(player,body.snapshot());
+        return true;
     }
     public static boolean isReady(ServerPlayer player) { return owner(player).decayingAftermath$isBodyReady(); }
     public static boolean isHealthBridge() { return BRIDGE.get() > 0; }
@@ -269,7 +275,7 @@ public final class ServerMedicalSystem {
         node.putInt("version", 3); node.putFloat("blood", body.blood()); node.putFloat("oxygen", body.oxygen());
         node.putFloat("energy", body.energy()); node.putFloat("consciousness", body.consciousness());
         node.putFloat("drug", body.drug()); node.putFloat("bpm", body.bpm()); node.putInt("mode", body.mode().ordinal());
-        node.putFloat("progress", body.consciousnessProgress());
+        node.putFloat("progress", body.consciousnessProgress()); node.putInt("cardiac_ticks", body.cardiacTicks());
         node.putIntArray("care", saved.careTicks()); node.putIntArray("regeneration", saved.regenerationTicks());
         node.putIntArray("tourniquet_time", saved.tourniquetTicks());
         node.putBoolean("last_standing_spent", saved.lastStandingSpent()); node.putInt("stable_ticks", saved.stableTicks());
@@ -308,7 +314,8 @@ public final class ServerMedicalSystem {
             Mode mode = Mode.values()[Math.clamp(node.getIntOr("mode", 0), 0, Mode.values().length - 1)];
             BodySnapshot body = new BodySnapshot(1, number(node, "blood", 1, 1), number(node, "oxygen", 1, 1), 0,
                     number(node, "drug", 0, 3), number(node, "bpm", 72, 220), mode, number(node, "progress", 1, 1),
-                    number(node, "energy", 1, 1), number(node, "consciousness", 1, 1), parts);
+                    number(node, "energy", 1, 1), number(node, "consciousness", 1, 1), parts)
+                    .withCardiacTicks(node.getIntOr("cardiac_ticks", 0));
             BodyModel.SavedState legacy = new BodyModel.SavedState(body, timers(node, "care"), timers(node, "regeneration"),
                     timers(node, "tourniquet_time"), node.getBooleanOr("last_standing_spent", mode != Mode.CONSCIOUS),
                     Math.clamp(node.getIntOr("stable_ticks", 0), 0, 1200),

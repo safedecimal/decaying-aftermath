@@ -45,7 +45,7 @@ public final class BodyModel {
     private SurvivalModel survival = new SurvivalModel();
     private float blood = 1, oxygen = 1, energy = 1, drug, bpm = 72;
     private Mode mode = Mode.CONSCIOUS;
-    private int lastStandingTicks, wakeTicks, stableTicks;
+    private int lastStandingTicks, wakeTicks, stableTicks, cardiacTicks;
     private int lastStandingBoostTicks, dyingTicks = -1;
     private boolean lastStandingSpent, faintRecovered;
 
@@ -64,7 +64,7 @@ public final class BodyModel {
         Arrays.fill(coldInjuries,false);
         lungCollapse=0; chestDrain=false; survival=new SurvivalModel();
         blood = oxygen = energy = 1; drug = 0; bpm = 72; mode = Mode.CONSCIOUS;
-        lastStandingTicks = wakeTicks = stableTicks = 0; lastStandingSpent = false;
+        lastStandingTicks = wakeTicks = stableTicks = cardiacTicks = 0; lastStandingSpent = false;
         lastStandingBoostTicks = 0; dyingTicks = -1; faintRecovered = false;
     }
 
@@ -236,7 +236,7 @@ public final class BodyModel {
             totalBleeding += bleeding[i];
             internalBleeding[i]=Math.max(0,internalBleeding[i]-.000008f*survival.clottingFactor());
             totalBleeding+=internalBleeding[i];
-            boolean perfused=!tourniquet[i] && oxygen>.5f && blood>.3f && survival.nutrition()>.2f
+            boolean perfused=cardiacTicks>=0 && !tourniquet[i] && oxygen>.5f && blood>.3f && survival.nutrition()>.2f
                     && survival.oxygenDelivery(1-lungCollapse)>.6f && infection[i]<.6f;
             boolean nativeSkinCare = skinHealAmount[i] > 0;
             if (nativeSkinCare) {
@@ -282,7 +282,7 @@ public final class BodyModel {
         float activeDrug=survival.effectiveOpiate(drug);
         float depression = Math.clamp((activeDrug - .7f) / .6f, 0, 1.8f);
         float breathRecovery = environment.breathable() ? .0008f * (1 - Math.min(1, depression))*(1-lungCollapse) : 0;
-        oxygen = unit(oxygen + breathRecovery - depression * .0012f
+        oxygen = unit(oxygen + (cardiacTicks < 0 ? 0 : breathRecovery) - depression * .0012f
                 - Math.max(0, .35f - blood) * .0015f - sepsis() * .00015f
                 - lungCollapse*.0005f - (environment.breathable()?0:.0008f));
         if (moving && oxygen < .7f) oxygen = unit(oxygen - (sprinting ? .00018f : .00006f));
@@ -296,14 +296,32 @@ public final class BodyModel {
         if(survival.thermalStress()>.8f) integrity[BodyPart.TORSO.ordinal()]=unit(integrity[BodyPart.TORSO.ordinal()]-.000025f);
         if(survival.nutrition()<.02f||survival.hydration()<.04f||survival.systemicStress()>.85f)
             integrity[BodyPart.TORSO.ordinal()]=unit(integrity[BodyPart.TORSO.ordinal()]-.000025f);
+        if (cardiacTicks < 0) {
+            cardiacTicks = CardiacRhythm.advance(cardiacTicks, false);
+            if (cardiacTicks == 0) { kill(); return; }
+            oxygen = unit(oxygen - .0024f); bpm = 0;
+            return;
+        }
         evaluateAndAlign(true);
         if (mode == Mode.DEAD) { bpm = 0; return; }
+        if (mode != Mode.LAST_STANDING && mode != Mode.DYING) {
+            boolean strain = survival.stimulantAction() > .92f
+                    || blood < .55f && oxygen < .64f
+                    || integrity[BodyPart.TORSO.ordinal()] < .48f && oxygen < .65f;
+            cardiacTicks = CardiacRhythm.advance(cardiacTicks, strain);
+            if (cardiacTicks < 0) {
+                mode = Mode.UNCONSCIOUS; wakeTicks = stableTicks = 0; bpm = 0;
+                return;
+            }
+        } else cardiacTicks = 0;
         float target = 72 + (moving ? sprinting ? 65 : 18 : 0) + effectivePain() * 38
                 + (1 - blood) * 65 - Math.min(1, depression) * 65;
         if (lastStandingBoostTicks > 0) target += 20;
         target+=survival.stimulantAction()*25+survival.systemicStress()*18;
         target = Math.clamp(target, 18, 200);
-        bpm += (target - bpm) * (target > bpm ? .04f : .015f);
+        if (CardiacRhythm.unstable(cardiacTicks)) {
+            bpm = CardiacRhythm.racingBpm(cardiacTicks);
+        } else bpm += (target - bpm) * (target > bpm ? .04f : .015f);
     }
 
     /** For environmental suffocation/drowning: no invented anatomical cut is created. */
@@ -325,7 +343,19 @@ public final class BodyModel {
     public void finishNightSleep() { if(mode!=Mode.DEAD)survival.wakeFromNight(); }
 
     /** Explicit lethal sources such as void/kill; ordinary attacks use damage(). */
-    public void kill() { mode = Mode.DEAD; bpm = 0; wakeTicks = lastStandingTicks = 0; dyingTicks = 0; }
+    public void kill() { mode = Mode.DEAD; bpm = 0; wakeTicks = lastStandingTicks = cardiacTicks = 0; dyingTicks = 0; }
+
+    public Mode mode() { return mode; }
+
+    public boolean canDefibrillate() { return mode != Mode.DEAD && CardiacRhythm.shockable(cardiacTicks); }
+
+    /** Only restarts the rhythm; doesn't restore oxygen, blood or damaged tissue. */
+    public boolean defibrillate() {
+        if (!canDefibrillate()) return false;
+        cardiacTicks = CardiacRhythm.RECOVERY;
+        bpm = 78;
+        return true;
+    }
 
     public boolean removeTourniquet(BodyPart part) {
         int i = Objects.requireNonNull(part).ordinal();
@@ -376,7 +406,7 @@ public final class BodyModel {
                 : mode == Mode.LAST_STANDING ? (float) lastStandingTicks / LAST_STANDING_TICKS
                 : mode == Mode.DYING ? (float) Math.max(0, dyingTicks) / DYING_TICKS : 1;
         return new BodySnapshot(unit(condition), blood, oxygen, effectivePain(), drug, bpm, mode,
-                progress, energy, consciousness(), parts,survival.snapshot(totalInternalBleeding(),1-lungCollapse));
+                progress, energy, consciousness(), parts,survival.snapshot(totalInternalBleeding(),1-lungCollapse),null,cardiacTicks);
     }
 
     /** Snapshot-only restore is conservative; use SavedState to preserve all treatment timers. */
@@ -485,6 +515,8 @@ public final class BodyModel {
 
     private void loadSnapshot(BodySnapshot state) {
         blood = state.blood(); oxygen = state.oxygen(); energy = state.energy(); drug = state.drug(); bpm = state.bpm(); mode = state.mode();
+        cardiacTicks = state.cardiacTicks();
+        if (cardiacTicks < 0) mode = Mode.UNCONSCIOUS;
         survival=new SurvivalModel(state.survival()); lungCollapse=1-state.survival().lungFunction();
         wakeTicks = mode == Mode.UNCONSCIOUS ? Math.round(state.consciousnessProgress() * WAKE_UP_TICKS) : 0;
         lastStandingTicks = mode == Mode.LAST_STANDING ? Math.round(state.consciousnessProgress() * LAST_STANDING_TICKS) : 0;
@@ -507,7 +539,7 @@ public final class BodyModel {
 
     /** Finish a mild recovery early without changing oxygen, blood or injury. */
     public boolean tryStandUp() {
-        if (mode != Mode.UNCONSCIOUS || wakeTicks < WakeRecovery.EARLY_STAND_TICKS
+        if (cardiacTicks < 0 || mode != Mode.UNCONSCIOUS || wakeTicks < WakeRecovery.EARLY_STAND_TICKS
                 || !WakeRecovery.canStandEarly(snapshot())) return false;
         energy = unit(energy - WakeRecovery.STAND_ENERGY_COST);
         finishFaintRecovery();
@@ -521,7 +553,7 @@ public final class BodyModel {
     }
 
     private void evaluate(boolean elapsedTick) {
-        if (mode == Mode.DEAD) return;
+        if (mode == Mode.DEAD || cardiacTicks < 0) return;
         boolean extreme = vitalIntegrity() <= .08f || oxygen <= .15f || blood <= .04f
                 || blood <= .16f && totalBleeding() > .001f;
         if (mode == Mode.LAST_STANDING) {

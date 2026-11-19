@@ -15,7 +15,7 @@ public final class MedicalPresentationPolicy {
         // Match the recorded CU branches; unverified vitals must not select the heavy track.
         float bleeding = 0;
         for (var part:body.parts()) bleeding += part.bleeding() + part.internalBleeding();
-        return body.oxygen() < .5f || hemorrhageCritical(body.blood(), bleeding)
+        return body.racingHeart() || body.oxygen() < .5f || hemorrhageCritical(body.blood(), bleeding)
                 || body.mode() == BodySnapshot.Mode.LAST_STANDING || body.mode() == BodySnapshot.Mode.DYING;
     }
 

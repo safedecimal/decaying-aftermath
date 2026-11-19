@@ -28,6 +28,7 @@ public final class MedicalPhysiology {
         return totalBleeding * BLOOD_LOSS_PER_TICK_PER_SEVERITY * 20 * 100;
     }
     private static float perfusion(BodySnapshot b) {
+        if(b.cardiacArrest())return 0;
         return Math.clamp(b.blood()/.8f,0,1)*( .8f+.2f*b.oxygen());
     }
     public static int systolic(BodySnapshot b) {

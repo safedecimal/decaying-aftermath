@@ -19,6 +19,7 @@ public final class DecayingAftermath implements ModInitializer {
         io.github.safedecimal.decayingaftermath.server.MedicalCommands.register();
         io.github.safedecimal.decayingaftermath.compat.MedicalVisualNetwork.register();
         io.github.safedecimal.decayingaftermath.network.MedicalNetwork.register();
+        io.github.safedecimal.decayingaftermath.network.DefibNetwork.register();
         LOGGER.info("Decaying Aftermath initialized.");
     }
 }

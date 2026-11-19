@@ -25,6 +25,8 @@ public final class MedicalItems {
     public static final Item FENTANYL = item("fentanyl", 1);
     public static final Item ANESTHETIC = item("anesthetic", 16);
     public static final Item ANTISEPTIC = item("antiseptic", 16);
+    public static final Item MANUAL_DEFIBRILLATOR = defibrillator("manual_defibrillator",12,false);
+    public static final Item AED = defibrillator("aed",8,true);
     private static boolean registered;
 
     private MedicalItems() { }
@@ -40,6 +42,8 @@ public final class MedicalItems {
             output.accept(FENTANYL);
             output.accept(ANESTHETIC);
             output.accept(ANTISEPTIC);
+            output.accept(MANUAL_DEFIBRILLATOR);
+            output.accept(AED);
         });
     }
 
@@ -86,6 +90,12 @@ public final class MedicalItems {
     private static boolean isRegularPotion(ItemStack stack) {
         return stack != null && !stack.isEmpty() && stack.getItem() instanceof PotionItem
                 && !(stack.getItem() instanceof ThrowablePotionItem);
+    }
+
+    private static Item defibrillator(String name,int uses,boolean automatic) {
+        var id=Identifier.fromNamespaceAndPath(DecayingAftermath.MOD_ID,name);
+        ResourceKey<Item> key=ResourceKey.create(Registries.ITEM,id);
+        return Registry.register(BuiltInRegistries.ITEM,key,new DefibrillatorItem(new Item.Properties().setId(key).durability(uses),automatic));
     }
 
     private static Item item(String name, int stackSize) {
