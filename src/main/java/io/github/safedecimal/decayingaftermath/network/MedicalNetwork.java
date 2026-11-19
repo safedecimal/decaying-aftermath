@@ -107,12 +107,16 @@ public final class MedicalNetwork {
             if(!session.warnedSpace) {thought(player,"decaying_aftermath.thought.supply_space");session.warnedSpace=true;}
             return;
         }
-        float available=kind.reusable()?Math.max(0,1-session.spent):remainingFill(stack);
-        float grant=session.budget.grant(now,request.amount(),available);
+        boolean spray=kind==TreatmentKind.ANTISEPTIC;
+        float available=creative&&spray?1:kind.reusable()?Math.max(0,1-session.spent):remainingFill(stack);
+        if(spray && now<session.nextSpray) return;
+        float grant=spray ? session.budget.grantSpray(now,request.amount(),available)
+                : session.budget.grant(now,request.amount(),available);
         var spend=MedicalSupplyPolicy.spend(available,grant);
         if(spend.used()<=0)return;
         if(!creative&&!kind.reusable())separateUnused(slot,stack,transfers);
         session.spent+=spend.used();
+        if(spray) session.nextSpray=now+MedicalSupplyPolicy.SPRAY_COOLDOWN;
         if(!MedicalSupplyPolicy.installation(kind)) {
             if(kind==TreatmentKind.HEALING_POTION||kind==TreatmentKind.REGENERATION_POTION||kind==TreatmentKind.POTION)
                 applyPotion(player,body,part,stack,spend.used(),spend.exhausted());
@@ -130,6 +134,8 @@ public final class MedicalNetwork {
             }
         }
         session.signature=slot.getItem().copy();
+        if(creative&&spray&&session.budget.delivered()>=1-MedicalSupplyPolicy.EMPTY)
+            session.budget=new ProcedureBudget(now,MedicalSupplyPolicy.ticksPerFill(kind));
         if(spend.exhausted()&&!MedicalSupplyPolicy.installation(kind)) {
             if(creative)session.budget=new ProcedureBudget(now,MedicalSupplyPolicy.ticksPerFill(kind));
             else SESSIONS.remove(player.getUUID());
@@ -259,7 +265,7 @@ public final class MedicalNetwork {
     }
     private static final class Session {
         final int slot;final BodyPart part;final TreatmentKind kind;final long start;final float initialFill;
-        ItemStack signature;ProcedureBudget budget;float spent;boolean warnedSpace;
+        ItemStack signature;ProcedureBudget budget;float spent;boolean warnedSpace;long nextSpray;
         Session(int slot,BodyPart part,TreatmentKind kind,ItemStack signature,long start,float fill) {
             this.slot=slot;this.part=part;this.kind=kind;this.signature=signature;this.start=start;this.initialFill=fill;
             budget=new ProcedureBudget(start,MedicalSupplyPolicy.ticksPerFill(kind));

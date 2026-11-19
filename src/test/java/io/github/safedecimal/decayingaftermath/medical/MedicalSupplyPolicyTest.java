@@ -20,6 +20,26 @@ class MedicalSupplyPolicyTest {
         assertEquals(3,MedicalSupplyPolicy.treatmentAmount(TreatmentKind.BANDAGE,.25f),.000001f);
         assertEquals(.25f,MedicalSupplyPolicy.treatmentAmount(TreatmentKind.FENTANYL,.25f));
     }
+    @Test void spraySpendsOneShotAndAllowsOnlyFinalResidueToBePartial() {
+        var budget = new ProcedureBudget(0,120);
+        assertEquals(0,budget.grantSpray(5,1,1));
+        assertEquals(0,budget.grantSpray(20,.02f,1));
+        assertEquals(.05f,budget.grantSpray(20,1,1));
+        assertEquals(.02f,budget.grantSpray(20,.02f,.02f));
+        assertEquals(1,MedicalSupplyPolicy.treatmentAmount(TreatmentKind.ANTISEPTIC,.05f));
+        assertEquals(.4f,MedicalSupplyPolicy.treatmentAmount(TreatmentKind.ANTISEPTIC,.02f),.000001f);
+    }
+    @Test void fullBottleGivesExactlyTwentySprays() {
+        var budget=new ProcedureBudget(0,120);
+        float remaining=1;
+        for(int i=1;i<=20;i++) {
+            float grant=budget.grantSpray(20L*i,MedicalSupplyPolicy.SPRAY_COST,remaining);
+            assertEquals(.05f,grant,.000001f);
+            remaining=MedicalSupplyPolicy.spend(remaining,grant).remaining();
+        }
+        assertEquals(0,remaining);
+        assertEquals(0,budget.grantSpray(420,MedicalSupplyPolicy.SPRAY_COST,1));
+    }
     @Test void eachKindHasABoundedTickBudget() {
         for(var kind:TreatmentKind.values())assertTrue(MedicalSupplyPolicy.ticksPerFill(kind)>0);
         var budget=new ProcedureBudget(0,240);float sum=0;for(int i=0;i<1000;i++)sum+=budget.grant(60,1,1);assertEquals(.25f,sum,.000001f);

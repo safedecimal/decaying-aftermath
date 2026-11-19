@@ -30,7 +30,14 @@ public final class MedicalStatusIcons {
     }
     public static Icon infection(BodySnapshot.PartSnapshot part) {
         if(part.infection()<.25f)return null;
-        return new Icon(part.disinfected()?"infection_decreasing":"infection_increasing",24,22);
+        return new Icon(part.infectionDelta()>0?"infection_increasing":"infection_decreasing",24,22);
+    }
+    public static Icon disinfection(BodySnapshot.PartSnapshot part) {
+        return part.disinfected() ? new Icon("disinfected",17,23) : null;
+    }
+    public static int disinfectionColor(BodySnapshot.PartSnapshot part) {
+        int value = channel(.1f + part.disinfectionTicks() / (20f * 220));
+        return 0xFF000000 | value << 16 | value << 8 | value;
     }
     /** Same BleedImageFromLimb gradient for covered/uncovered and procedure/body icons. */
     public static int bleedingColor(BodySnapshot.PartSnapshot part) {
@@ -58,6 +65,7 @@ public final class MedicalStatusIcons {
         List<Icon> icons=new ArrayList<>();Icon bleed=bleeding(part),infection=infection(part);
         if(bleed!=null)icons.add(bleed);if(part.fractured())icons.add(new Icon("fracture",21,32));
         if(infection!=null)icons.add(infection);
+        Icon protection=disinfection(part);if(protection!=null)icons.add(protection);
         int count=icons.size(),size=Math.min(13,Math.max(1,Math.min(box.width(),box.height())));
         if(count==0)return List.of();
         int cx=box.x()+box.width()/2,cy=box.y()+box.height()/2;
@@ -77,7 +85,8 @@ public final class MedicalStatusIcons {
             }
             Icon icon=icons.get(index);
             int tint=icon.name().startsWith("infection_")?infectionColor(part)
-                    :icon.name().equals("fracture")?fractureColor(part):bleedingColor(part);
+                    :icon.name().equals("fracture")?fractureColor(part)
+                    :icon.name().equals("disinfected")?disinfectionColor(part):bleedingColor(part);
             result.add(new Placement(icon,x,y,size,tint));
         }
         return List.copyOf(result);

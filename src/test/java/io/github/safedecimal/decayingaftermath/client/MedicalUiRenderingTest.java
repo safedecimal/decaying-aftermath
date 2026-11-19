@@ -219,6 +219,23 @@ class MedicalUiRenderingTest {
         assertTrue(limb.blits.stream().filter(b->b.id().toString().contains("/bleeding_")).allMatch(b->((b.color()>>>16)&255)>=192));
     }
 
+    @Test void disinfectionBadgeBlitsWithoutInfectionAndDisappearsOnExpiry() throws Exception {
+        var model=new io.github.safedecimal.decayingaftermath.medical.BodyModel();
+        var arm=io.github.safedecimal.decayingaftermath.medical.BodyPart.LEFT_ARM;
+        model.treat(arm,io.github.safedecimal.decayingaftermath.medical.TreatmentKind.ANTISEPTIC,1);
+        var g=Graphics.create(260,250);
+        var box=MinecraftBodyLayout.box(arm,false);
+        MedicalStatusIcons.body(g,model.snapshot().part(arm),box);
+        assertEquals(1,g.blits.size());
+        var badge=g.blits.getFirst();
+        assertTrue(badge.id().getPath().endsWith("/status/disinfected.png"));
+        assertEquals(0xFFFFFFFF,badge.color());
+        for(int i=0;i<4800;i++)model.tick(true,true);
+        var expired=Graphics.create(260,250);
+        MedicalStatusIcons.body(expired,model.snapshot().part(arm),box);
+        assertTrue(expired.blits.isEmpty());
+    }
+
     @Test void staminaDrawsLeftLungFirstAndBothLungsFaceForwardAtFullEnergy() throws Exception {
         var parts=new BodySnapshot.PartSnapshot[6];
         java.util.Arrays.fill(parts,new BodySnapshot.PartSnapshot(1,0,0,false,false,false,false));

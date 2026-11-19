@@ -52,16 +52,32 @@ class MedicalStatusIconsTest {
         var icon=MedicalStatusIcons.infection(infected(.5f,true));
         assertEquals("infection_decreasing",icon.name());assertEquals(24,icon.width());assertEquals(22,icon.height());
     }
+    @Test void nativeSprayIconIsIndependentOfVisibleInfectionAndFades() throws Exception {
+        var clean = new BodySnapshot.PartSnapshot(1,0,0,false,false,false,false,0,true,false);
+        var expiring = new BodySnapshot.PartSnapshot(1,0,0,false,false,false,false,0,true,false,
+                0,0,0,false,false,1,false,1,0);
+        assertNull(MedicalStatusIcons.infection(clean));
+        assertNull(MedicalStatusIcons.disinfection(infected(0,false)));
+        var icon=MedicalStatusIcons.disinfection(clean);
+        assertEquals("disinfected",icon.name());
+        assertEquals(0xFFFFFFFF,MedicalStatusIcons.disinfectionColor(clean));
+        assertEquals(0xFF191919,MedicalStatusIcons.disinfectionColor(expiring));
+        try(var png=getClass().getResourceAsStream("/assets/decaying_aftermath/textures/gui/status/disinfected.png")) {
+            assertNotNull(png);
+            var sprite=javax.imageio.ImageIO.read(png);
+            assertEquals(17,sprite.getWidth());assertEquals(23,sprite.getHeight());
+        }
+    }
     @Test void exhaustedBandageCareReturnsToUncoveredBleedingEvenIfPreviouslyBandaged() {
         var used=new BodySnapshot.PartSnapshot(1,.1f,0,false,true,false,false,0,false,false,0);
         assertEquals("bleeding_heavy",MedicalStatusIcons.bleeding(used).name());
         var covered=new BodySnapshot.PartSnapshot(1,.1f,0,false,true,false,false,0,false,false,.006f);
         assertEquals("bleeding_covered_heavy",MedicalStatusIcons.bleeding(covered).name());
     }
-    @Test void threeStatusIconsFitAllRealWideAndSlimBodyParts() {
+    @Test void fourStatusIconsFitAllRealWideAndSlimBodyParts() {
         for(boolean slim:new boolean[]{false,true})for(var part:io.github.safedecimal.decayingaftermath.medical.BodyPart.values()) {
-            var box=MinecraftBodyLayout.box(part,slim);var placements=MedicalStatusIcons.placements(infected(.5f,false),box);
-            assertEquals(3,placements.size());
+            var box=MinecraftBodyLayout.box(part,slim);var placements=MedicalStatusIcons.placements(infected(.5f,true),box);
+            assertEquals(4,placements.size());
             for(var p:placements) {
                 float ratio=p.size()/(float)Math.max(p.icon().width(),p.icon().height());
                 int w=Math.max(1,Math.round(p.icon().width()*ratio)),h=Math.max(1,Math.round(p.icon().height()*ratio));

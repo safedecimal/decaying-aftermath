@@ -7,7 +7,7 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
 
 public record BodyPayload(BodySnapshot snapshot) implements CustomPacketPayload {
-    public static final Type<BodyPayload> TYPE = new Type<>(Identifier.fromNamespaceAndPath("decaying_aftermath", "body_v5"));
+    public static final Type<BodyPayload> TYPE = new Type<>(Identifier.fromNamespaceAndPath("decaying_aftermath", "body_v6"));
     public static final StreamCodec<RegistryFriendlyByteBuf, BodyPayload> CODEC = CustomPacketPayload.codec(BodyPayload::write, BodyPayload::read);
     @Override public Type<BodyPayload> type() { return TYPE; }
     private void write(RegistryFriendlyByteBuf b) {
@@ -22,7 +22,7 @@ public record BodyPayload(BodySnapshot snapshot) implements CustomPacketPayload 
             b.writeFloat(p.bandageCare());
             b.writeFloat(p.burn());b.writeFloat(p.internalBleeding());b.writeBoolean(p.openWound());
             b.writeBoolean(p.foreignBody());b.writeFloat(p.boneRecovery());
-            b.writeBoolean(p.coldInjury());
+            b.writeBoolean(p.coldInjury()); b.writeVarInt(p.disinfectionTicks()); b.writeFloat(p.infectionDelta());
         }
         var s=snapshot.survival();
         b.writeFloat(s.hydration());b.writeFloat(s.nutrition());b.writeFloat(s.temperature());b.writeFloat(s.fatigue());
@@ -38,7 +38,7 @@ public record BodyPayload(BodySnapshot snapshot) implements CustomPacketPayload 
         if (mode<0 || mode>=BodySnapshot.Mode.values().length) throw new IllegalArgumentException("Unknown body mode");
         float progress=b.readFloat(), energy=b.readFloat(), consciousness=b.readFloat();
         var parts=new BodySnapshot.PartSnapshot[BodyPart.values().length];
-        for (int i=0;i<parts.length;i++) parts[i]=new BodySnapshot.PartSnapshot(b.readFloat(),b.readFloat(),b.readFloat(),b.readBoolean(),b.readBoolean(),b.readBoolean(),b.readBoolean(),b.readFloat(),b.readBoolean(),b.readBoolean(),b.readFloat(),b.readFloat(),b.readFloat(),b.readBoolean(),b.readBoolean(),b.readFloat(),b.readBoolean());
+        for (int i=0;i<parts.length;i++) parts[i]=new BodySnapshot.PartSnapshot(b.readFloat(),b.readFloat(),b.readFloat(),b.readBoolean(),b.readBoolean(),b.readBoolean(),b.readBoolean(),b.readFloat(),b.readBoolean(),b.readBoolean(),b.readFloat(),b.readFloat(),b.readFloat(),b.readBoolean(),b.readBoolean(),b.readFloat(),b.readBoolean(),b.readVarInt(),b.readFloat());
         var s=new SurvivalSnapshot(b.readFloat(),b.readFloat(),b.readFloat(),b.readFloat(),b.readFloat(),b.readFloat(),b.readFloat(),
                 b.readFloat(),b.readFloat(),b.readFloat(),b.readFloat(),b.readFloat(),b.readFloat(),b.readFloat(),b.readFloat(),
                 b.readFloat(),b.readFloat(),b.readFloat());

@@ -139,6 +139,41 @@ class BodyVitalsTest {
         ticks(body,1000);assertTrue(body.snapshot().part(LEFT_ARM).infection()<infection);
     }
 
+    @Test void sprayPreventsIncubationAndRefreshesWithoutStacking() {
+        var body = new BodyModel();
+        body.damage(LEFT_ARM,12); body.treat(LEFT_ARM,PRESSURE_DRESSING,1);
+        body.treat(LEFT_ARM,ANTISEPTIC,1);
+        assertEquals(4800,body.snapshot().part(LEFT_ARM).disinfectionTicks());
+        assertFalse(body.snapshot().part(RIGHT_ARM).disinfected());
+        ticks(body,100);
+        body.treat(LEFT_ARM,ANTISEPTIC,.5f);
+        assertEquals(4700,body.snapshot().part(LEFT_ARM).disinfectionTicks());
+        body.treat(LEFT_ARM,ANTISEPTIC,1);
+        assertEquals(4800,body.snapshot().part(LEFT_ARM).disinfectionTicks());
+        ticks(body,4800);
+        assertFalse(body.snapshot().part(LEFT_ARM).disinfected());
+        assertEquals(0,body.snapshot().part(LEFT_ARM).infection());
+        ticks(body,800);
+        assertEquals(0,body.snapshot().part(LEFT_ARM).infection());
+        ticks(body,1);
+        assertTrue(body.snapshot().part(LEFT_ARM).infection()>0);
+    }
+
+    @Test void earlyInfectionCanClearButOneSprayDoesNotInstantlyCureAdvancedInfection() {
+        for(float infection:new float[]{.10f,.45f}) {
+            var base=new BodyModel().snapshot();var parts=base.parts();
+            parts[LEFT_ARM.ordinal()]=new BodySnapshot.PartSnapshot(.65f,0,0,false,false,false,false,
+                    infection,false,false,0,0,0,true,false,1);
+            var body=BodyModel.restore(new BodySnapshot(1,1,1,0,0,72,CONSCIOUS,1,parts));
+            body.treat(LEFT_ARM,ANTISEPTIC,1);
+            assertEquals(infection,body.snapshot().part(LEFT_ARM).infection());
+            assertTrue(body.snapshot().part(LEFT_ARM).infectionDelta()<0);
+            ticks(body,4800);
+            if(infection<.2f)assertEquals(0,body.snapshot().part(LEFT_ARM).infection());
+            else assertEquals(infection-.2016f,body.snapshot().part(LEFT_ARM).infection(),.0003f);
+        }
+    }
+
     @Test void fullSavePreservesEnergyInfectionAnesthesiaAndFractionalCare() {
         BodyModel body=new BodyModel();body.damage(LEFT_ARM,12);body.treat(LEFT_ARM,PRESSURE_DRESSING,1);ticks(body,8000);
         body.treat(LEFT_ARM,ANTISEPTIC,.5f);body.treat(LEFT_ARM,ANESTHETIC,.5f);body.treat(LEFT_ARM,BANDAGE,.125f);

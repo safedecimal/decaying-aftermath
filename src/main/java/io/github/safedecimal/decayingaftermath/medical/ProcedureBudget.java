@@ -17,5 +17,14 @@ public final class ProcedureBudget {
         delivered+=amount;
         return amount;
     }
+    /** A spray uses a whole shot (or the last residue), never a trickle. */
+    public float grantSpray(long now, float requested, float available) {
+        float cost = MedicalSupplyPolicy.sprayCost(available);
+        if (!Float.isFinite(requested) || cost <= MedicalSupplyPolicy.EMPTY || requested + .000001f < cost
+                || now < start || now-start > 2400) return 0;
+        if (delivered + cost > Math.min(1, (now-start)/(float)ticksPerFill) + .000001f) return 0;
+        delivered += cost;
+        return cost;
+    }
     public float delivered() { return delivered; }
 }

@@ -47,9 +47,6 @@ public final class CuProcedureGeometry {
         return point.x()>=bounds.x()&&point.x()<bounds.x()+bounds.width()
                 &&point.y()>=bounds.y()&&point.y()<bounds.y()+bounds.height();
     }
-    public static float antisepticFlow(double tilt) {
-        return Double.isFinite(tilt)?(float)Math.clamp((tilt-30)/20,0,1):0;
-    }
     public static float pourStrength(double tilt) {
         if(!Double.isFinite(tilt))return 0;
         return (float)Math.clamp(Math.min((tilt-35)/20,(85-tilt)/15),0,1);

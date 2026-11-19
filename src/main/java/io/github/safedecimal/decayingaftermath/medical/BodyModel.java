@@ -168,7 +168,8 @@ public final class BodyModel {
                 anestheticTicks[i] = Math.min(12000, anestheticTicks[i] + Math.round(amount * 1200));
             }
             case ANTISEPTIC -> {
-                disinfectionTicks[i] = Math.min(12000, disinfectionTicks[i] + Math.round(amount * 6000));
+                disinfectionTicks[i] = Math.max(disinfectionTicks[i], Math.round(amount * WoundInfection.SPRAY_TICKS));
+                localPain[i] = unit(localPain[i] + .10f * amount);
             }
             case HEALING_POTION -> {
                 // Outside Last Standing even potion care is gradual and reserve-dependent.
@@ -198,19 +199,15 @@ public final class BodyModel {
         boolean receivingCare = false;
         for (int i = 0; i < PARTS; i++) {
             if (anestheticTicks[i] > 0) anestheticTicks[i]--;
-            if (disinfectionTicks[i] > 0) {
-                disinfectionTicks[i]--;
-                infection[i] = unit(infection[i] - .00010f*(foreignBodies[i]?.25f:1));
-            } else if ((openWounds[i] && integrity[i] < .8f) || foreignBodies[i] || infection[i]>.35f) {
-                // CU checks wounded skin every40s; default infection growth is7.2/min.
-                if (infectionAgeTicks[i] < 800) infectionAgeTicks[i]++;
-                else infection[i] = unit(infection[i] + .00006f*(foreignBodies[i]?1.6f:1));
-            } else {
-                infection[i] = unit(infection[i] - .000025f);
+            float infectionBefore = infection[i];
+            boolean protectedWound = disinfectionTicks[i] > 0;
+            infection[i] = unit(infectionBefore + infectionDelta(i));
+            if (protectedWound) disinfectionTicks[i]--;
+            if (infection[i] == 0 && (protectedWound || infectionBefore > 0 || !canIncubate(i))) {
                 infectionAgeTicks[i] = 0;
+            } else if (infection[i] == 0 && infectionAgeTicks[i] < WoundInfection.INCUBATION_TICKS) {
+                infectionAgeTicks[i]++;
             }
-            // A systemic antibiotic acts over time; cleaning the skin is not systemic sepsis treatment.
-            if(survival.antibioticAction()>0) infection[i]=unit(infection[i]-.000075f*survival.antibioticAction());
             if(coolingTicks[i]>0) {
                 coolingTicks[i]--; localPain[i]=Math.max(0,localPain[i]-.00015f);
                 survival.cool(.02f);
@@ -347,6 +344,17 @@ public final class BodyModel {
         evaluateAndAlign(false);return true;
     }
 
+    private boolean canIncubate(int i) {
+        return (openWounds[i] && integrity[i] < .8f) || foreignBodies[i];
+    }
+
+    private float infectionDelta(int i) {
+        boolean treated = disinfectionTicks[i] > 0;
+        if (infection[i] == 0 && (treated || !canIncubate(i)
+                || infectionAgeTicks[i] < WoundInfection.INCUBATION_TICKS)) return 0;
+        return WoundInfection.localDelta(treated, foreignBodies[i]) - .000075f * survival.antibioticAction();
+    }
+
     public BodySnapshot snapshot() {
         PartSnapshot[] parts = new PartSnapshot[PARTS];
         float totalIntegrity = 0;
@@ -354,7 +362,8 @@ public final class BodyModel {
             parts[i] = new PartSnapshot(integrity[i], bleeding[i], limbPain(i), fractured[i],
                     bandaged[i], splinted[i], tourniquet[i], infection[i], disinfectionTicks[i] > 0,
                     anestheticTicks[i] > 40, bandageSlowAmount[i],burns[i],internalBleeding[i],openWounds[i],
-                    foreignBodies[i],fractured[i]?Math.clamp((float)boneHealing[i]/BONE_HEAL_TICKS,0,1):1,coldInjuries[i]);
+                    foreignBodies[i],fractured[i]?Math.clamp((float)boneHealing[i]/BONE_HEAL_TICKS,0,1):1,coldInjuries[i],
+                    disinfectionTicks[i], infectionDelta(i));
             totalIntegrity += integrity[i];
         }
         float condition = Math.min(Math.min(vitalIntegrity() * 1.15f, blood * 1.15f),
@@ -490,7 +499,7 @@ public final class BodyModel {
             foreignBodies[i]=value.foreignBody(); boneHealing[i]=Math.round(value.boneRecovery()*BONE_HEAL_TICKS);
             coldInjuries[i]=value.coldInjury();
             bandageSlowAmount[i] = value.bandageCare();
-            disinfectionTicks[i] = value.disinfected() ? 6000 : 0;
+            disinfectionTicks[i] = value.disinfectionTicks();
             anestheticTicks[i] = value.anesthetized() ? 1200 : 0;
         }
         if (mode == Mode.DEAD) bpm = 0;

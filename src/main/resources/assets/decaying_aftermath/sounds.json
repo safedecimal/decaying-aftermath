@@ -1,4 +1,5 @@
 {
+  "procedure_spray": { "sounds": ["decaying_aftermath:procedure_spray"] },
   "heartbeat": {
     "sounds": [
       {

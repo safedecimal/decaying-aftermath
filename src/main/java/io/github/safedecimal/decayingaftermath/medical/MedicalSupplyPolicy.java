@@ -3,6 +3,9 @@ package io.github.safedecimal.decayingaftermath.medical;
 /** Resource units, not completion percentages. Twelve full CU bandage turns use one roll. */
 public final class MedicalSupplyPolicy {
     public static final float EMPTY = .0001f;
+    public static final float SPRAY_COST = 1f / 20;
+    public static final int SPRAY_COOLDOWN = 18;
+    public static float sprayCost(float available) { return Math.min(fill(available), SPRAY_COST); }
     private MedicalSupplyPolicy() {}
     public static boolean wrap(TreatmentKind kind) {
         return kind == TreatmentKind.BANDAGE || kind == TreatmentKind.PRESSURE_DRESSING;
@@ -34,7 +37,7 @@ public final class MedicalSupplyPolicy {
         return wrap(kind) ? 240 : kind == TreatmentKind.SPLINT ? 80 : kind.simpleTool()?60:120;
     }
     public static float treatmentAmount(TreatmentKind kind, float supply) {
-        return fill(supply) * (wrap(kind) ? 12 : 1);
+        return fill(supply) * (wrap(kind) ? 12 : kind == TreatmentKind.ANTISEPTIC ? 20 : 1);
     }
     public static float wrapCost(double normalTurns) {
         return Double.isFinite(normalTurns) && normalTurns > 0 ? (float)(normalTurns / 12) : 0;

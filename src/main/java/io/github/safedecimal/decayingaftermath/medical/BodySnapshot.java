@@ -55,7 +55,15 @@ public record BodySnapshot(float condition, float blood, float oxygen, float pai
     public record PartSnapshot(float integrity, float bleeding, float pain, boolean fractured,
             boolean bandaged, boolean splinted, boolean tourniquet, float infection,
             boolean disinfected, boolean anesthetized, float bandageCare, float burn,
-            float internalBleeding, boolean openWound, boolean foreignBody, float boneRecovery,boolean coldInjury) {
+            float internalBleeding, boolean openWound, boolean foreignBody, float boneRecovery,boolean coldInjury,
+            int disinfectionTicks,float infectionDelta) {
+        public PartSnapshot(float integrity,float bleeding,float pain,boolean fractured,boolean bandaged,boolean splinted,
+                boolean tourniquet,float infection,boolean disinfected,boolean anesthetized,float bandageCare,float burn,
+                float internalBleeding,boolean openWound,boolean foreignBody,float boneRecovery,boolean coldInjury) {
+            this(integrity,bleeding,pain,fractured,bandaged,splinted,tourniquet,infection,disinfected,anesthetized,
+                    bandageCare,burn,internalBleeding,openWound,foreignBody,boneRecovery,coldInjury,
+                    disinfected ? WoundInfection.SPRAY_TICKS : 0, WoundInfection.localDelta(disinfected,foreignBody));
+        }
         public PartSnapshot(float integrity,float bleeding,float pain,boolean fractured,boolean bandaged,boolean splinted,
                 boolean tourniquet,float infection,boolean disinfected,boolean anesthetized,float bandageCare,float burn,
                 float internalBleeding,boolean openWound,boolean foreignBody,float boneRecovery) {
@@ -82,6 +90,8 @@ public record BodySnapshot(float condition, float blood, float oxygen, float pai
             integrity = unit(integrity); bleeding = unit(bleeding); pain = unit(pain); infection = unit(infection);
             bandageCare = finiteClamp(bandageCare, 0, 10);
             burn=unit(burn); internalBleeding=unit(internalBleeding); boneRecovery=unit(boneRecovery);
+            disinfectionTicks=Math.max(0,disinfectionTicks);
+            disinfected=disinfectionTicks>0; infectionDelta=finiteClamp(infectionDelta,-1,1);
         }
     }
 

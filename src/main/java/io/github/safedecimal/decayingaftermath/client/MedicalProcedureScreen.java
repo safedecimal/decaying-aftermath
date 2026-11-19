@@ -23,7 +23,7 @@ public final class MedicalProcedureScreen extends Screen {
     private final FastenerMotion fasteners=new FastenerMotion();
     private ProcedureBudget budget;
     private boolean started,ended,completed,holding,injecting,sourceExhausted;
-    private int elapsed,stage,errorTicks;
+    private int elapsed,stage,errorTicks,nextSpray,sprayFrames;
     private float scale=1,remaining=1,initialFill=1,lastFill=1,pendingUse,outstanding;
     private int ox,oy;
     private double pointerX=128,pointerY=225,offsetX,offsetY,objectX=47,objectY=90;
@@ -108,7 +108,7 @@ public final class MedicalProcedureScreen extends Screen {
     private void target(double x,double y) {pointerX=Math.clamp((x-ox)/scale,-3,259);pointerY=Math.clamp((y-oy)/scale,-3,259);}
     @Override public void mouseMoved(double x,double y) {target(x,y);}
     @Override public void tick() {
-        elapsed++;if(errorTicks>0)errorTicks--;
+        elapsed++;if(errorTicks>0)errorTicks--;if(sprayFrames>0)sprayFrames--;
         if(minecraft.player==null||!minecraft.player.isAlive()) {end();return;}
         var mode=ClientMedicalState.snapshot().mode();
         if(mode==BodySnapshot.Mode.UNCONSCIOUS||mode==BodySnapshot.Mode.DEAD) {onClose();return;}
@@ -188,11 +188,13 @@ public final class MedicalProcedureScreen extends Screen {
             var grip=ProcedureToolPose.grip(0,0,pivotX(),pivotY(),gripLocalX,gripLocalY,potionTilt);
             objectX=Math.clamp(hand.x()-grip.x(),15,210);objectY=Math.clamp(hand.y()-grip.y(),15,205);
             var mouth=CuProcedureGeometry.bottleMouth(objectX,objectY,potionTilt);
-            boolean aimed=isAntiseptic()?CuProcedureGeometry.contains(CuProcedureGeometry.antisepticZone(part),mouth)
-                    :CuProcedureGeometry.overWound(part,mouth);
-            float rate=isAntiseptic()?CuProcedureGeometry.antisepticFlow(potionTilt):CuProcedureGeometry.pourStrength(potionTilt);
-            if(aimed&&rate>0) {stage=1;queueUse((float)(seconds*rate/6));}
-            else {stage=0;if(!isAntiseptic()&&rate>0)errorTicks=8;}
+            if(isAntiseptic()) {
+                stage=CuProcedureGeometry.contains(CuProcedureGeometry.antisepticZone(part),mouth)?1:0;
+            } else {
+                float rate=CuProcedureGeometry.pourStrength(potionTilt);
+                if(CuProcedureGeometry.overWound(part,mouth)&&rate>0) {stage=1;queueUse((float)(seconds*rate/6));}
+                else {stage=0;if(rate>0)errorTicks=8;}
+            }
         } else if(stage==0) {
             var grip=ProcedureToolPose.grip(0,0,pivotX(),pivotY(),gripLocalX,gripLocalY,toolAngle());
             objectX=Math.clamp(hand.x()-grip.x(),15,215);objectY=Math.clamp(hand.y()-grip.y(),15,205);
@@ -212,6 +214,25 @@ public final class MedicalProcedureScreen extends Screen {
     @Override public boolean mouseClicked(MouseButtonEvent event,boolean doubleClick) {
         target(event.x(),event.y());
         if(ended)return false;
+        if(event.button()==3&&isAntiseptic()&&holding) {
+            // Check the current bottle pose, not a stage left over from an earlier grab.
+            var nozzle=CuProcedureGeometry.bottleMouth(objectX,objectY,potionTilt);
+            if(minecraft.player!=null && !sourceExhausted && elapsed>=nextSpray
+                    && CuProcedureGeometry.contains(CuProcedureGeometry.antisepticZone(part),nozzle)) {
+                boolean creative=minecraft.player.hasInfiniteMaterials();
+                float available=creative?1:remaining;
+                float cost=MedicalSupplyPolicy.sprayCost(available);
+                float granted=budget.grantSpray(Math.max(0,elapsed-4),cost,available);
+                if(granted>0) {
+                    ClientMedicalState.sendTreatment(slot,part,kind,granted);
+                    nextSpray=elapsed+MedicalSupplyPolicy.SPRAY_COOLDOWN+2;
+                    sprayFrames=8;MedicalClient.sound("procedure_spray",.65f,1);
+                    if(creative&&budget.delivered()>=1-MedicalSupplyPolicy.EMPTY)
+                        budget=new ProcedureBudget(Math.max(0,elapsed-4),MedicalSupplyPolicy.ticksPerFill(kind));
+                }
+            }
+            return true;
+        }
         if(event.button()==3&&kind.injection()&&syringeInserted&&holding) {injecting=true;return true;}
         if(event.button()!=1)return false;
         double x=hand.x(),y=hand.y();
@@ -237,7 +258,7 @@ public final class MedicalProcedureScreen extends Screen {
             handRotation=(float)Math.IEEEremainder(handRotation+Math.toRadians(vertical*12),2*Math.PI);return true;
         }
         if(holding&&kind==TreatmentKind.SPLINT&&stage==0) {deviceAngle=Math.clamp(deviceAngle+vertical*3,-45,45);return true;}
-        if(holding&&isPotion()) {potionTilt=Math.clamp(potionTilt+vertical*8,0,110);return true;}
+        if(holding&&isPotion()&&!isAntiseptic()) {potionTilt=Math.clamp(potionTilt+vertical*8,0,110);return true;}
         return false;
     }
     @Override public void extractRenderState(GuiGraphicsExtractor graphics,int mouseX,int mouseY,float partialTick) {
@@ -276,6 +297,12 @@ public final class MedicalProcedureScreen extends Screen {
                 var zone=CuProcedureGeometry.antisepticZone(part);
                 graphics.fill(zone.x(),zone.y(),zone.x()+zone.width(),zone.y()+zone.height(),0x242ED5C7);
                 graphics.outline(zone.x(),zone.y(),zone.width(),zone.height(),holding&&stage==1?0xFF8EF2BC:0xFFA4CCC6);
+                var wound=CuProcedureGeometry.part(part,111,80,34,116);
+                // Render the server's protection status even before returning to the inventory.
+                var state=ClientMedicalState.snapshot().part(part);
+                MedicalStatusIcons.draw(graphics,MedicalStatusIcons.disinfection(state),
+                        wound.x()+wound.width()+17,wound.y()+wound.height()/2,23,
+                        MedicalStatusIcons.disinfectionColor(state));
             }
         } else if(kind.simpleTool()) {
             drawSelectedPart(graphics,111,80,34,116);
@@ -354,11 +381,11 @@ public final class MedicalProcedureScreen extends Screen {
     }
     private void drawPotion(GuiGraphicsExtractor graphics,double x,double y) {
         graphics.pose().pushMatrix();graphics.pose().translate((float)x+16,(float)y+16);graphics.pose().rotate((float)Math.toRadians(potionTilt));graphics.pose().scale(2,2);graphics.item(source(),-8,-8);graphics.pose().popMatrix();
-        if(stage==1&&holding) {
+        if(holding&&(isAntiseptic()?sprayFrames>0:stage==1)) {
             var mouth=CuProcedureGeometry.bottleMouth(x,y,potionTilt);var wound=CuProcedureGeometry.part(part,111,80,34,116);
             int bottom=isAntiseptic()?Math.max((int)mouth.y()+10,wound.y()+9):wound.y()+wound.height()-4;
             int span=Math.max(1,bottom-(int)mouth.y()-3);
-            for(int i=0;i<5;i++) {int dy=(int)mouth.y()+3+(elapsed*3+i*7)%span;graphics.fill((int)mouth.x()-1,dy,(int)mouth.x()+2,Math.min(dy+3,bottom),isAntiseptic()?0xFF83E5D6:0xFFB0BDB3);}
+            for(int i=0;i<5;i++) {int dy=(int)mouth.y()+3+(elapsed*3+i*7)%span;int dx=isAntiseptic()?(i-2)*Math.min(4,Math.max(1,(dy-(int)mouth.y())/5)):0;graphics.fill((int)mouth.x()+dx-1,dy,(int)mouth.x()+dx+2,Math.min(dy+3,bottom),isAntiseptic()?0xFF83E5D6:0xFFB0BDB3);}
         }
     }
     private void drawSelectedPart(GuiGraphicsExtractor graphics,int x,int y,int w,int h) {ProcedureVisuals.part(graphics,part,x,y,w,h);}

@@ -114,6 +114,8 @@ class MedicalMonitorRevisionTest {
     }
     @Test void nativePacketRoundTripIncludesAllNewPersistentFieldsAndConsumesExactBytes() {
         var base=body(state(.6f,.4f,.8f,.3f,82.6f,1.75f,2.25f));
+        var treated=BodyModel.restore(base);treated.treat(BodyPart.LEFT_ARM,TreatmentKind.ANTISEPTIC,.75f);
+        base=treated.snapshot();
         var buffer=new RegistryFriendlyByteBuf(Unpooled.buffer(),RegistryAccess.EMPTY);
         try {
             for(var group:BloodGroup.values()) {
@@ -122,9 +124,10 @@ class MedicalMonitorRevisionTest {
                 BodyPayload.CODEC.encode(buffer,new BodyPayload(b));
                 var decoded=BodyPayload.CODEC.decode(buffer).snapshot();
                 assertEquals(group,decoded.bloodGroup());
-                assertEquals(b.survival(),decoded.survival());assertEquals(buffer.writerIndex(),buffer.readerIndex());
+                assertEquals(b.survival(),decoded.survival());assertArrayEquals(b.parts(),decoded.parts());
+                assertEquals(buffer.writerIndex(),buffer.readerIndex());
             }
-            assertTrue(BodyPayload.TYPE.id().toString().endsWith("body_v5"));
+            assertTrue(BodyPayload.TYPE.id().toString().endsWith("body_v6"));
         } finally { buffer.release(); }
     }
     private ValueInput input(Map<String,Object> data) {

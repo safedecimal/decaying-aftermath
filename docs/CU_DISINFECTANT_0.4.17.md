@@ -1,0 +1,8 @@
+# CU disinfectant
+
+Source checked: local Casualties Unknown assembly SHA-256 48c7f2296fc4a659faae3b1822884ca5b7ff73d6767ef159e6a6c2bc0b2d38f1. Relevant members: Item.SetupItems, Liquids onHealthUse, Limb.SetDisinfect, Limb.GetInfectionSpeed, Limb.Update and WoundView.UpdateView.
+
+- A bottle has twenty sprays. A full spray applies 240 game seconds of local protection and stings. Another spray refreshes the timer rather than stacking it. At neutral immunity infection goes from +7.2 to -5.04 percentage points per minute while protected. A light infection can clear; an advanced one can take more treatment.
+- WoundView.icons[4] (level1/1596 -> sharedassets1.assets/409, disinfected, 17x23) is the separate icon for active protection. PNG SHA-256: 1c3d6388eb07b174b969d90bf016d8136dd5f5869f0912a702867971663695cb. The spray sound comes from resources.assets/1479 (spray), re-encoded to Ogg Vorbis, SHA-256 0c3def914d2d16ec43a3303e0160cabef6f4916b7f3a3ac975b5e506655e9d22.
+- Minecraft retains deterministic 40-second incubation, excludes new infection during protection, keeps its foreign-body and systemic antibiotic model, and displays the net infection trend. CU's random checks, diagnosis memory and spread between body parts are not ported here. Existing timers remain readable; update both client and server.
+- In the Minecraft procedure, grab the bottle with the left mouse button, aim at the outlined area, and right-click to spray instead of tilting the bottle. The original `disinfected` icon is shown both on the affected part in the inventory and next to the part during the procedure. It is independent of the infection icon and fades as the server timer runs down.

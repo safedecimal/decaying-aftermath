@@ -166,6 +166,7 @@ public final class MedicalInventoryScreen extends AbstractContainerScreen<Invent
                     (part.fractured()?Component.translatable("decaying_aftermath.status.fractured").getString():"")
                     +(part.bleeding()>0?Component.translatable("decaying_aftermath.status.bleeding").getString():"")
                     +(part.infection()>=.25f?Component.translatable("decaying_aftermath.status.infection").getString():"")
+                    +(part.disinfected()?Component.translatable("decaying_aftermath.status.disinfected").getString():"")
                     +(part.anesthetized()?Component.translatable("decaying_aftermath.status.anesthetized").getString():"")
                     +(part.burn()>.01f?Component.translatable("decaying_aftermath.status.burn").getString():"")
                     +(part.coldInjury()?Component.translatable("decaying_aftermath.status.cold_injury").getString():"")
