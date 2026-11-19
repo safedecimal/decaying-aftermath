@@ -30,6 +30,12 @@ public final class MedicalPresentationPolicy {
         return woundViewOpen ? "heartbeat" : null;
     }
 
+    // Visual feedback shares the beat clock, not the inventory-dependent audio policy.
+    static boolean heartbeatVision(boolean lastStandIntro, BodySnapshot body) {
+        return !lastStandIntro && body.mode() != BodySnapshot.Mode.DEAD
+                && Float.isFinite(body.bpm()) && body.bpm() > 0;
+    }
+
     static boolean crossedBeat(double phase,double advance) {
         // Compare the unwrapped phase so a tick straddling the cycle boundary cannot miss a beat.
         return Math.floor(phase+advance-.3)>Math.floor(phase-.3);
