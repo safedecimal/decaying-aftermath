@@ -23,9 +23,10 @@ public final class MedicalPresentationPolicy {
         return blood < .3f && totalBleeding > 0;
     }
 
-    /** One recording per beat: the monitor replaces the heavy thump only on the wound view. */
+    /** One recording per beat: the blackout monitor combines the ECG and heavy thump. */
     public static String beatSound(boolean woundViewOpen, BodySnapshot body) {
         if (body.mode() == BodySnapshot.Mode.DEAD || body.bpm() <= 0) return null;
+        if (body.mode() == BodySnapshot.Mode.UNCONSCIOUS) return "heartbeat_monitor";
         if (criticalAlarm(body)) return woundViewOpen ? "heartbeat_monitor" : "heartbeat_heavy";
         return woundViewOpen ? "heartbeat" : null;
     }

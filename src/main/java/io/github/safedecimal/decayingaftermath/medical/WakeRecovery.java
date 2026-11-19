@@ -1,7 +1,9 @@
 package io.github.safedecimal.decayingaftermath.medical;
 
-/** Shared server/HUD recovery gates; the countdown counts stable server ticks, not wound healing. */
+/** Gameplay thresholds for unconscious recovery and an earlier, deliberate attempt to stand. */
 public final class WakeRecovery {
+    static final int EARLY_STAND_TICKS = 40;
+    static final float STAND_ENERGY_COST = .04f;
     public enum Blocker { NONE, BLOOD, OXYGEN, INJURY, CONSCIOUSNESS }
     private WakeRecovery() {}
     public static Blocker blocker(float vital, float blood, float oxygen, float consciousness) {
@@ -15,17 +17,13 @@ public final class WakeRecovery {
         return blocker(Math.min(body.part(BodyPart.HEAD).integrity(), body.part(BodyPart.TORSO).integrity()),
                 body.blood(), body.oxygen(), body.consciousness());
     }
-    public static int remainingSeconds(BodySnapshot body) {
-        int ticks = Math.round(body.consciousnessProgress() * BodyModel.WAKE_UP_TICKS);
-        return Math.max(0, (BodyModel.WAKE_UP_TICKS - ticks + 19) / 20);
+    static boolean canStandEarly(BodySnapshot body) {
+        return body.mode() == BodySnapshot.Mode.UNCONSCIOUS && body.blood() > .45f && body.oxygen() > .50f
+                && body.consciousness() > .30f && body.energy() >= .20f
+                && body.part(BodyPart.HEAD).integrity() > .22f && body.part(BodyPart.TORSO).integrity() > .22f
+                && (loadBearing(body.part(BodyPart.LEFT_LEG)) || loadBearing(body.part(BodyPart.RIGHT_LEG)));
     }
-    public static String labelKey(BodySnapshot body) {
-        return switch (blocker(body)) {
-            case NONE -> "decaying_aftermath.recovery.wake_in";
-            case BLOOD -> "decaying_aftermath.recovery.blood";
-            case OXYGEN -> "decaying_aftermath.recovery.oxygen";
-            case INJURY -> "decaying_aftermath.recovery.injury";
-            case CONSCIOUSNESS -> "decaying_aftermath.recovery.consciousness";
-        };
+    private static boolean loadBearing(BodySnapshot.PartSnapshot leg) {
+        return leg.integrity() >= .30f && !leg.anesthetized() && (!leg.fractured() || leg.splinted());
     }
 }

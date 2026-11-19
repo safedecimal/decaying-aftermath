@@ -108,7 +108,6 @@ class MedicalUiRenderingTest {
                 assertTrue(ring.x()>=0);assertTrue(ring.y()>=0);
                 assertTrue(ring.x()+ring.width()<=width);assertTrue(ring.y()+ring.height()<=height);
             }
-            assertTrue(box.y()+box.diameter()+6+9<height,"Countdown below the ring stays on screen");
         }
     }
 

@@ -25,6 +25,9 @@ public final class MedicalNetwork {
         PayloadTypeRegistry.clientboundPlay().register(BodyPayload.TYPE,BodyPayload.CODEC);
         PayloadTypeRegistry.clientboundPlay().register(ThoughtPayload.TYPE,ThoughtPayload.CODEC);
         PayloadTypeRegistry.serverboundPlay().register(MedicalActionPayload.TYPE,MedicalActionPayload.CODEC);
+        PayloadTypeRegistry.serverboundPlay().register(StandUpPayload.TYPE, StandUpPayload.CODEC);
+        ServerPlayNetworking.registerGlobalReceiver(StandUpPayload.TYPE,
+                (p,c)->c.server().execute(()->ServerMedicalSystem.tryStandUp(c.player())));
         ServerPlayNetworking.registerGlobalReceiver(MedicalActionPayload.TYPE,(p,c)->c.server().execute(()->handle(c.player(),p)));
         ServerPlayConnectionEvents.DISCONNECT.register((h,s)->SESSIONS.remove(h.getPlayer().getUUID()));
         ServerPlayerEvents.COPY_FROM.register((oldPlayer,newPlayer,alive)->SESSIONS.remove(oldPlayer.getUUID()));

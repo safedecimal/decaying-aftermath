@@ -496,6 +496,21 @@ public final class BodyModel {
         if (mode == Mode.DEAD) bpm = 0;
     }
 
+    /** Finish a mild recovery early without changing oxygen, blood or injury. */
+    public boolean tryStandUp() {
+        if (mode != Mode.UNCONSCIOUS || wakeTicks < WakeRecovery.EARLY_STAND_TICKS
+                || !WakeRecovery.canStandEarly(snapshot())) return false;
+        energy = unit(energy - WakeRecovery.STAND_ENERGY_COST);
+        finishFaintRecovery();
+        return true;
+    }
+
+    private void finishFaintRecovery() {
+        mode = Mode.CONSCIOUS;
+        wakeTicks = 0;
+        faintRecovered = true;
+    }
+
     private void evaluate(boolean elapsedTick) {
         if (mode == Mode.DEAD) return;
         boolean extreme = vitalIntegrity() <= .08f || oxygen <= .15f || blood <= .04f
@@ -532,9 +547,7 @@ public final class BodyModel {
         if (mode == Mode.UNCONSCIOUS) {
             // Persistent pain/tissue damage no longer erase progress every tick. Unsafe physiology
             // pauses the countdown instead; critical Last Standing / dying handling above is unchanged.
-            if (!blocked && elapsedTick && ++wakeTicks >= WAKE_UP_TICKS) {
-                mode = Mode.CONSCIOUS; wakeTicks = 0; faintRecovered = true;
-            }
+            if (!blocked && elapsedTick && ++wakeTicks >= WAKE_UP_TICKS) finishFaintRecovery();
         } else if (faint && (!faintRecovered || blocked)) {
             mode = Mode.UNCONSCIOUS; wakeTicks = stableTicks = 0;
         }

@@ -90,6 +90,14 @@ public final class ServerMedicalSystem {
         Mode mode = get(player).snapshot().mode();
         return player.isAlive() && (mode == Mode.CONSCIOUS || mode == Mode.LAST_STANDING || mode == Mode.DYING);
     }
+    public static void tryStandUp(ServerPlayer player) {
+        if (!player.isAlive() || player.isCreative() || player.isSpectator() || player.isSleeping()
+                || !player.onGround() || player.isPassenger() || player.isUnderWater()) return;
+        BodyModel body = get(player);
+        if (!body.tryStandUp()) return;
+        mirrorHealth(player);
+        syncBody(player, body.snapshot());
+    }
     public static boolean isReady(ServerPlayer player) { return owner(player).decayingAftermath$isBodyReady(); }
     public static boolean isHealthBridge() { return BRIDGE.get() > 0; }
     private static ServerBodyOwner owner(ServerPlayer player) { return (ServerBodyOwner) (Object) player; }

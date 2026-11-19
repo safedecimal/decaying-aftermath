@@ -7,6 +7,7 @@ import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
@@ -26,6 +27,7 @@ public final class MedicalClient {
     private static LongSupplier clockNanos = System::nanoTime;
     private static long lastTickNanos;
     private static double blackoutRelief;
+    private static boolean standKeyHeld;
     private static boolean playedDrone;
     private static MedicalLoopSound criticalLoop, unconsciousLoop;
     private static MedicalLoopSound painLoop, exhaustedLoop, tiredLoop, dyingLoop;
@@ -67,6 +69,7 @@ public final class MedicalClient {
         if (!ClientMedicalState.received()) return;
         BodySnapshot body = ClientMedicalState.snapshot();
         if(waitingForLiveBody) {if(body.mode()==BodySnapshot.Mode.DEAD)return;waitingForLiveBody=false;}
+        updateUnconsciousControls(client);
         if(body.mode()==BodySnapshot.Mode.DEAD||!client.player.isAlive())PAIN.reset();
         else PAIN.advance(body.pain(),client.isPaused()?0:seconds);
         if (body.mode() != previousMode) {
@@ -98,7 +101,7 @@ public final class MedicalClient {
                 && MedicalPresentationPolicy.criticalAmbience(body));
         updateSituationLoops(body, seconds, audioAlive && body.mode() != BodySnapshot.Mode.DYING
                 || body.mode() == BodySnapshot.Mode.DYING && !DEATH_MUSIC.preDeathStarted());
-        // CU's heavy-monitor recording is selected only while its WoundView is open.
+        // The monitor track is also the heartbeat for the blackout HUD.
         boolean woundView = client.gui.screen() instanceof MedicalInventoryScreen;
         String beat = intro && !MedicalPresentationPolicy.criticalAlarm(body)
                 ? null : MedicalPresentationPolicy.beatSound(woundView, body);
@@ -189,10 +192,32 @@ public final class MedicalClient {
         HEARTBEAT_FOV.reset();
         ThoughtTyper.reset();beatPhase=0;lastTickNanos=0;playedDrone=false;
         blackoutRelief = 0;
+        standKeyHeld = false;
         TIMELINE.reset();CONSCIOUSNESS_ECG.reset();PAIN.reset();previousMode=BodySnapshot.Mode.CONSCIOUS;
         VanillaMusicGate.reset();
         currentPlayer=null;waitingForLiveBody=false;
     }
+    public static boolean blocksInventory(Minecraft client) {
+        return client.player != null && client.player.isAlive() && !client.player.isCreative()
+                && !client.player.isSpectator() && ClientMedicalState.received()
+                && ClientMedicalState.snapshot().mode() == BodySnapshot.Mode.UNCONSCIOUS;
+    }
+
+    private static void updateUnconsciousControls(Minecraft client) {
+        boolean jumpDown = client.options.keyJump.isDown();
+        boolean attempt = jumpDown && !standKeyHeld;
+        standKeyHeld = jumpDown;
+        if (!blocksInventory(client)) return;
+        while (client.options.keyInventory.consumeClick()) { /* discard queued inventory presses */ }
+        var screen = client.gui.screen();
+        if (screen instanceof AbstractContainerScreen<?> || screen instanceof MedicalProcedureScreen) {
+            // Close through the player so both sides release the container and the procedure is cleaned up.
+            client.player.closeContainer();
+        } else if (screen == null && !client.isPaused() && attempt) {
+            ClientMedicalState.tryStandUp();
+        }
+    }
+
     public static double beatPhase() { return beatPhase; }
 
     public static double heartbeatZoom(Minecraft client) {
@@ -232,13 +257,8 @@ public final class MedicalClient {
         if (alpha > 0) {
             var box = ConsciousnessLayout.at(graphics.guiWidth(), graphics.guiHeight());
             extractRecoveryRing(graphics, box, body, alpha);
-            if (body.mode() == BodySnapshot.Mode.UNCONSCIOUS)
-                graphics.centeredText(client.font, net.minecraft.network.chat.Component.translatable(
-                        io.github.safedecimal.decayingaftermath.medical.WakeRecovery.labelKey(body),
-                        io.github.safedecimal.decayingaftermath.medical.WakeRecovery.remainingSeconds(body)),
-                        box.textX(), box.y() + box.diameter() + 6, color(alpha, 0xFFFFFF));
-            // Preserve the user's inventory-only pulse requirement; blackout/recovery ring remains on HUD.
-            if (isInventoryOpen(client) && body.mode() == BodySnapshot.Mode.UNCONSCIOUS) {
+            // Blackout feedback belongs to the world HUD, not to an inventory screen.
+            if (body.mode() == BodySnapshot.Mode.UNCONSCIOUS) {
                 for (int column = 0; column < CONSCIOUSNESS_ECG.width(); column++) {
                     for (int row = 0; row < CONSCIOUSNESS_ECG.height(); row++) {
                         int pixelAlpha = CONSCIOUSNESS_ECG.alpha(column, row);
@@ -251,9 +271,6 @@ public final class MedicalClient {
                                 color(alpha * pixelAlpha / 255, 0xFFFFFF));
                     }
                 }
-                // BPM below the graph is a Minecraft readout adaptation, not CU's static "Zzz..." text.
-                graphics.centeredText(client.font, Integer.toString(Math.round(body.bpm())),
-                        box.textX(), box.textY(), color(alpha, 0xFFFFFF));
             }
         }
         if (TIMELINE.lastStandActive()) {

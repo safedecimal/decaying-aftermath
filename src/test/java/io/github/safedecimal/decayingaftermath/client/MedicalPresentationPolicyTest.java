@@ -39,10 +39,11 @@ class MedicalPresentationPolicyTest {
     @Test void painOrSedationFaintIsNotAutomaticallyAnEcgAlarmOrCriticalLoop() {
         var faint=body(BodySnapshot.Mode.UNCONSCIOUS,.6f,.9f,.9f,.95f,72,0);
         assertFalse(MedicalPresentationPolicy.criticalAlarm(faint));assertFalse(MedicalPresentationPolicy.criticalAmbience(faint));
-        assertEquals("heartbeat",MedicalPresentationPolicy.beatSound(true,faint));assertNull(MedicalPresentationPolicy.beatSound(false,faint));
+        assertEquals("heartbeat_monitor", MedicalPresentationPolicy.beatSound(true, faint));
+        assertEquals("heartbeat_monitor", MedicalPresentationPolicy.beatSound(false, faint));
     }
     @Test void sourceSelectsOneRecordingPerBeatForInventoryAndWorld() {
-        var critical=body(BodySnapshot.Mode.UNCONSCIOUS,.2f,.7f,.3f,.3f,72,0);
+        var critical=body(BodySnapshot.Mode.CONSCIOUS,.2f,.7f,.3f,.3f,72,0);
         assertEquals("heartbeat",MedicalPresentationPolicy.beatSound(true,healthy()));assertNull(MedicalPresentationPolicy.beatSound(false,healthy()));
         assertEquals("heartbeat_monitor",MedicalPresentationPolicy.beatSound(true,critical));assertEquals("heartbeat_heavy",MedicalPresentationPolicy.beatSound(false,critical));
     }

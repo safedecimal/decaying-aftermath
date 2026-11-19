@@ -16,6 +16,9 @@ public final class ClientMedicalState {
         ClientPlayNetworking.registerGlobalReceiver(BodyPayload.TYPE,(p,c)->c.client().execute(()->{state=p.snapshot();received=true;}));
         ClientPlayNetworking.registerGlobalReceiver(ThoughtPayload.TYPE,(p,c)->c.client().execute(()->ThoughtTyper.enqueue(Component.translatable(p.message()).getString())));
     }
+    public static void tryStandUp() {
+        if (ClientPlayNetworking.canSend(StandUpPayload.TYPE)) ClientPlayNetworking.send(StandUpPayload.INSTANCE);
+    }
     public static void beginProcedure(int slot,BodyPart part,TreatmentKind kind) { send(MedicalActionPayload.BEGIN,slot,part,kind,0); }
     public static void sendTreatment(int slot,BodyPart part,TreatmentKind kind,float amount) { send(MedicalActionPayload.APPLY,slot,part,kind,amount); }
     public static void finishProcedure(int slot,BodyPart part,TreatmentKind kind) { send(MedicalActionPayload.FINISH,slot,part,kind,0); }
