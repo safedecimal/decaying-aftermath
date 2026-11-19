@@ -9,7 +9,12 @@ public final class MedicalPresentationTimeline {
     public static final double LAST_STAND_INTRO_SECONDS = 6.7;
     public static final double LAST_STAND_FADE_SECONDS = 4;
     private double black, circleOpacity, vignette;
+    private static final double FIRST_GLIMPSE_SECONDS = 2.5;
+    private static final double GLIMPSE_PERIOD_SECONDS = 4.6;
+    private static final double GLIMPSE_DURATION_SECONDS = 1.4;
+    private static final double GLIMPSE_PEAK_RELIEF = .13;
     private double lastStandSeconds = -1;
+    private double unconsciousSeconds = -1;
 
     public void beginLastStand() { lastStandSeconds = 0; }
 
@@ -21,6 +26,8 @@ public final class MedicalPresentationTimeline {
     }
     private void advance(Mode mode,double consciousness,double remainingGrace,double seconds) {
         if (!Double.isFinite(seconds) || seconds < 0) return;
+        unconsciousSeconds = mode != Mode.UNCONSCIOUS ? -1
+                : unconsciousSeconds < 0 ? 0 : unconsciousSeconds + seconds;
         if (mode == Mode.DYING || mode == Mode.DEAD) lastStandSeconds=-1;
         if (lastStandSeconds >= 0) lastStandSeconds += seconds;
         if(mode==Mode.DEAD) {
@@ -42,6 +49,16 @@ public final class MedicalPresentationTimeline {
     }
 
     public double black() { return black; }
+    // Sample between client ticks so the opening and closing stay smooth at render rate.
+    public double blackoutRelief(double secondsSinceTick) {
+        if (unconsciousSeconds < 0 || lastStandActive()) return 0;
+        double afterFirst = unconsciousSeconds + secondsSinceTick - FIRST_GLIMPSE_SECONDS;
+        if (afterFirst <= 0) return 0;
+        double phase = afterFirst % GLIMPSE_PERIOD_SECONDS;
+        if (phase >= GLIMPSE_DURATION_SECONDS) return 0;
+        double opening = Math.sin(Math.PI * phase / GLIMPSE_DURATION_SECONDS);
+        return GLIMPSE_PEAK_RELIEF * opening * opening;
+    }
     public double vignette() { return vignette; }
     public double circleAlpha() { return circleOpacity; }
     public boolean lastStandActive() { return lastStandSeconds >= 0 && lastStandSeconds < 10.7; }
@@ -60,7 +77,10 @@ public final class MedicalPresentationTimeline {
                 : Math.clamp(1 - (lastStandSeconds - LAST_STAND_INTRO_SECONDS) * .25, 0, 1);
     }
     public boolean lastStandFlicker() { return lastStandSeconds > 2 && lastStandSeconds < 6.7; }
-    public void reset() { black = circleOpacity = vignette = 0; lastStandSeconds = -1; }
+    public void reset() {
+        black = circleOpacity = vignette = 0;
+        lastStandSeconds = unconsciousSeconds = -1;
+    }
     private static double towards(double value, double target, double maximum) {
         return value + Math.copySign(Math.min(Math.abs(target - value), maximum), target - value);
     }

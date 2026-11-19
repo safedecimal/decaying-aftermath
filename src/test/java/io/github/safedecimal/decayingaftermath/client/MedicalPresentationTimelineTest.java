@@ -13,6 +13,41 @@ class MedicalPresentationTimelineTest {
         timeline.advance(Mode.UNCONSCIOUS,.25); assertEquals(.965,timeline.black(),1e-9);
         timeline.advance(Mode.CONSCIOUS,5); assertEquals(0,timeline.black());assertEquals(0,timeline.circleAlpha());
     }
+    @Test void blackoutOpensSmoothlyByThirteenPointsAndRepeatsWithoutChangingTheBaseFade() {
+        var timeline = new MedicalPresentationTimeline();
+        timeline.advance(Mode.UNCONSCIOUS, .05);
+        timeline.advance(Mode.UNCONSCIOUS, 2.5);
+        assertEquals(0, timeline.blackoutRelief(0));
+        assertEquals(.065, timeline.blackoutRelief(.35), 1e-9);
+        assertEquals(.13, timeline.blackoutRelief(.7), 1e-9);
+        assertEquals(.065, timeline.blackoutRelief(1.05), 1e-9);
+        assertEquals(0, timeline.blackoutRelief(1.5));
+        assertEquals(0, timeline.blackoutRelief(3));
+        timeline.advance(Mode.UNCONSCIOUS, 4.6);
+        assertEquals(.13, timeline.blackoutRelief(.7), 1e-9);
+        assertEquals(.965, timeline.black(), 1e-9);
+    }
+    @Test void leavingBlackoutOrResettingStopsTheGlimpseAndRestartsItsDelay() {
+        var timeline = new MedicalPresentationTimeline();
+        for (Mode next : new Mode[] {Mode.CONSCIOUS, Mode.DYING, Mode.DEAD, Mode.LAST_STANDING}) {
+            timeline.advance(Mode.UNCONSCIOUS, .05);
+            timeline.advance(Mode.UNCONSCIOUS, 3.2);
+            assertEquals(.13, timeline.blackoutRelief(0), 1e-9);
+            timeline.advance(next, .05);
+            assertEquals(0, timeline.blackoutRelief(0));
+        }
+        timeline.advance(Mode.UNCONSCIOUS, .05);
+        timeline.advance(Mode.UNCONSCIOUS, 3.2);
+        timeline.reset();
+        assertEquals(0, timeline.blackoutRelief(0));
+    }
+    @Test void lastStandIntroDoesNotShowAGlimpseThroughItsBlackout() {
+        var timeline = new MedicalPresentationTimeline();
+        timeline.beginLastStand();
+        timeline.advance(Mode.UNCONSCIOUS, .05);
+        timeline.advance(Mode.UNCONSCIOUS, 3.2);
+        assertEquals(0, timeline.blackoutRelief(0));
+    }
     @Test void zeroTimeAndSwitchingToDyingOrDeadNeverLeaveARecoveryCircle() {
         var timeline = new MedicalPresentationTimeline();timeline.advance(Mode.UNCONSCIOUS,0);
         assertEquals(0,timeline.circleAlpha());timeline.advance(Mode.UNCONSCIOUS,1);

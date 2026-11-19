@@ -25,6 +25,7 @@ public final class MedicalClient {
     private static BodySnapshot.Mode previousMode = BodySnapshot.Mode.CONSCIOUS;
     private static LongSupplier clockNanos = System::nanoTime;
     private static long lastTickNanos;
+    private static double blackoutRelief;
     private static boolean playedDrone;
     private static MedicalLoopSound criticalLoop, unconsciousLoop;
     private static MedicalLoopSound painLoop, exhaustedLoop, tiredLoop, dyingLoop;
@@ -186,6 +187,7 @@ public final class MedicalClient {
         dyingMusic=deadMusic=null;DEATH_MUSIC.reset();
         HEARTBEAT_FOV.reset();
         ThoughtTyper.reset();beatPhase=0;lastTickNanos=0;playedDrone=false;
+        blackoutRelief = 0;
         TIMELINE.reset();CONSCIOUSNESS_ECG.reset();PAIN.reset();previousMode=BodySnapshot.Mode.CONSCIOUS;
         VanillaMusicGate.reset();
         currentPlayer=null;waitingForLiveBody=false;
@@ -202,13 +204,25 @@ public final class MedicalClient {
         return HEARTBEAT_FOV.apply(vanillaFov, client.options.fovEffectScale().get(), clockNanos.getAsLong());
     }
 
+    // Called during frame update so the world blur and the HUD use the same opening.
+    public static boolean updateUnconsciousVision(Minecraft client) {
+        blackoutRelief = 0;
+        if (client.level == null || client.player == null || client.player != currentPlayer
+                || !client.player.isAlive() || client.player.isSpectator() || !ClientMedicalState.received()
+                || ClientMedicalState.snapshot().mode() != BodySnapshot.Mode.UNCONSCIOUS) return false;
+        double secondsSinceTick = Math.max(0, (clockNanos.getAsLong() - lastTickNanos) / 1_000_000_000.0);
+        blackoutRelief = TIMELINE.blackoutRelief(secondsSinceTick);
+        return blackoutRelief > 0;
+    }
+
     public static void extractHud(GuiGraphicsExtractor graphics) {
         Minecraft client = Minecraft.getInstance();
         if (client.player == null || !ClientMedicalState.received()) return;
         BodySnapshot body = ClientMedicalState.snapshot();
         extractPain(graphics);
         if (TIMELINE.black() > 0 || TIMELINE.vignette() > 0) {
-            double black=MedicalPresentationPolicy.blackOverlay(body,TIMELINE.black(),isMedicalPanelOpen(client));
+            double relief = body.mode() == BodySnapshot.Mode.UNCONSCIOUS ? blackoutRelief : 0;
+            double black = MedicalPresentationPolicy.blackOverlay(body, TIMELINE.black() - relief, isMedicalPanelOpen(client));
             graphics.fill(0, 0, graphics.guiWidth(), graphics.guiHeight(), color(black, 0));
             blit(graphics, "consciousness_vignette", 0, 0, graphics.guiWidth(), graphics.guiHeight(),
                     256, 256, color(TIMELINE.vignette(), 0xFFFFFF));
