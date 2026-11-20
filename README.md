@@ -2,6 +2,20 @@
 
 Отдельный стартовый мод для **Minecraft 26.3 / Fabric**, Java 25.
 
+## License & assets / Лицензия и ассеты
+
+The source code of this mod is licensed under the [MIT License](LICENSE).
+
+This mod uses assets (textures, icons, sounds and other materials) from **Casualties Unknown**.
+All Casualties Unknown assets belong to **Orsoniks**, the developer of Casualties Unknown.
+They are not covered by the MIT License, and no ownership of or license to them is claimed.
+
+Исходный код мода распространяется по [лицензии MIT](LICENSE).
+
+Мод использует ассеты (текстуры, значки, звуки и другие материалы) из **Casualties Unknown**.
+Все ассеты Casualties Unknown принадлежат **Orsoniks**, разработчику Casualties Unknown.
+Лицензия MIT на них не распространяется; права на них не присваиваются.
+
 ## Рука и медицинские мини-игры (0.4.12)
 
 В медицинском инвентаре вместо системного курсора — полупрозрачная рука.
