@@ -76,6 +76,11 @@ public final class MedicalItems {
         return regeneration ? TreatmentKind.REGENERATION_POTION : TreatmentKind.POTION;
     }
 
+    /** Defibrillators are dragged onto the torso in the inventory and open their own minigame. */
+    public static boolean isDefibrillator(ItemStack stack) {
+        return stack != null && !stack.isEmpty() && stack.getItem() instanceof DefibrillatorItem;
+    }
+
     /** Only healing/regeneration drinkable potions receive the wasted-drink rule. */
     public static boolean isHealingPotion(ItemStack stack) {
         if (!isRegularPotion(stack)) return false;

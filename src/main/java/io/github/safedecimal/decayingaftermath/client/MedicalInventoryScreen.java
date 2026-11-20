@@ -244,7 +244,8 @@ public final class MedicalInventoryScreen extends AbstractContainerScreen<Invent
         Slot slot=slotAt(e.x(),e.y());
         // MouseButtonEvent uses SDL button IDs in 26.3: primary=1, NOT GLFW's 0.
         if(event.button()==1 && event.modifiers()==0 && menu.getCarried().isEmpty()
-                &&slot!=null&&slot.index>=9&&slot.hasItem()&&MedicalItems.treatment(slot.getItem())!=null) {
+                &&slot!=null&&slot.index>=9&&slot.hasItem()
+                &&(MedicalItems.treatment(slot.getItem())!=null||MedicalItems.isDefibrillator(slot.getItem()))) {
             pendingSlot=slot.index;dragged=slot.getItem().copy();pressX=e.x();pressY=e.y();moved=false;clickCarry=false;return true;
         }
         return super.mouseClicked(e,doubleClick);
@@ -281,6 +282,12 @@ public final class MedicalInventoryScreen extends AbstractContainerScreen<Invent
                 ||ClientMedicalState.snapshot().mode()==BodySnapshot.Mode.UNCONSCIOUS) clearMedicalCarry();
     }
     private boolean startProcedure(BodyPart part) {
+        if(MedicalItems.isDefibrillator(dragged)) {
+            // Pads go on the chest: only the torso accepts a defibrillator. The server opens the minigame.
+            int source=pendingSlot;clearMedicalCarry();
+            if(part==BodyPart.TORSO) {selected=part;ClientMedicalState.applyDefibrillator(source);}
+            return true;
+        }
         TreatmentKind kind=MedicalItems.treatment(dragged);
         if(kind==null) {clearMedicalCarry();return true;}
         int source=pendingSlot;selected=part;clearMedicalCarry();

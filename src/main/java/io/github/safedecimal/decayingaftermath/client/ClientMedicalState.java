@@ -24,6 +24,10 @@ public final class ClientMedicalState {
     public static void finishProcedure(int slot,BodyPart part,TreatmentKind kind) { send(MedicalActionPayload.FINISH,slot,part,kind,0); }
     public static void removeTourniquet(BodyPart part){send(MedicalActionPayload.REMOVE_TOURNIQUET,0,part,TreatmentKind.TOURNIQUET,0);}
     public static void removeSplint(BodyPart part){send(MedicalActionPayload.REMOVE_SPLINT,0,part,TreatmentKind.SPLINT,0);}
+    /** Self-defibrillation from an inventory slot dragged onto the torso. */
+    public static void applyDefibrillator(int slot) {
+        if (ClientPlayNetworking.canSend(DefibNetwork.Apply.TYPE)) ClientPlayNetworking.send(new DefibNetwork.Apply(slot));
+    }
     public static void endProcedure() {
         if (ClientPlayNetworking.canSend(MedicalActionPayload.TYPE)) ClientPlayNetworking.send(new MedicalActionPayload(MedicalActionPayload.END,0,0,0,0));
     }

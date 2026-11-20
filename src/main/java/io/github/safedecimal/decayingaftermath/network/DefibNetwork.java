@@ -1,6 +1,7 @@
 package io.github.safedecimal.decayingaftermath.network;
 
 import io.github.safedecimal.decayingaftermath.medical.DefibGame;
+import io.github.safedecimal.decayingaftermath.medical.DefibrillatorItem;
 import io.github.safedecimal.decayingaftermath.server.ServerMedicalSystem;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,6 +31,8 @@ public final class DefibNetwork {
     public static void register() {
         PayloadTypeRegistry.clientboundPlay().register(State.TYPE,State.CODEC);
         PayloadTypeRegistry.serverboundPlay().register(Input.TYPE,Input.CODEC);
+        PayloadTypeRegistry.serverboundPlay().register(Apply.TYPE,Apply.CODEC);
+        ServerPlayNetworking.registerGlobalReceiver(Apply.TYPE,(p,c)->c.server().execute(()->applyFromInventory(c.player(),p)));
         ServerPlayNetworking.registerGlobalReceiver(Input.TYPE,(p,c)->c.server().execute(()->input(c.player(),p)));
         ServerTickEvents.END_SERVER_TICK.register(server->SESSIONS.values().removeIf(s->{
             if(!valid(s)) {reply(s,ABORT);return true;}
@@ -39,6 +42,18 @@ public final class DefibNetwork {
         ServerPlayConnectionEvents.DISCONNECT.register((handler,server)->SESSIONS.remove(handler.getPlayer().getUUID()));
     }
     public static void open(ServerPlayer actor,ServerPlayer patient,InteractionHand hand,boolean automatic) {
+        start(actor,patient,hand,-1,actor.getItemInHand(hand),automatic);
+    }
+    /** Inventory drag onto the torso: the device stays in its slot and the actor treats themselves. */
+    private static void applyFromInventory(ServerPlayer actor,Apply packet) {
+        int slot=packet.slot();
+        if(slot<9 || slot>=actor.inventoryMenu.slots.size() || actor.containerMenu!=actor.inventoryMenu
+                || !actor.inventoryMenu.getCarried().isEmpty())return;
+        ItemStack stack=actor.inventoryMenu.getSlot(slot).getItem();
+        if(!(stack.getItem() instanceof DefibrillatorItem item))return;
+        start(actor,actor,InteractionHand.MAIN_HAND,slot,stack,item.automatic());
+    }
+    private static void start(ServerPlayer actor,ServerPlayer patient,InteractionHand hand,int slot,ItemStack device,boolean automatic) {
         if(!ServerPlayNetworking.canSend(actor,State.TYPE) || actor.isSpectator() || !ServerMedicalSystem.canAct(actor))return;
         if(!eligible(actor,patient)) {
             MedicalNetwork.thought(actor,"decaying_aftermath.defib.not_needed");
@@ -47,7 +62,7 @@ public final class DefibNetwork {
         var previous=SESSIONS.get(actor.getUUID());
         if(previous!=null && valid(previous))return;
         int layout=actor.getRandom().nextInt(4);
-        var session=new Session(actor,patient,hand,actor.getItemInHand(hand),++nextId,automatic,layout,
+        var session=new Session(actor,patient,hand,slot,device,++nextId,automatic,layout,
                 actor.level().getGameTime(),new DefibGame(automatic,layout,actor.level().getGameTime()));
         SESSIONS.put(actor.getUUID(),session);
         reply(session,OPEN);
@@ -60,8 +75,11 @@ public final class DefibNetwork {
     private static boolean valid(Session s) {
         long elapsed=s.actor.level().getGameTime()-s.started;
         return elapsed>=0 && elapsed<=LIMIT && !s.actor.isRemoved() && !s.actor.isSpectator()
-                && s.actor.containerMenu==s.actor.inventoryMenu && s.actor.getItemInHand(s.hand)==s.device && !s.device.isEmpty()
+                && s.actor.containerMenu==s.actor.inventoryMenu && source(s)==s.device && !s.device.isEmpty()
                 && ServerMedicalSystem.canAct(s.actor) && eligible(s.actor,s.patient);
+    }
+    private static ItemStack source(Session s) {
+        return s.slot<0 ? s.actor.getItemInHand(s.hand) : s.actor.inventoryMenu.getSlot(s.slot).getItem();
     }
     private static void input(ServerPlayer actor,Input packet) {
         Session s=SESSIONS.get(actor.getUUID());
@@ -81,13 +99,14 @@ public final class DefibNetwork {
         if(!ServerMedicalSystem.defibrillate(s.patient)) {reply(s,ABORT);return;}
         if(!s.actor.getAbilities().instabuild)
             s.device.hurtAndBreak(1,(ServerLevel)s.actor.level(),s.actor,ignored->{});
+        if(s.slot>=0) {s.actor.inventoryMenu.getSlot(s.slot).setChanged();s.actor.inventoryMenu.broadcastChanges();}
         reply(s,DONE);
     }
     private static void reply(Session s,int result) {
         if(s.actor.isRemoved() || !ServerPlayNetworking.canSend(s.actor,State.TYPE))return;
         ServerPlayNetworking.send(s.actor,new State(s.id,result,s.automatic,s.layout,s.game.pads(),s.game.locks()));
     }
-    private record Session(ServerPlayer actor,ServerPlayer patient,InteractionHand hand,ItemStack device,int id,
+    private record Session(ServerPlayer actor,ServerPlayer patient,InteractionHand hand,int slot,ItemStack device,int id,
                            boolean automatic,int layout,long started,DefibGame game) {}
 
     public record State(int session,int result,boolean automatic,int layout,int pads,int locks) implements CustomPacketPayload {
@@ -96,6 +115,14 @@ public final class DefibNetwork {
         public Type<State> type(){return TYPE;}
         private void write(RegistryFriendlyByteBuf b){b.writeInt(session);b.writeByte(result);b.writeBoolean(automatic);b.writeByte(layout);b.writeByte(pads);b.writeByte(locks);}
         private static State read(RegistryFriendlyByteBuf b){return new State(b.readInt(),b.readUnsignedByte(),b.readBoolean(),b.readUnsignedByte(),b.readUnsignedByte(),b.readUnsignedByte());}
+    }
+    /** Carries only an inventory slot of the sender; the patient is always the sender. */
+    public record Apply(int slot) implements CustomPacketPayload {
+        public static final Type<Apply> TYPE=new Type<>(Identifier.fromNamespaceAndPath("decaying_aftermath","defib_apply"));
+        public static final StreamCodec<RegistryFriendlyByteBuf,Apply> CODEC=CustomPacketPayload.codec(Apply::write,Apply::read);
+        public Type<Apply> type(){return TYPE;}
+        private void write(RegistryFriendlyByteBuf b){b.writeVarInt(slot);}
+        private static Apply read(RegistryFriendlyByteBuf b){return new Apply(b.readVarInt());}
     }
     public record Input(int session,int control) implements CustomPacketPayload {
         public static final Type<Input> TYPE=new Type<>(Identifier.fromNamespaceAndPath("decaying_aftermath","defib_input"));

@@ -347,13 +347,18 @@ public final class BodyModel {
 
     public Mode mode() { return mode; }
 
-    public boolean canDefibrillate() { return mode != Mode.DEAD && CardiacRhythm.shockable(cardiacTicks); }
+    public boolean canDefibrillate() { return mode != Mode.DEAD; }
 
-    /** Only restarts the rhythm; doesn't restore oxygen, blood or damaged tissue. */
+    /**
+     * A shock can be delivered to any living body. Only an unstable rhythm or an arrest is
+     * restarted; a stable rhythm is left untouched. Never restores oxygen, blood or tissue.
+     */
     public boolean defibrillate() {
         if (!canDefibrillate()) return false;
-        cardiacTicks = CardiacRhythm.RECOVERY;
-        bpm = 78;
+        if (CardiacRhythm.shockable(cardiacTicks)) {
+            cardiacTicks = CardiacRhythm.RECOVERY;
+            bpm = 78;
+        }
         return true;
     }
 

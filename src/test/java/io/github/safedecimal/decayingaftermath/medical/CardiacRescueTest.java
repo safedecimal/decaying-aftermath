@@ -21,7 +21,7 @@ final class CardiacRescueTest {
         var body=new BodyModel();
         for(int i=0;i<1600;i++)body.tick(true,true);
         assertEquals(0,body.snapshot().cardiacTicks());
-        assertFalse(body.defibrillate());
+        // A stable rhythm can still be shocked; it simply stays stable.        assertTrue(body.defibrillate());        assertEquals(0,body.snapshot().cardiacTicks());
         assertTrue(body.snapshot().bpm()>72);
     }
     @Test void racingHeartIsAudibleThenStopsAtExactlyZero() {
@@ -59,7 +59,7 @@ final class CardiacRescueTest {
         assertEquals(saved.part(BodyPart.LEFT_ARM),shock.part(BodyPart.LEFT_ARM));
         assertEquals(saved.oxygen(),shock.oxygen());
         assertEquals(saved.blood(),shock.blood());
-        assertFalse(body.defibrillate());
+        assertTrue(body.defibrillate());        assertEquals(CardiacRhythm.RECOVERY,body.snapshot().cardiacTicks());
         tick(body,BodyModel.WAKE_UP_TICKS);
         assertEquals(BodySnapshot.Mode.CONSCIOUS,body.snapshot().mode());
     }

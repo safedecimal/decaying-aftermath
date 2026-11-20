@@ -15,6 +15,7 @@ public final class DefibrillatorItem extends Item {
     public DefibrillatorItem(Properties properties,boolean automatic) {
         super(properties); this.automatic=automatic;
     }
+    public boolean automatic() { return automatic; }
     @Override public InteractionResult use(Level level,Player player,InteractionHand hand) {
         if(player instanceof ServerPlayer server)DefibNetwork.open(server,server,hand,automatic);
         return InteractionResult.SUCCESS;
