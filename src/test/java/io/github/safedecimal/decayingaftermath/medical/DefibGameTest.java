@@ -18,6 +18,10 @@ final class DefibGameTest {
         assertEquals(2,game.locks());
         assertEquals(SHOCK,game.input(DefibGame.CONFIRM,185));
     }
+    @Test void readyAtStartsSixTicksAfterStart() {
+        assertEquals(106,new DefibGame(false,0,100).readyAt());
+        assertEquals(106,new DefibGame(true,0,100).readyAt());
+    }
     @Test void automaticOnlyCompletesAfterBothMatchingPadsAndFullAnalysis() {
         for(int layout=0;layout<4;layout++) {
             var game=new DefibGame(true,layout,100);

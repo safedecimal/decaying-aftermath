@@ -104,17 +104,17 @@ public final class DefibNetwork {
     }
     private static void reply(Session s,int result) {
         if(s.actor.isRemoved() || !ServerPlayNetworking.canSend(s.actor,State.TYPE))return;
-        ServerPlayNetworking.send(s.actor,new State(s.id,result,s.automatic,s.layout,s.game.pads(),s.game.locks()));
+        ServerPlayNetworking.send(s.actor,new State(s.id,result,s.automatic,s.layout,s.game.pads(),s.game.locks(),s.game.readyAt()));
     }
     private record Session(ServerPlayer actor,ServerPlayer patient,InteractionHand hand,int slot,ItemStack device,int id,
                            boolean automatic,int layout,long started,DefibGame game) {}
 
-    public record State(int session,int result,boolean automatic,int layout,int pads,int locks) implements CustomPacketPayload {
+    public record State(int session,int result,boolean automatic,int layout,int pads,int locks,long readyAt) implements CustomPacketPayload {
         public static final Type<State> TYPE=new Type<>(Identifier.fromNamespaceAndPath("decaying_aftermath","defib_state"));
         public static final StreamCodec<RegistryFriendlyByteBuf,State> CODEC=CustomPacketPayload.codec(State::write,State::read);
         public Type<State> type(){return TYPE;}
-        private void write(RegistryFriendlyByteBuf b){b.writeInt(session);b.writeByte(result);b.writeBoolean(automatic);b.writeByte(layout);b.writeByte(pads);b.writeByte(locks);}
-        private static State read(RegistryFriendlyByteBuf b){return new State(b.readInt(),b.readUnsignedByte(),b.readBoolean(),b.readUnsignedByte(),b.readUnsignedByte(),b.readUnsignedByte());}
+        private void write(RegistryFriendlyByteBuf b){b.writeInt(session);b.writeByte(result);b.writeBoolean(automatic);b.writeByte(layout);b.writeByte(pads);b.writeByte(locks);b.writeLong(readyAt);}
+        private static State read(RegistryFriendlyByteBuf b){return new State(b.readInt(),b.readUnsignedByte(),b.readBoolean(),b.readUnsignedByte(),b.readUnsignedByte(),b.readUnsignedByte(),b.readLong());}
     }
     /** Carries only an inventory slot of the sender; the patient is always the sender. */
     public record Apply(int slot) implements CustomPacketPayload {
