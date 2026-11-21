@@ -15,6 +15,7 @@ public final class DefibGame {
     }
     public static int port(int layout,int pad) { return pad*2 + ((layout >> pad) & 1); }
     public int pads() { return pads; }
+    public long readyAt() { return readyAt; }
     public int locks() { return locks; }
     public boolean autoReady(long now) {return automatic && pads==2 && now-readyAt>=SCAN;}
 

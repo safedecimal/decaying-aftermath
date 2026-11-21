@@ -116,6 +116,7 @@
   "decaying_aftermath.defib.miss_pad": "Wrong port. Match the symbols.",
   "decaying_aftermath.defib.scan": "Analyzing rhythm…",
   "decaying_aftermath.defib.automatic_fire": "The AED will deliver the shock automatically.",
+  "decaying_aftermath.defib.calibrating": "Calibrating…",
   "decaying_aftermath.defib.calibrate": "Lock rhythm: %s / 3",
   "decaying_aftermath.defib.miss_beat": "Missed. Try the next pass.",
   "decaying_aftermath.defib.now": "Now!",

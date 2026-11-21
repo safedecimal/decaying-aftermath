@@ -116,6 +116,7 @@
   "decaying_aftermath.defib.miss_pad": "Не то гнездо. Сверь символы.",
   "decaying_aftermath.defib.scan": "Анализ ритма…",
   "decaying_aftermath.defib.automatic_fire": "AED выполнит разряд автоматически.",
+  "decaying_aftermath.defib.calibrating": "Калибровка…",
   "decaying_aftermath.defib.calibrate": "Фиксации ритма: %s / 3",
   "decaying_aftermath.defib.miss_beat": "Мимо. Дождись следующего прохода.",
   "decaying_aftermath.defib.now": "Сейчас!",
