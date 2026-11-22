@@ -15,11 +15,19 @@ public final class MedicalGuiClientGameTest implements FabricClientGameTest {
             world.getServer().runCommand("gamemode survival @a");
             context.waitFor(c->c.player!=null&&c.level!=null);
             world.getServer().runOnServer(s->{
-                var p=s.getPlayerList().getPlayers().getFirst();var b=new BodyModel();b.reduceOxygen(.6f);
+                var p=s.getPlayerList().getPlayers().getFirst();var base=new BodyModel().snapshot();var parts=base.parts();
+                parts[BodyPart.HEAD.ordinal()]=new BodySnapshot.PartSnapshot(.2f,0,0,false,false,false,false);
+                var b=BodyModel.restore(new BodySnapshot(.2f,1,1,0,0,72,BodySnapshot.Mode.UNCONSCIOUS,0,.4f,.3f,parts,base.survival()));
                 ((ServerBodyOwner)(Object)p).decayingAftermath$setBody(b);
             });
             context.waitFor(c->ClientMedicalState.received()&&ClientMedicalState.snapshot().mode()==BodySnapshot.Mode.UNCONSCIOUS);
             context.waitTicks(3);copy(context.takeScreenshot("medical-circle-world"),"circle-world.png");
+            context.runOnClient(c->{try {
+                var f=MedicalClient.class.getDeclaredField("scoreMusic");f.setAccessible(true);var score=(MedicalMusicSound)f.get(null);
+                if(score==null||!score.getIdentifier().getPath().equals("dying_drone"))
+                    throw new AssertionError("Normal-reserve blackout incorrectly selected exhaustion");
+                System.out.println("REAL_NORMAL_RESERVE_BLACKOUT: circle_and_primary_score_present");
+            }catch(ReflectiveOperationException e){throw new IllegalStateException(e);}});
             context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_F1);
             context.waitTicks(3);copy(context.takeScreenshot("medical-circle-hidden-hud"),"circle-hidden-hud.png");
             context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_F1);

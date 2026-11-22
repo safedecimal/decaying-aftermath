@@ -15,6 +15,11 @@ class MedicalScoreStateTest {
         assertEquals("dying_drone",a.cue());assertTrue(a.start());assertEquals(.7f,a.volume());
         var v=MedicalSituationSoundState.volumes(body(.8f,.1f,.4f));assertEquals(0,v.exhausted());assertEquals(0,v.tired());assertEquals(0,v.pain());
     }
+    @Test void normalOxygenBlackoutStillGetsTheMainScoreNotExhausted() {
+        var b=new BodySnapshot(.2f,1,1,0,0,72,BodySnapshot.Mode.UNCONSCIOUS,0,.4f,.3f,new BodyModel().snapshot().parts());
+        var a=new MedicalScoreState().advance(b,false);assertEquals("dying_drone",a.cue());assertTrue(a.start());
+        var v=MedicalSituationSoundState.volumes(b);assertEquals(0,v.exhausted());assertEquals(0,v.tired());assertEquals(1,v.dying());
+    }
     @Test void exhaustionCueStartsOnceForAnUnchangedEpisodeNotEveryClipEnd() {
         var s=new MedicalScoreState();var b=body(0,.4f,1);assertTrue(s.advance(b,false).start());
         for(int i=0;i<4000;i++)assertFalse(s.advance(b,false).start());
