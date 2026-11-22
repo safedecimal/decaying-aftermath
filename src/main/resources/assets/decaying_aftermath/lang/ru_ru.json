@@ -123,5 +123,8 @@
   "decaying_aftermath.defib.cu_aed_state2": "Разряд рекомендован. Нажми кнопку.",
   "decaying_aftermath.defib.cu_aed_state3": "Зарядка",
   "decaying_aftermath.defib.cu_aed_state4": "Разряд выполнен",
-  "decaying_aftermath.defib.cu_aed_state5": "Разряд не рекомендован"
+  "decaying_aftermath.defib.cu_aed_state5": "Разряд не рекомендован",
+  "decaying_aftermath.pause.denied": "Сейчас не время останавливаться. Держись.",
+  "decaying_aftermath.heal.done": "Полное восстановление: травмы и состояния очищены.",
+  "decaying_aftermath.heal.dead": "После смерти сначала возродись."
 }

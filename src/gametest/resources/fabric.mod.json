@@ -5,7 +5,13 @@
   "name": "Medical GUI regression (test only)",
   "environment": "client",
   "entrypoints": {
-    "fabric-client-gametest": ["io.github.safedecimal.decayingaftermath.client.MedicalGuiClientGameTest"]
+    "fabric-client-gametest": [
+      "io.github.safedecimal.decayingaftermath.client.MedicalGuiClientGameTest",
+      "io.github.safedecimal.decayingaftermath.client.CriticalPauseHealClientGameTest"
+    ]
   },
-  "depends": {"decaying_aftermath": "*", "fabric-client-gametest-api-v1": "*"}
+  "depends": {
+    "decaying_aftermath": "*",
+    "fabric-client-gametest-api-v1": "*"
+  }
 }

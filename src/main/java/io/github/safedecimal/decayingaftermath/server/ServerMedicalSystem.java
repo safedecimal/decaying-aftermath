@@ -90,6 +90,21 @@ public final class ServerMedicalSystem {
         Mode mode = get(player).mode();
         return player.isAlive() && (mode == Mode.CONSCIOUS || mode == Mode.LAST_STANDING || mode == Mode.DYING);
     }
+    /** Explicit administrator reset, independent of canAct and ordinary treatment budgets. */
+    public static void healFully(ServerPlayer player) {
+        io.github.safedecimal.decayingaftermath.network.MedicalNetwork.cancelProcedures(player);
+        io.github.safedecimal.decayingaftermath.network.DefibNetwork.cancelFor(player);
+        io.github.safedecimal.decayingaftermath.compat.MedicalRagdollCompatibility.release(player);
+        player.removeAllEffects();player.clearFire();player.setTicksFrozen(0);
+        player.setAirSupply(player.getMaxAirSupply());player.resetFallDistance();
+        player.getFoodData().setFoodLevel(20);player.getFoodData().setSaturation(5);
+        player.setDeltaMovement(Vec3.ZERO);
+        LAST_SOURCE.remove(player);SLEEP_TICKS.remove(player);CARRIED_MASS.remove(player);
+        owner(player).decayingAftermath$setBody(new BodyModel());
+        applyInjuryModifiers(player,get(player).snapshot(),false);
+        mirrorHealth(player);syncBody(player,get(player).snapshot());
+        io.github.safedecimal.decayingaftermath.network.MedicalNetwork.thought(player,"decaying_aftermath.heal.done");
+    }
     public static void tryStandUp(ServerPlayer player) {
         if (!player.isAlive() || player.isCreative() || player.isSpectator() || player.isSleeping()
                 || !player.onGround() || player.isPassenger() || player.isUnderWater()) return;

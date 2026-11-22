@@ -19,7 +19,9 @@
     "UnconsciousToastMixin",
     "UnconsciousVisionMixin",
     "HeartbeatFovMixin",
-    "GuiMedicalOverlayMixin"
+    "GuiMedicalOverlayMixin",
+    "MedicalPauseMixin",
+    "MedicalPauseScreenMixin"
   ],
   "injectors": {
     "defaultRequire": 1

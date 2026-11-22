@@ -123,5 +123,8 @@
   "decaying_aftermath.defib.cu_aed_state2": "Shock advised. Press the button.",
   "decaying_aftermath.defib.cu_aed_state3": "Charging",
   "decaying_aftermath.defib.cu_aed_state4": "Shock delivered",
-  "decaying_aftermath.defib.cu_aed_state5": "No shock advised"
+  "decaying_aftermath.defib.cu_aed_state5": "No shock advised",
+  "decaying_aftermath.pause.denied": "There is no time to stop. Hold on.",
+  "decaying_aftermath.heal.done": "Fully restored: injuries and conditions cleared.",
+  "decaying_aftermath.heal.dead": "Respawn before using heal."
 }

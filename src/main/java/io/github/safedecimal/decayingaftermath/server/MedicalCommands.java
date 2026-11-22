@@ -7,13 +7,25 @@ import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import java.util.Locale;
 
-/** Read-only field report and explicit device removal; no hidden heal/cheat command. */
+/** Field reports/device removal plus explicit administrator-only full self-heal. */
 public final class MedicalCommands {
     private static boolean registered;
     private MedicalCommands(){ }
     public static void register() {
         if(registered)return;registered=true;
         CommandRegistrationCallback.EVENT.register((dispatcher,registry,environment)->{
+            dispatcher.register(Commands.literal("heal")
+                    .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
+                    .executes(context->{
+                        var source=context.getSource();
+                        // Re-check in the executor too: a conflicting third-party command tree must not weaken access.
+                        if(!Commands.hasPermission(Commands.LEVEL_GAMEMASTERS).test(source))
+                            throw new com.mojang.brigadier.exceptions.SimpleCommandExceptionType(Component.translatable("commands.generic.permission")).create();
+                        var player=source.getPlayerOrException();
+                        if(!player.isAlive())throw new com.mojang.brigadier.exceptions.SimpleCommandExceptionType(Component.translatable("decaying_aftermath.heal.dead")).create();
+                        ServerMedicalSystem.healFully(player);
+                        source.sendSuccess(()->Component.translatable("decaying_aftermath.heal.done"),false);return 1;
+                    }));
             var root=Commands.literal("aftermath");
             root.then(Commands.literal("status").executes(context->{
                 var player=context.getSource().getPlayerOrException();var body=ServerMedicalSystem.get(player).snapshot();var s=body.survival();

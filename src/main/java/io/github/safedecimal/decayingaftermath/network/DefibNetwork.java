@@ -48,6 +48,12 @@ public final class DefibNetwork {
     public static void open(ServerPlayer actor,ServerPlayer patient,InteractionHand hand,boolean automatic) {
         start(actor,patient,hand,-1,actor.getItemInHand(hand),automatic);
     }
+    public static void cancelFor(ServerPlayer player) {
+        SESSIONS.values().removeIf(s->{
+            if(s.actor!=player&&s.patient!=player)return false;
+            reply(s,ABORT);return true;
+        });
+    }
     /** Inventory drag onto the torso: the device stays in its slot and the actor treats themselves. */
     private static void applyFromInventory(ServerPlayer actor,Apply packet) {
         int slot=packet.slot();

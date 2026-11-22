@@ -27,6 +27,7 @@ public final class MedicalClient {
     private static long lastTickNanos;
     private static double blackoutRelief;
     private static boolean standKeyHeld;
+    private static int pauseHintTicks;
     private static boolean playedDrone;
     private static MedicalLoopSound criticalLoop, unconsciousLoop;
     private static MedicalMusicSound scoreMusic;
@@ -64,6 +65,8 @@ public final class MedicalClient {
         if (!ClientMedicalState.received()) return;
         BodySnapshot body = ClientMedicalState.snapshot();
         if(waitingForLiveBody) {if(body.mode()==BodySnapshot.Mode.DEAD)return;waitingForLiveBody=false;}
+        if(pauseHintTicks>0)pauseHintTicks--;
+        if(!blocksPause(client))pauseHintTicks=0;
         updateUnconsciousControls(client);
         if(body.mode()==BodySnapshot.Mode.DEAD||!client.player.isAlive())PAIN.reset();
         else PAIN.advance(body.pain(),client.isPaused()?0:seconds);
@@ -181,6 +184,7 @@ public final class MedicalClient {
         ThoughtTyper.reset();beatPhase=0;lastTickNanos=0;playedDrone=false;
         blackoutRelief = 0;
         standKeyHeld = false;
+        pauseHintTicks=0;
         TIMELINE.reset();CONSCIOUSNESS_ECG.reset();PAIN.reset();previousMode=BodySnapshot.Mode.CONSCIOUS;
         VanillaMusicGate.reset();
         currentPlayer=null;waitingForLiveBody=false;
@@ -190,6 +194,13 @@ public final class MedicalClient {
                 && !client.player.isSpectator() && ClientMedicalState.received()
                 && ClientMedicalState.snapshot().mode() == BodySnapshot.Mode.UNCONSCIOUS;
     }
+    public static boolean blocksPause(Minecraft client) {
+        return client.level!=null&&client.player!=null&&client.player.isAlive()
+                &&ClientMedicalState.received()
+                &&MedicalPausePolicy.blocked(ClientMedicalState.snapshot());
+    }
+    public static void pauseDenied() {pauseHintTicks=80;}
+    public static void adminHealConfirmed() {clearPresentation();}
 
     private static void updateUnconsciousControls(Minecraft client) {
         boolean jumpDown = client.options.keyJump.isDown();
@@ -289,11 +300,17 @@ public final class MedicalClient {
         Minecraft client=Minecraft.getInstance();
         if(client.level==null||client.player==null||!ClientMedicalState.received())return;
         var screen=client.gui.screen();
-        // Menus/chat stay usable; world and medical minigames receive the medical foreground.
-        if(screen!=null&&!(screen instanceof MedicalInventoryScreen)&&!(screen instanceof MedicalProcedureScreen)
-                &&!(screen instanceof DefibScreen))return;
+        // Chat/menus must never hide medical effects. Actual death/respawn UI stays available.
+        if(screen instanceof net.minecraft.client.gui.screens.DeathScreen)return;
         graphics.nextStratum();graphics.pose().pushMatrix();graphics.pose().identity();
-        try {extractHud(graphics);} finally {graphics.pose().popMatrix();}
+        try {
+            extractHud(graphics);
+            if(pauseHintTicks>0) {
+                int tint=color(.65*Math.min(1,pauseHintTicks/20d),0xEEEEEE);
+                var lines=client.font.split(Component.translatable("decaying_aftermath.pause.denied"),Math.max(60,graphics.guiWidth()-24));
+                for(int i=0;i<lines.size();i++)graphics.centeredText(client.font,lines.get(i),graphics.guiWidth()/2,10+i*10,tint);
+            }
+        } finally {graphics.pose().popMatrix();}
     }
 
     static void extractRecoveryRing(GuiGraphicsExtractor graphics, ConsciousnessLayout box, BodySnapshot body, double alpha) {

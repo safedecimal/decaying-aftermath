@@ -41,6 +41,7 @@ public final class MedicalNetwork {
         if(ServerPlayNetworking.canSend(player,BodyPayload.TYPE))
             ServerPlayNetworking.send(player,new BodyPayload(snapshot.withBloodGroup(BloodGroup.forPlayer(player.getUUID()))));
     }
+    public static void cancelProcedures(ServerPlayer player) {SESSIONS.remove(player.getUUID());}
     public static void thought(ServerPlayer player,String message) {
         if(ServerPlayNetworking.canSend(player,ThoughtPayload.TYPE))ServerPlayNetworking.send(player,new ThoughtPayload(message));
     }

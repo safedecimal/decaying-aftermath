@@ -14,7 +14,10 @@ public final class ClientMedicalState {
     public static void reset() { state=new BodyModel().snapshot();received=false; }
     public static void register() {
         ClientPlayNetworking.registerGlobalReceiver(BodyPayload.TYPE,(p,c)->c.client().execute(()->{state=p.snapshot();received=true;}));
-        ClientPlayNetworking.registerGlobalReceiver(ThoughtPayload.TYPE,(p,c)->c.client().execute(()->ThoughtTyper.enqueue(Component.translatable(p.message()).getString())));
+        ClientPlayNetworking.registerGlobalReceiver(ThoughtPayload.TYPE,(p,c)->c.client().execute(()->{
+            if(p.message().equals("decaying_aftermath.heal.done"))MedicalClient.adminHealConfirmed();
+            else ThoughtTyper.enqueue(Component.translatable(p.message()).getString());
+        }));
     }
     public static void tryStandUp() {
         if (ClientPlayNetworking.canSend(StandUpPayload.TYPE)) ClientPlayNetworking.send(StandUpPayload.INSTANCE);
