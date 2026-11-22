@@ -29,7 +29,8 @@ public final class MedicalPhysiology {
     }
     private static float perfusion(BodySnapshot b) {
         if(b.cardiacArrest())return 0;
-        return Math.clamp(b.blood()/.8f,0,1)*( .8f+.2f*b.oxygen());
+        float filling=b.racingHeart()?Math.clamp(.72f-(b.cardiacTicks()-CardiacRhythm.WARNING)*.22f/160,.5f,.72f):1;
+        return Math.clamp(b.blood()/.8f,0,1)*( .8f+.2f*b.oxygen())*filling;
     }
     public static int systolic(BodySnapshot b) {
         if(b.mode()==BodySnapshot.Mode.DEAD)return 0;

@@ -28,6 +28,7 @@ public final class DefibScreen extends Screen {
     private double pointerX,pointerY;
     private int ox,oy,held=-1,staleTicks;
     private boolean pressed,aborted;
+    private int harmTicks;
 
     private DefibScreen(DefibNetwork.State state,Screen previous) {
         super(Component.translatable(KEY+(state.automatic()?"automatic":"manual")));
@@ -64,6 +65,7 @@ public final class DefibScreen extends Screen {
         if(held!=1) {pad1X=next.pad1X();pad1Y=next.pad1Y();}
         if(held!=2)dialCharge=next.desiredCharge();
         aborted|=next.result()==DefibNetwork.ABORT;
+        if(next.result()==DefibNetwork.HARM)harmTicks=60;
         state=next;staleTicks=0;
     }
     private void send(int control) {
@@ -83,6 +85,7 @@ public final class DefibScreen extends Screen {
     @Override public void mouseMoved(double x,double y) {target(x,y);}
     @Override public boolean mouseDragged(MouseButtonEvent event,double dx,double dy) {target(event.x(),event.y());return pressed;}
     @Override public void tick() {
+        if(harmTicks>0)harmTicks--;
         if(minecraft.player==null||!minecraft.player.isAlive()) {onClose();return;}
         if(++staleTicks>200)aborted=true;
         if(aborted)return;
@@ -163,6 +166,7 @@ public final class DefibScreen extends Screen {
         sprite(g,automatic?"device_aed":"device_manual_defibrillator",-381,-155,40,automatic?40:29,automatic?12:14,automatic?12:10,0xFFFFFFFF);
         text(g,getTitle().getString()+" ("+Math.round(state.battery()*100)+"%)",-257,369,20,400,0xFFFFFFFF);
         if(aborted)text(g,Component.translatable(KEY+"abort").getString(),0,-330,36,1000,0xFFFFA0A0);
+        else if(harmTicks>0)text(g,Component.translatable(KEY+"harm").getString(),0,-330,28,1000,0xFFFF6060);
         text(g,Component.translatable(KEY+"cu_exit").getString(),0,-493,24,850,0xFFFFFFFF);
         if(!aborted) {
             double hx=hand.visualX(partialTick,held==2),hy=hand.visualY(partialTick,held==2);

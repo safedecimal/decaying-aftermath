@@ -287,7 +287,7 @@ public final class BodyModel {
                 - lungCollapse*.0005f - (environment.breathable()?0:.0008f));
         if (moving && oxygen < .7f) oxygen = unit(oxygen - (sprinting ? .00018f : .00006f));
         boolean exertion = moving && mode != Mode.UNCONSCIOUS;
-        float recovery = exertion ? 0 : .0007f * oxygen * survival.oxygenDelivery(1-lungCollapse)
+        float recovery = exertion || cardiacTicks < 0 ? 0 : .0007f * oxygen * survival.oxygenDelivery(1-lungCollapse)
                 * Math.min(1,survival.hydration()*2)*Math.min(1,survival.nutrition()*2)*(1-survival.fatigue()*.7f);
         float load=1+Math.max(0,environment.encumbrance()-.5f)*.6f;
         energy = unit(energy + recovery - (exertion ? sprinting ? .0012f : .00035f : 0)*load
@@ -299,7 +299,7 @@ public final class BodyModel {
         if (cardiacTicks < 0) {
             cardiacTicks = CardiacRhythm.advance(cardiacTicks, false);
             if (cardiacTicks == 0) { kill(); return; }
-            oxygen = unit(oxygen - .0024f); bpm = 0;
+            oxygen = unit(oxygen - .0024f); energy = unit(energy - .0012f); bpm = 0;
             return;
         }
         evaluateAndAlign(true);
@@ -350,8 +350,8 @@ public final class BodyModel {
     public boolean canDefibrillate() { return mode != Mode.DEAD; }
 
     /**
-     * A shock can be delivered to any living body. Only an unstable rhythm or an arrest is
-     * restarted; a stable rhythm is left untouched. Never restores oxygen, blood or tissue.
+     * Legacy therapeutic adapter. Device gameplay uses the energy-aware overload below.
+     * Never restores oxygen, blood or tissue. The arrest timer models a shockable rhythm.
      */
     public boolean defibrillate() {
         if (!canDefibrillate()) return false;
@@ -360,6 +360,42 @@ public final class BodyModel {
             bpm = 78;
         }
         return true;
+    }
+
+    /** Apply every delivered device shock on the server, including failed/harmful shocks.
+     * Deterministic given the server RNG sample; no client-supplied success or rhythm.
+     */
+    public DefibShockPolicy.Result defibrillate(boolean automatic,float charge,float roll) {
+        if(!canDefibrillate())return DefibShockPolicy.Result.REJECTED;
+        float vulnerability=Math.clamp((1-oxygen)+(1-blood)+survival.systemicStress(),0,1);
+        var effect=DefibShockPolicy.assess(cardiacTicks,automatic,charge,roll,vulnerability);
+        var result=effect.result();
+        if(result==DefibShockPolicy.Result.REJECTED||result==DefibShockPolicy.Result.BLOCKED)return result;
+        int torso=BodyPart.TORSO.ordinal();
+        // Local heat/electrical injury is not a cut, bleeding, fracture or global temperature jump.
+        integrity[torso]=unit(integrity[torso]-effect.injury()*.35f);
+        burns[torso]=unit(burns[torso]+effect.injury());
+        if(!automatic)localPain[torso]=unit(localPain[torso]+.025f+effect.power()*.06f+effect.injury());
+        if(result==DefibShockPolicy.Result.CONVERTED) {
+            cardiacTicks=CardiacRhythm.RECOVERY;bpm=78;wakeTicks=stableTicks=0;
+        } else if(result==DefibShockPolicy.Result.ARREST) {
+            cardiacTicks=-CardiacRhythm.RESCUE;
+        } else if(result==DefibShockPolicy.Result.ARRHYTHMIA) {
+            cardiacTicks=CardiacRhythm.WARNING+Math.round(effect.power()*120);
+            bpm=CardiacRhythm.racingBpm(cardiacTicks);
+        } else if(cardiacTicks>=0&&effect.injury()>0) {
+            // Excessive failed shocks aggravate an already unstable rhythm; they do not heal it.
+            int worsened=cardiacTicks+Math.round(effect.injury()*600);
+            cardiacTicks=worsened>=CardiacRhythm.COLLAPSE?-CardiacRhythm.RESCUE:worsened;
+            if(cardiacTicks>=0)bpm=CardiacRhythm.racingBpm(cardiacTicks);
+        }
+        if(cardiacTicks<0) {
+            mode=Mode.UNCONSCIOUS;wakeTicks=stableTicks=0;bpm=0;
+            // Failed shocks during VF never replenish the remaining rescue window.
+        }
+        if(result==DefibShockPolicy.Result.NO_CONVERSION&&effect.injury()>0)
+            return cardiacTicks<0?DefibShockPolicy.Result.ARREST:DefibShockPolicy.Result.ARRHYTHMIA;
+        return result;
     }
 
     public boolean removeTourniquet(BodyPart part) {
@@ -621,7 +657,7 @@ public final class BodyModel {
     }
     private float limbPain(int i) { return anestheticTicks[i] > 0 ? 0 : localPain[i]; }
     private float consciousness() {
-        if (mode == Mode.DEAD) return 0;
+        if (mode == Mode.DEAD || cardiacTicks < 0) return 0;
         float reserves = Math.min(Math.min(unit(oxygen / .8f), unit(blood / .6f)), unit(vitalIntegrity() / .35f));
         return unit(reserves * (1 - effectivePain() * .35f)
                 * (1 - Math.min(1, survival.effectiveOpiate(drug)) * .45f) * (1 - sepsis() * .4f)

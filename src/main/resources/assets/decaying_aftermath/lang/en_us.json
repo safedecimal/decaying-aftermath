@@ -109,6 +109,7 @@
   "decaying_aftermath.defib.not_needed": "This device cannot be used on this patient.",
   "decaying_aftermath.defib.arrest": "Cardiac arrest • %s s left",
   "decaying_aftermath.defib.done": "Rhythm restored",
+  "decaying_aftermath.defib.harm": "Harmful shock: rhythm deteriorated",
   "decaying_aftermath.defib.abort": "Procedure interrupted",
   "decaying_aftermath.defib.close": "Close",
   "decaying_aftermath.defib.racing": "Unstable rhythm • %s BPM",

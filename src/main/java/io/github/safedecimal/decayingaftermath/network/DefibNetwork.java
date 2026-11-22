@@ -21,7 +21,7 @@ import net.minecraft.world.item.ItemStack;
 
 /** Only a real server-side item interaction selects a patient. Packets never carry a target ID. */
 public final class DefibNetwork {
-    public static final int OPEN=0, PROGRESS=1, MISS=2, DONE=3, ABORT=4, NO_EFFECT=5;
+    public static final int OPEN=0, PROGRESS=1, MISS=2, DONE=3, ABORT=4, NO_EFFECT=5, HARM=6;
     private static final Map<UUID,Session> SESSIONS=new HashMap<>();
     private static int nextId;
     private DefibNetwork() {}
@@ -101,11 +101,13 @@ public final class DefibNetwork {
         persist(s);reply(s,result);
     }
     private static int shock(Session s) {
-        var body=ServerMedicalSystem.get(s.patient).snapshot();
-        float severity=DefibGame.fibrillation(body.cardiacTicks());
-        // CU's arrest branch bypasses the manual energy/chance comparison.
-        if(!s.automatic&&!body.cardiacArrest()&&s.actor.getRandom().nextFloat()>=s.game.chanceToWork(severity))return NO_EFFECT;
-        return ServerMedicalSystem.defibrillate(s.patient)?DONE:ABORT;
+        var result=ServerMedicalSystem.defibrillate(s.patient,s.automatic,s.game.lastShockCharge(),s.actor.getRandom().nextFloat());
+        return switch(result) {
+            case REJECTED -> ABORT;
+            case BLOCKED,NO_CONVERSION -> NO_EFFECT;
+            case CONVERTED -> DONE;
+            case ARRHYTHMIA,ARREST -> HARM;
+        };
     }
     private static void persist(Session s) {
         if(!s.actor.getAbilities().instabuild)DefibrillatorItem.battery(s.device,s.game.battery());

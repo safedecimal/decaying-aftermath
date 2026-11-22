@@ -69,9 +69,10 @@ public final class DefibGame {
             return Result.MISS;
         }
         if(automatic) {
-            // CU permits another button press after either a shock or a no-shock advisory.
+            // A no-shock advisory cannot be overridden; request a fresh analysis instead.
             if(control!=CONFIRM||stage.ordinal()<Stage.READY.ordinal()||stage==Stage.CHARGING
                     ||!hit(x,y,0,-421,141,141))return Result.MISS;
+            if(stage==Stage.NO_SHOCK) {stage=Stage.ANALYZING;stageAt=now;return Result.PROGRESS;}
             stage=Stage.CHARGING;stageAt=now;return Result.PROGRESS;
         }
         if(control==DIAL&&hit(x,y,DIAL_X,DIAL_Y,150,150)) {
@@ -101,6 +102,8 @@ public final class DefibGame {
         } else if(stage==Stage.ANALYZING&&now-stageAt>ANALYZE_TICKS) {
             stage=shockable?Stage.READY:Stage.NO_SHOCK;stageAt=now;drain(.02f);
         } else if(autoReady(now)) {
+            // Rhythm can change while charging. Re-check at the actual delivery tick.
+            if(!shockable) {stage=Stage.NO_SHOCK;stageAt=now;return Result.PROGRESS;}
             stage=Stage.COMPLETE;stageAt=now;drain(.14f);shocks++;return Result.SHOCK;
         }
         return Result.PROGRESS;

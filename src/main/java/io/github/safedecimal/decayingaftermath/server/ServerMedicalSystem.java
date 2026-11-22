@@ -104,6 +104,14 @@ public final class ServerMedicalSystem {
         mirrorHealth(player);syncBody(player,body.snapshot());
         return true;
     }
+    public static io.github.safedecimal.decayingaftermath.medical.DefibShockPolicy.Result defibrillate(
+            ServerPlayer player,boolean automatic,float charge,float roll) {
+        BodyModel body=get(player);
+        var result=body.defibrillate(automatic,charge,roll);
+        // Harm and failed shocks must reach the health bridge, ragdoll and vitals immediately too.
+        mirrorHealth(player);syncBody(player,body.snapshot());
+        return result;
+    }
     public static boolean isReady(ServerPlayer player) { return owner(player).decayingAftermath$isBodyReady(); }
     public static boolean isHealthBridge() { return BRIDGE.get() > 0; }
     private static ServerBodyOwner owner(ServerPlayer player) { return (ServerBodyOwner) (Object) player; }

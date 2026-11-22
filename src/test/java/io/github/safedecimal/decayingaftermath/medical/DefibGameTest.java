@@ -68,9 +68,17 @@ final class DefibGameTest {
         assertEquals(PROGRESS,g.tick(1000,true));assertEquals(1,g.shocks());
         assertEquals(.83f,g.battery(),.00001f);
     }
-    @Test void noShockAdvisoryAndCuButtonOverrideArePreserved() {
+    @Test void noShockAdvisoryButtonReanalyzesButCannotOverrideInterlock() {
         var g=aed();g.tick(191,false);assertEquals(Stage.NO_SHOCK,g.stage());
-        assertEquals(PROGRESS,g.input(CONFIRM,0,-421,192));assertEquals(DefibGame.Result.SHOCK,g.tick(263,false));
+        assertEquals(PROGRESS,g.input(CONFIRM,0,-421,192));assertEquals(Stage.ANALYZING,g.stage());
+        assertEquals(PROGRESS,g.tick(263,false));assertEquals(0,g.shocks());
+        g.tick(278,false);assertEquals(Stage.NO_SHOCK,g.stage());
+    }
+    @Test void aedRechecksRhythmAtDeliveryAndDoesNotWasteShockEnergyOnStableRhythm() {
+        var g=aed();g.tick(191,true);g.input(CONFIRM,0,-421,192);
+        float before=g.battery();
+        assertEquals(PROGRESS,g.tick(263,false));assertEquals(Stage.NO_SHOCK,g.stage());
+        assertEquals(0,g.shocks());assertEquals(before,g.battery());
     }
     @Test void cuAedCanChargeAgainWithoutInventedRhythmLocks() {
         var g=aed();g.tick(191,true);g.input(CONFIRM,0,-421,192);g.tick(263,true);
