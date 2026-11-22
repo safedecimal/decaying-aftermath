@@ -10,6 +10,8 @@ import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import org.lwjgl.sdl.SDLMouse;
+import java.util.function.Consumer;
 
 /** Original CU prefab geometry, sprites, inertial hand and separate charge/shock controls. */
 public final class DefibScreen extends Screen {
@@ -19,18 +21,19 @@ public final class DefibScreen extends Screen {
     private final Screen previous;
     private final DefibHandMotion hand=new DefibHandMotion();
     private final ProcedureCursor cursor=new ProcedureCursor();
+    private final Consumer<DefibNetwork.Input> inputSender=DefibScreen::sendNetwork;
     private final EcgTrace ecg=new EcgTrace(122,41);
     private DefibNetwork.State state;
     private float scale=1,pad0X,pad0Y,pad1X,pad1Y,offsetX,offsetY,dialCharge;
     private double pointerX,pointerY;
-    private int ox,oy,held=-1,idleVariant,staleTicks;
+    private int ox,oy,held=-1,staleTicks;
     private boolean pressed,aborted;
 
     private DefibScreen(DefibNetwork.State state,Screen previous) {
         super(Component.translatable(KEY+(state.automatic()?"automatic":"manual")));
         session=state.session();automatic=state.automatic();this.previous=previous;this.state=state;
         pad0X=state.pad0X();pad0Y=state.pad0Y();pad1X=state.pad1X();pad1Y=state.pad1Y();
-        dialCharge=state.desiredCharge();idleVariant=session&1;
+        dialCharge=state.desiredCharge();
         if(automatic)MedicalClient.sound("cu_aedstart",1,1);
     }
     public static void register() {
@@ -64,8 +67,11 @@ public final class DefibScreen extends Screen {
         state=next;staleTicks=0;
     }
     private void send(int control) {
-        if(ClientPlayNetworking.canSend(DefibNetwork.Input.TYPE))ClientPlayNetworking.send(
-                new DefibNetwork.Input(session,control,(float)Math.clamp(hand.x(),-524,524),(float)Math.clamp(hand.y(),-524,524)));
+        inputSender.accept(new DefibNetwork.Input(session,control,
+                (float)Math.clamp(hand.x(),-524,524),(float)Math.clamp(hand.y(),-524,524)));
+    }
+    private static void sendNetwork(DefibNetwork.Input input) {
+        if(ClientPlayNetworking.canSend(DefibNetwork.Input.TYPE))ClientPlayNetworking.send(input);
     }
     @Override public boolean isPauseScreen() {return false;}
     @Override public void onClose() {minecraft.gui.setScreen(minecraft.player!=null&&minecraft.player.isAlive()?previous:null);}
@@ -80,20 +86,24 @@ public final class DefibScreen extends Screen {
         if(minecraft.player==null||!minecraft.player.isAlive()) {onClose();return;}
         if(++staleTicks>200)aborted=true;
         if(aborted)return;
-        var body=ClientMedicalState.snapshot();hand.beginTick();
-        for(int i=0;i<3;i++)hand.step(pointerX,pointerY,body.pain(),body.consciousness(),held==2);
+        var body=ClientMedicalState.snapshot();advanceHand(body.pain(),body.consciousness());
+        ecg.advance(.05,state.bpm());
+    }
+    void advanceHand(float pain,float consciousness) {
+        hand.beginTick();
+        for(int i=0;i<3;i++)hand.step(pointerX,pointerY,pain,consciousness,held==2);
         if(pressed&&held>=0) {
             if(held==0) {pad0X=(float)hand.x()+offsetX;pad0Y=(float)hand.y()+offsetY;}
             if(held==1) {pad1X=(float)hand.x()+offsetX;pad1Y=(float)hand.y()+offsetY;}
             if(held==2)dialCharge=DefibGame.chargeForAngle(angle((float)hand.x(),(float)hand.y()));
             send(DefibGame.MOVE);
         }
-        ecg.advance(.05,state.bpm());
     }
     @Override public boolean mouseClicked(MouseButtonEvent event,boolean doubleClick) {
-        if(event.button()==1) {onClose();return true;} // CU: attack/LMB interacts; RMB/ESC exits.
-        if(event.button()!=0)return false;
-        if(aborted) {onClose();return true;}
+        // MouseButtonEvent is SDL (left=1/right=3), not ContainerInput (left=0/right=1).
+        if(event.button()==SDLMouse.SDL_BUTTON_RIGHT) {onClose();return true;}
+        if(event.button()!=SDLMouse.SDL_BUTTON_LEFT)return false;
+        if(aborted)return true; // An interrupted session never turns a left click into an exit.
         target(event.x(),event.y());pressed=true;
         float x=(float)hand.x(),y=(float)hand.y();
         if(automatic&&stage()==DefibGame.Stage.PLACING) {
@@ -111,9 +121,9 @@ public final class DefibScreen extends Screen {
         return true;
     }
     @Override public boolean mouseReleased(MouseButtonEvent event) {
-        if(event.button()!=0)return false;
+        if(event.button()!=SDLMouse.SDL_BUTTON_LEFT)return false;
         if(held>=0)send(DefibGame.RELEASE);
-        held=-1;pressed=false;idleVariant^=1;return true;
+        held=-1;pressed=false;return true;
     }
     @Override public boolean keyPressed(KeyEvent event) {return super.keyPressed(event);}
     private static float angle(float x,float y) {
@@ -157,16 +167,15 @@ public final class DefibScreen extends Screen {
         if(!aborted) {
             double hx=hand.visualX(partialTick,held==2),hy=hand.visualY(partialTick,held==2);
             boolean grasp=automatic?stage().ordinal()<=1:hx<=-60;
-            int index=grasp?(pressed?2:idleVariant):(pressed?5:3+idleVariant);
-            int gb=Math.round(255*(1-ClientMedicalState.snapshot().pain()));
-            int color=0xD2FF0000|(gb<<8)|gb;
-            g.pose().pushMatrix();g.pose().translate((float)(128+hx*.25),(float)(128-hy*.25));
-            g.pose().rotate(hand.rotation());if(state.leftHand())g.pose().scale(-1,1);
-            // Original RectTransform pivot (0.25420797, 0.86340046), size 768x1890.
-            g.blit(RenderPipelines.GUI_TEXTURED,Identifier.fromNamespaceAndPath("decaying_aftermath","textures/gui/defib/hand_"+index+".png"),
-                    -49,-65,0f,0f,192,473,256,630,256,630,color);
-            g.pose().popMatrix();
+            extractHand(g,128+hx*.25,128-hy*.25,hand.rotation(),state.leftHand(),grasp&&pressed);
         }
+        g.pose().popMatrix();
+    }
+    static void extractHand(GuiGraphicsExtractor g,double x,double y,float rotation,boolean leftHand,boolean grasp) {
+        g.pose().pushMatrix();g.pose().translate((float)x,(float)y);g.pose().rotate(rotation);
+        if(leftHand)g.pose().scale(-1,1);
+        // Same 4x12 Minecraft block arm as inventory and every other medical minigame.
+        CuMedicalHand.extract(g,0,0,0,grasp);
         g.pose().popMatrix();
     }
     private void drawAed(GuiGraphicsExtractor g) {
