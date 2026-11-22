@@ -15,6 +15,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class AftermathCameraMixin {
     @Shadow protected abstract void setPosition(Vec3 position);
     @Shadow protected abstract void setRotation(float yaw,float pitch);
+    @Inject(method="update(Lnet/minecraft/client/DeltaTracker;)V",at=@At("HEAD"))
+    private void decayingAftermath$detachNativeHeadCamera(DeltaTracker delta,CallbackInfo ci) {
+        if(AftermathClient.active()) io.github.safedecimal.decayingaftermath.compat.ClientMedicalRagdolls.detachDeathCamera();
+    }
     // Override before the view/frustum is cached, so culling uses the directed shot too.
     @Inject(method="update(Lnet/minecraft/client/DeltaTracker;)V",at=@At(value="INVOKE",
             target="Lnet/minecraft/client/Camera;getViewRotationMatrix(Lorg/joml/Matrix4f;)Lorg/joml/Matrix4f;"))

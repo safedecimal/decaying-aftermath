@@ -11,7 +11,8 @@
     "PotionDrinkMixin",
     "UnconsciousPacketMixin",
     "SurvivalFoodMixin",
-    "AftermathDeathMixin"
+    "AftermathDeathMixin",
+    "AftermathConnectionAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

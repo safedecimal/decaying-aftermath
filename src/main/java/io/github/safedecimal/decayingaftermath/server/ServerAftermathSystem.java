@@ -18,6 +18,9 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.network.protocol.game.ClientboundSetHealthPacket;
+import net.minecraft.network.protocol.game.ClientboundSetCameraPacket;
+import net.minecraft.network.protocol.game.ClientboundGameEventPacket;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
@@ -73,7 +76,12 @@ public final class ServerAftermathSystem {
         ServerPlayerEvents.AFTER_RESPAWN.register((oldPlayer, player, alive) -> {
             Session session=SESSIONS.get(player.getUUID());
             if (session!=null && !session.finishing) {
-                session.pendingRespawn=false; hold(player,session); sync(player,session,true);
+                session.pendingRespawn=false;
+                rebindConnection(player);
+                io.github.safedecimal.decayingaftermath.compat.AftermathRagdollCompatibility.retainDeath(oldPlayer,session.remainingTicks);
+                ServerMedicalSystem.restoreAfterDeath(player);
+                hold(player,session); sync(player,session,true);
+                sendHealth(player);
             }
         });
         // Save/load carries the remaining time across logout/restart. Never leak to a new server world.
@@ -111,14 +119,17 @@ public final class ServerAftermathSystem {
             ServerPlayer player=initial;
             if (session.pendingRespawn || !player.isAlive()) {
                 // Normal death/drop logic already ran. The temporary new body is always a spectator.
-                player.setGameMode(GameType.SPECTATOR);
+                // Do not tag the DEAD old body as spectator before COPY_FROM.
                 player=server.getPlayerList().respawn(player,false,Entity.RemovalReason.KILLED);
+                rebindConnection(player);
                 session.pendingRespawn=false;
                 hold(player,session); sync(player,session,true);
             }
+            // An explicit server/admin gamemode change ends the camera lock without another teleport.
+            if(player.gameMode()!=GameType.SPECTATOR) {finish(player,session,false);continue;}
             hold(player,session);
-            if (--session.remainingTicks<=0) finish(player,session);
-            else if (session.remainingTicks%20==0) sync(player,session,true);
+            if (--session.remainingTicks<=0) finish(player,session,true);
+            else if (session.remainingTicks%20==0) {sync(player,session,true);sendHealth(player);}
         }
     }
     private static void hold(ServerPlayer player, Session session) {
@@ -129,15 +140,33 @@ public final class ServerAftermathSystem {
         if (level!=null && (player.level()!=level || player.position().distanceToSqr(session.anchor)>.0025))
             player.teleportTo(level,session.anchor.x,session.anchor.y,session.anchor.z,Set.of(),session.yaw,0,false);
     }
-    private static void finish(ServerPlayer player, Session session) {
+    private static void finish(ServerPlayer player, Session session,boolean respawnAtSpawn) {
         session.finishing=true;
-        if (!session.hardcore) {
+        SESSIONS.remove(player.getUUID());LIVE_MOOD.remove(player.getUUID());
+        ServerMedicalSystem.restoreAfterDeath(player);
+        player.setCamera(player);player.setLastClientInput(Input.EMPTY);
+        if (!session.hardcore && respawnAtSpawn) {
             TeleportTransition spawn=player.findRespawnPositionAndUseSpawnBlock(false,TeleportTransition.DO_NOTHING);
             Vec3 position=spawn.position();
             player.teleportTo(spawn.newLevel(),position.x,position.y,position.z,Set.of(),spawn.yRot(),spawn.xRot(),false);
-            player.setGameMode(session.returnMode);
+            player.setGameMode(GameType.byId(AftermathPolicy.returnGameModeId(session.returnMode.getId(),false)));
         } // Hardcore remains spectator: this presentation must never grant a second life.
-        sync(player,session,false); SESSIONS.remove(player.getUUID());
+        // Send the actual final mode even when a mode setter would otherwise be a no-op.
+        player.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.CHANGE_GAME_MODE,player.gameMode().getId()));
+        sync(player,session,false);sendHealth(player);
+        player.connection.send(new ClientboundSetCameraPacket(player));
+    }
+    private static void rebindConnection(ServerPlayer player) {
+        // PlayerList.respawn returns a new ServerPlayer but does not assign listener.player.
+        // Vanilla's handleClientCommand normally performs these three steps afterwards.
+        player.connection.player=player;
+        player.connection.resetPosition();
+        ((io.github.safedecimal.decayingaftermath.mixin.AftermathConnectionAccessor)(Object)player.connection)
+                .decayingAftermath$restartAfterRespawn();
+    }
+    private static void sendHealth(ServerPlayer player) {
+        player.connection.send(new ClientboundSetHealthPacket(player.getHealth(),
+                player.getFoodData().getFoodLevel(),player.getFoodData().getSaturationLevel()));
     }
     private static void sync(ServerPlayer player, Session session, boolean active) {
         if (ServerPlayNetworking.canSend(player,AftermathPayload.TYPE))

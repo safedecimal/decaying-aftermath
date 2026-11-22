@@ -85,6 +85,11 @@ public final class ClientMedicalRagdolls {
             return Double.isFinite(x) && Double.isFinite(y) && Double.isFinite(z) ? new Vec3(x, y, z) : null;
         } catch (ReflectiveOperationException | LinkageError error) { fail(error); return null; }
     }
+    public static void detachDeathCamera() {
+        if (broken || !OptionalMedicalCompatibility.ragdollifiedSupported()) return;
+        try {Class.forName("com.raiiiden.ragdollified.api.RagdollifiedApi").getMethod("detachCamera").invoke(null);}
+        catch(ReflectiveOperationException | LinkageError error) {fail(error);}
+    }
     public static boolean pinDeath(int id, UUID uuid) {
         if (broken || uuid==null || !OptionalMedicalCompatibility.ragdollifiedSupported()) return false;
         try {

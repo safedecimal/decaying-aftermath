@@ -25,6 +25,11 @@ public final class AftermathPolicy {
     public static boolean lockMovement() { return true; }
     public static boolean showVanillaDeathScreen() { return false; }
     public static int nextTrack(int current) { return Math.floorMod(current + 1, PLAYLIST.size()); }
+    /** A temporary or stale saved spectator mode is never a normal respawn result. */
+    public static int returnGameModeId(int originalMode,boolean hardcore) {
+        if(hardcore)return 3;
+        return originalMode==3 ? 0 : Math.clamp(originalMode,0,2);
+    }
     public static int checkedSeconds(int seconds) {
         if (seconds < 1 || seconds > 3600) throw new IllegalArgumentException("deathAftermathSeconds must be 1..3600");
         return seconds;

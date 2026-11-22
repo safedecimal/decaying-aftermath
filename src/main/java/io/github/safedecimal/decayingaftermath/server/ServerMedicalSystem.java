@@ -59,7 +59,7 @@ public final class ServerMedicalSystem {
         });
         ServerPlayerEvents.JOIN.register(player -> { get(player); mirrorHealth(player); syncBody(player, get(player).snapshot()); });
         ServerPlayerEvents.COPY_FROM.register((oldPlayer, newPlayer, alive) -> {
-            owner(newPlayer).decayingAftermath$setBody(alive
+            owner(newPlayer).decayingAftermath$setBody(alive && get(oldPlayer).mode()!=Mode.DEAD
                     ? BodyModel.restoreState(get(oldPlayer).saveState()) : new BodyModel());
             LAST_SOURCE.remove(newPlayer); mirrorHealth(newPlayer);
         });
@@ -92,7 +92,9 @@ public final class ServerMedicalSystem {
         return player.isAlive() && (mode == Mode.CONSCIOUS || mode == Mode.LAST_STANDING || mode == Mode.DYING);
     }
     /** Explicit administrator reset, independent of canAct and ordinary treatment budgets. */
-    public static void healFully(ServerPlayer player) {
+    public static void healFully(ServerPlayer player) {resetFully(player,true);}
+    public static void restoreAfterDeath(ServerPlayer player) {resetFully(player,false);}
+    private static void resetFully(ServerPlayer player,boolean announce) {
         io.github.safedecimal.decayingaftermath.network.MedicalNetwork.cancelProcedures(player);
         io.github.safedecimal.decayingaftermath.network.DefibNetwork.cancelFor(player);
         io.github.safedecimal.decayingaftermath.compat.MedicalRagdollCompatibility.release(player);
@@ -104,7 +106,7 @@ public final class ServerMedicalSystem {
         owner(player).decayingAftermath$setBody(new BodyModel());
         applyInjuryModifiers(player,get(player).snapshot(),false);
         mirrorHealth(player);syncBody(player,get(player).snapshot());
-        io.github.safedecimal.decayingaftermath.network.MedicalNetwork.thought(player,"decaying_aftermath.heal.done");
+        if(announce) io.github.safedecimal.decayingaftermath.network.MedicalNetwork.thought(player,"decaying_aftermath.heal.done");
     }
     public static void tryStandUp(ServerPlayer player) {
         if (!player.isAlive() || player.isCreative() || player.isSpectator() || player.isSleeping()

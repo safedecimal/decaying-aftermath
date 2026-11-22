@@ -43,6 +43,7 @@ public final class AftermathClient {
     private static Object corpseLevel;
     private static MedicalMusicSound music;
     private static int track;
+    private static int recoveryTicks;
     private AftermathClient() { }
     public static void register() {
         ClientPlayNetworking.registerGlobalReceiver(AftermathPayload.TYPE,
@@ -53,7 +54,7 @@ public final class AftermathClient {
     private static void receive(AftermathPayload payload) {
         Minecraft client=Minecraft.getInstance();
         supported=true;
-        if (!payload.active()) { reset(client); return; }
+        if (!payload.active()) {boolean completed=state!=null;reset(client);if(completed)recoveryTicks=40;return;}
         if (!Double.isFinite(payload.x()) || !Double.isFinite(payload.y()) || !Double.isFinite(payload.z())
                 || !Float.isFinite(payload.yaw()) || payload.remainingTicks()<0 || payload.remainingTicks()>72000) return;
         if (state==null || state.token()!=payload.token()) {
@@ -71,7 +72,7 @@ public final class AftermathClient {
     public static boolean depression() { return active() && state.depression(); }
     public static boolean locked() {
         var client=Minecraft.getInstance();
-        return active() || (client.player!=null && !client.player.isAlive() && supported);
+        return active();
     }
     public static boolean suppressDeathScreen() { return supported || active(); }
     public static double elapsedSeconds() { return Math.max(0,(System.nanoTime()-beganNanos)/1_000_000_000.0); }
@@ -82,6 +83,9 @@ public final class AftermathClient {
         return music==null ? "none" : music.getIdentifier().getPath();
     }
     public static int corpseCount() { return corpse==null ? 0 : 1; }
+    public static int nativeCorpseCount() {
+        return active() && victim!=null && ClientMedicalRagdolls.pinDeath(state.corpseId(),victim) ? 1 : 0;
+    }
     public static long redactedPlayerCount() {
         if (!depression()) return 0;
         var client=Minecraft.getInstance();
@@ -93,8 +97,16 @@ public final class AftermathClient {
     }
     private static void tick(Minecraft client) {
         if (client.player==null || client.level==null) { if (state!=null) reset(client); return; }
+        if(recoveryTicks>0) {
+            recoveryTicks--;
+            if(!active()&&ClientMedicalState.received()&&!client.player.isAlive()
+                    &&ClientMedicalState.snapshot().mode()!=io.github.safedecimal.decayingaftermath.medical.BodySnapshot.Mode.DEAD)
+                client.player.setHealth(Math.max(1,client.player.getMaxHealth()*ClientMedicalState.snapshot().condition()));
+        }
         if (!active()) return;
         if (victim==null) victim=client.player.getUUID();
+        // Camera ownership is distinct from its cinematic position. Respawn replaces LocalPlayer.
+        client.setCameraEntity(client.player);
         client.player.setDeltaMovement(Vec3.ZERO); client.player.setSprinting(false);
         if (client.player.input!=null) client.player.input.keyPresses=Input.EMPTY;
         if (client.gui.screen()!=null && (client.gui.screen() instanceof DeathScreen || client.gui.screen().isPauseScreen()))
@@ -112,7 +124,11 @@ public final class AftermathClient {
     private static void maintainCorpse(Minecraft client) {
         boolean nativeBody=ClientMedicalRagdolls.pinDeath(state.corpseId(),victim);
         if (corpseLevel!=client.level) { corpse=null; corpseLevel=client.level; }
-        if (nativeBody) { removeCorpse(client); return; }
+        // A streamed native body may still be queued on the physics thread. Never show
+        // a duplicate flat player while Ragdollified is present.
+        if (nativeBody || io.github.safedecimal.decayingaftermath.compat.OptionalMedicalCompatibility.ragdollifiedSupported()) {
+            removeCorpse(client); return;
+        }
         if (corpse!=null && !corpse.isRemoved()) return;
         UUID profile=UUID.nameUUIDFromBytes((victim+"/afterlife/"+state.token()).getBytes(StandardCharsets.UTF_8));
         corpse=new AftermathCorpse(client.level,new GameProfile(profile,"Aftermath"),client.player.getSkin(),
@@ -203,9 +219,10 @@ public final class AftermathClient {
     }
     private static void reset(Minecraft client) {
         if (music!=null) music.close(); music=null;
-        if (state!=null && victim!=null) ClientMedicalRagdolls.unpinDeath(state.corpseId(),victim);
+        if (state!=null && victim!=null) {ClientMedicalRagdolls.unpinDeath(state.corpseId(),victim);ClientMedicalRagdolls.detachDeathCamera();}
         removeCorpse(client); corpseLevel=null;
         if (previousCamera!=null) client.options.setCameraType(previousCamera);
-        previousCamera=null;state=null;victim=null;beganNanos=syncedNanos=musicNanos=0;track=0;
+        if(client.player!=null) client.setCameraEntity(client.player);
+        previousCamera=null;state=null;victim=null;beganNanos=syncedNanos=musicNanos=0;track=0;recoveryTicks=0;
     }
 }
