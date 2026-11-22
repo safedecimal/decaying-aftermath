@@ -13,6 +13,7 @@ import java.util.Map;
 /** Server-side balancing switches. Never silently overwrites an invalid player config. */
 public final class SurvivalConfig {
     public boolean metabolism=true,temperature=true,encumbrance=true;
+    public int deathAftermathSeconds=AftermathPolicy.DEFAULT_SECONDS;
     public float carryingCapacity=48,backpackCapacityBonus=24,blockMass=.25f,ordinaryItemMass=.05f;
     public Map<String,Float> itemMass=new HashMap<>();
     /** Explicit block emissions in Gy/second; vanilla blocks are not radioactive by default. */
@@ -31,6 +32,7 @@ public final class SurvivalConfig {
                 Files.writeString(path,GSON.toJson(loaded)+"\n",StandardCharsets.UTF_8);
             }
             if(loaded==null)throw new IllegalArgumentException("Empty survival config");
+            AftermathPolicy.checkedSeconds(loaded.deathAftermathSeconds);
             loaded.carryingCapacity=checked(loaded.carryingCapacity,1,1000,"carryingCapacity");
             loaded.backpackCapacityBonus=checked(loaded.backpackCapacityBonus,0,1000,"backpackCapacityBonus");
             loaded.blockMass=checked(loaded.blockMass,0,1000,"blockMass");

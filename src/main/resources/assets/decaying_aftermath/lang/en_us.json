@@ -126,5 +126,13 @@
   "decaying_aftermath.defib.cu_aed_state5": "No shock advised",
   "decaying_aftermath.pause.denied": "There is no time to stop. Hold on.",
   "decaying_aftermath.heal.done": "Fully restored: injuries and conditions cleared.",
-  "decaying_aftermath.heal.dead": "Respawn before using heal."
+  "decaying_aftermath.heal.dead": "Respawn before using heal.",
+  "decaying_aftermath.afterlife.thought.0": "Where do thoughts go when there is nobody left to think them?",
+  "decaying_aftermath.afterlife.thought.1": "Would anyone notice if I disappeared?",
+  "decaying_aftermath.afterlife.thought.2": "I wanted everything to go quiet.",
+  "decaying_aftermath.afterlife.thought.3": "I was tired of being here.",
+  "decaying_aftermath.afterlife.thought.4": "Why did I feel so alone, even with other people?",
+  "decaying_aftermath.afterlife.thought.5": "Is this all that will be left of me?",
+  "decaying_aftermath.afterlife.thought.6": "I did not know how to ask for help.",
+  "decaying_aftermath.afterlife.thought.7": "What if tomorrow could have been different?"
 }

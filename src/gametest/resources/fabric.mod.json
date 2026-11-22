@@ -7,7 +7,8 @@
   "entrypoints": {
     "fabric-client-gametest": [
       "io.github.safedecimal.decayingaftermath.client.MedicalGuiClientGameTest",
-      "io.github.safedecimal.decayingaftermath.client.CriticalPauseHealClientGameTest"
+      "io.github.safedecimal.decayingaftermath.client.CriticalPauseHealClientGameTest",
+      "io.github.safedecimal.decayingaftermath.client.AftermathClientGameTest"
     ]
   },
   "depends": {

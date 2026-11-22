@@ -1,0 +1,90 @@
+{
+  "normal_playlist": [
+    {
+      "title": "Lobby Time",
+      "path": "sounds/afterlife/lobby_time.ogg",
+      "source_sha256": "bc47dc1f1a0b1fe4ff631cee89ca3987b8f7b52f533d06233665d51300331beb",
+      "sha256": "b9a36e532dfb01a5d50e88386d45d51a03908a950c29d70a1bff6f2b1b297a85",
+      "bytes": 2822824,
+      "source_duration": 193.125011,
+      "duration": 193.125011,
+      "codec": "vorbis",
+      "sample_rate": "44100",
+      "channels": 2,
+      "filter": null,
+      "source": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Lobby%20Time.mp3"
+    },
+    {
+      "title": "Airport Lounge",
+      "path": "sounds/afterlife/airport_lounge.ogg",
+      "source_sha256": "e20d316b541c72690a3b0311c9f3d40fd00717359ab7567d7df82a9316c1dec4",
+      "sha256": "902b11cc48932b0bf747eb6327912f187f95ab1663990079e3d23c9ddfade50c",
+      "bytes": 4990825,
+      "source_duration": 307.617959,
+      "duration": 307.617959,
+      "codec": "vorbis",
+      "sample_rate": "44100",
+      "channels": 2,
+      "filter": null,
+      "source": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Airport%20Lounge.mp3"
+    },
+    {
+      "title": "Bossa Antigua",
+      "path": "sounds/afterlife/bossa_antigua.ogg",
+      "source_sha256": "322103dd6ac5fae4872122f91d32cccd4d964b86d300585a5a0cdfaf7048af5d",
+      "sha256": "d0284b9bd1dbbbf6566191089d86e163e6bc8d067965cc22404ee19387161f7a",
+      "bytes": 4013282,
+      "source_duration": 283.285714,
+      "duration": 283.285714,
+      "codec": "vorbis",
+      "sample_rate": "44100",
+      "channels": 2,
+      "filter": null,
+      "source": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Bossa%20Antigua.mp3"
+    },
+    {
+      "title": "Leopard Print Elevator",
+      "path": "sounds/afterlife/leopard_print_elevator.ogg",
+      "source_sha256": "b1e8213c81267e822083ed0388ab236151dd9b0839916a15082f5bd63e852691",
+      "sha256": "c78ced492a7c8e7c3cc0b77d0c51d2a6c8796ff2da6e64f620c5b7a23c7abab0",
+      "bytes": 5158151,
+      "source_duration": 327.6,
+      "duration": 327.6,
+      "codec": "vorbis",
+      "sample_rate": "44100",
+      "channels": 2,
+      "filter": null,
+      "source": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Leopard%20Print%20Elevator.mp3"
+    },
+    {
+      "title": "George Street Shuffle",
+      "path": "sounds/afterlife/george_street_shuffle.ogg",
+      "source_sha256": "15ee9995e01ffe91678db6ba072ec13cf0bf258f17c01677c5367009932b9c07",
+      "sha256": "6ac6a4c713ec74fb42e6f5b057bf2fb265fe4069ce512e02e2a4719abe85218e",
+      "bytes": 4267035,
+      "source_duration": 268.235306,
+      "duration": 268.235306,
+      "codec": "vorbis",
+      "sample_rate": "44100",
+      "channels": 2,
+      "filter": null,
+      "source": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/George%20Street%20Shuffle.mp3"
+    }
+  ],
+  "depression": {
+    "title": "Numb (2)",
+    "path": "sounds/afterlife/numb.ogg",
+    "source_sha256": "6c77341843daeee925746237e8d697a847882a4709917574056bc631961b3990",
+    "sha256": "efe3a3dea32605c66a79cee5764ca80cdec945d251893795de2c4584910f6464",
+    "bytes": 1087053,
+    "source_duration": 60.952381,
+    "duration": 85.7561,
+    "codec": "vorbis",
+    "sample_rate": "44100",
+    "channels": 2,
+    "filter": "aresample=44100,asetrate=31752,aresample=44100,highpass=f=45,lowpass=f=2100,acrusher=bits=9:mix=0.22,aecho=0.8:0.68:520|1100:0.2|0.1,alimiter=limit=0.82,afade=t=in:st=0:d=3",
+    "source": "user-supplied Downloads/Numb (2).mp3"
+  },
+  "trigger": "any death with mood strictly below -75; cause of death irrelevant",
+  "numb_bundled": true
+}

@@ -16,7 +16,7 @@ public final class VanillaMusicGate {
     /** @return true when {@code MusicManager.tick} must be cancelled for this tick. */
     public static boolean suppress(Minecraft client) {
         if (client == null) return false;
-        if (!UnconsciousPresentationPolicy.vanillaMusicMutedNow()) {
+        if (!AftermathClient.active() && !UnconsciousPresentationPolicy.vanillaMusicMutedNow()) {
             suppressing = false;
             return false;
         }

@@ -126,5 +126,13 @@
   "decaying_aftermath.defib.cu_aed_state5": "Разряд не рекомендован",
   "decaying_aftermath.pause.denied": "Сейчас не время останавливаться. Держись.",
   "decaying_aftermath.heal.done": "Полное восстановление: травмы и состояния очищены.",
-  "decaying_aftermath.heal.dead": "После смерти сначала возродись."
+  "decaying_aftermath.heal.dead": "После смерти сначала возродись.",
+  "decaying_aftermath.afterlife.thought.0": "Куда уходят мысли, когда некому их думать?",
+  "decaying_aftermath.afterlife.thought.1": "Если я исчезну, заметит ли кто-нибудь?",
+  "decaying_aftermath.afterlife.thought.2": "Мне хотелось, чтобы всё просто стихло.",
+  "decaying_aftermath.afterlife.thought.3": "Я устал быть здесь.",
+  "decaying_aftermath.afterlife.thought.4": "Почему даже рядом с людьми было так одиноко?",
+  "decaying_aftermath.afterlife.thought.5": "Неужели это всё, что от меня останется?",
+  "decaying_aftermath.afterlife.thought.6": "Я не знал, как попросить о помощи.",
+  "decaying_aftermath.afterlife.thought.7": "А вдруг завтра всё-таки было бы иначе?"
 }

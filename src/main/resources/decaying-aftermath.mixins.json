@@ -3,6 +3,17 @@
   "minVersion": "0.8",
   "package": "io.github.safedecimal.decayingaftermath.mixin",
   "compatibilityLevel": "JAVA_25",
-  "mixins": ["PlayerBodyMixin", "PlayerBodyMixin$Health", "PotionRegenerationMixin", "PotionRegenerationMixin$Peaceful", "PotionDrinkMixin", "UnconsciousPacketMixin", "SurvivalFoodMixin"],
-  "injectors": { "defaultRequire": 1 }
+  "mixins": [
+    "PlayerBodyMixin",
+    "PlayerBodyMixin$Health",
+    "PotionRegenerationMixin",
+    "PotionRegenerationMixin$Peaceful",
+    "PotionDrinkMixin",
+    "UnconsciousPacketMixin",
+    "SurvivalFoodMixin",
+    "AftermathDeathMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
 }

@@ -10,8 +10,10 @@ public final class MedicalPhysiology {
     }
     public static float mood(BodySnapshot b) {
         var s=b.survival();
-        return Math.clamp(1-b.pain()*.6f-(1-b.energy())*.15f-s.fatigue()*.15f
-                -(1-s.nutrition())*.1f-(1-s.hydration())*.1f-s.nausea()*.25f,0,1);
+        // Signed mood: +100 .. -100 in the monitor. Low mood must not clamp to zero.
+        float wellbeing=1-b.pain()*.6f-(1-b.energy())*.15f-s.fatigue()*.15f
+                -(1-s.nutrition())*.1f-(1-s.hydration())*.1f-s.nausea()*.25f;
+        return Math.clamp(wellbeing*2-1,-1,1);
     }
     public static int respiratoryRate(BodySnapshot b) {
         if(b.mode()==BodySnapshot.Mode.DEAD)return 0;

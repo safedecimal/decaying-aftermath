@@ -1,0 +1,14 @@
+{
+  "providers": [
+    {
+      "type": "ttf",
+      "file": "decaying_aftermath:rajdhani_light.ttf",
+      "size": 9,
+      "oversample": 8,
+      "shift": [
+        0,
+        0
+      ]
+    }
+  ]
+}

@@ -21,7 +21,13 @@
     "HeartbeatFovMixin",
     "GuiMedicalOverlayMixin",
     "MedicalPauseMixin",
-    "MedicalPauseScreenMixin"
+    "MedicalPauseScreenMixin",
+    "AftermathCameraMixin",
+    "AftermathKeyboardMixin",
+    "AftermathMouseMixin",
+    "AftermathGuiMixin",
+    "AftermathVisionMixin",
+    "AftermathRedactionMixin"
   ],
   "injectors": {
     "defaultRequire": 1

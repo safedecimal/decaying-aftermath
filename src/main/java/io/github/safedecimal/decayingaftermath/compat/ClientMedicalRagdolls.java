@@ -85,6 +85,33 @@ public final class ClientMedicalRagdolls {
             return Double.isFinite(x) && Double.isFinite(y) && Double.isFinite(z) ? new Vec3(x, y, z) : null;
         } catch (ReflectiveOperationException | LinkageError error) { fail(error); return null; }
     }
+    public static boolean pinDeath(int id, UUID uuid) {
+        if (broken || uuid==null || !OptionalMedicalCompatibility.ragdollifiedSupported()) return false;
+        try {
+            Api port=api(); Object body=port.get().invoke(null,id);
+            if (body==null || !uuid.equals(port.uuid().invoke(body)) || port.level().invoke(body)!=Minecraft.getInstance().level) return false;
+            port.persistent().invoke(null,id,true); return true;
+        } catch (ReflectiveOperationException | LinkageError error) {fail(error); return false;}
+    }
+    public static Vec3 deathOrigin(int id, UUID uuid, BodyPart part) {
+        if (!pinDeath(id,uuid)) return null;
+        try {
+            Api port=api();Object body=port.get().invoke(null,id);
+            Object transform=port.transform().invoke(body,port.part().getField(part.name()).get(null));
+            if (transform==null) return null;
+            Object position=transform.getClass().getField("position").get(transform);Class<?> vector=position.getClass();
+            double x=vector.getField("x").getFloat(position),y=vector.getField("y").getFloat(position),z=vector.getField("z").getFloat(position);
+            return Double.isFinite(x)&&Double.isFinite(y)&&Double.isFinite(z)?new Vec3(x,y,z):null;
+        } catch (ReflectiveOperationException | LinkageError error) {fail(error); return null;}
+    }
+    public static void unpinDeath(int id, UUID uuid) {
+        if (broken || uuid==null || !OptionalMedicalCompatibility.ragdollifiedSupported()) return;
+        try {
+            Api port=api();Object body=port.get().invoke(null,id);
+            if(body!=null&&uuid.equals(port.uuid().invoke(body))&&port.level().invoke(body)==Minecraft.getInstance().level)
+                port.persistent().invoke(null,id,false);
+        } catch (ReflectiveOperationException | LinkageError error) {fail(error);}
+    }
     private static void fail(Throwable error) {
         broken = true;
         System.getLogger("decaying_aftermath.compat").log(System.Logger.Level.WARNING, "Medical client ragdoll bridge disabled: " + error);

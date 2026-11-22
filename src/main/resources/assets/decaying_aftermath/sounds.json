@@ -203,5 +203,53 @@
         "stream": false
       }
     ]
+  },
+  "afterlife_lobby_time": {
+    "sounds": [
+      {
+        "name": "decaying_aftermath:afterlife/lobby_time",
+        "stream": true
+      }
+    ]
+  },
+  "afterlife_airport_lounge": {
+    "sounds": [
+      {
+        "name": "decaying_aftermath:afterlife/airport_lounge",
+        "stream": true
+      }
+    ]
+  },
+  "afterlife_bossa_antigua": {
+    "sounds": [
+      {
+        "name": "decaying_aftermath:afterlife/bossa_antigua",
+        "stream": true
+      }
+    ]
+  },
+  "afterlife_leopard_print_elevator": {
+    "sounds": [
+      {
+        "name": "decaying_aftermath:afterlife/leopard_print_elevator",
+        "stream": true
+      }
+    ]
+  },
+  "afterlife_george_street_shuffle": {
+    "sounds": [
+      {
+        "name": "decaying_aftermath:afterlife/george_street_shuffle",
+        "stream": true
+      }
+    ]
+  },
+  "afterlife_depression": {
+    "sounds": [
+      {
+        "name": "decaying_aftermath:afterlife/numb",
+        "stream": true
+      }
+    ]
   }
 }

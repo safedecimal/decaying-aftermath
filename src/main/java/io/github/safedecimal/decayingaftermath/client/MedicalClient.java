@@ -50,6 +50,7 @@ public final class MedicalClient {
     }
 
     private static void tick(Minecraft client) {
+        if (AftermathClient.active()) { if (currentPlayer!=null) clearPresentation(); return; }
         if (client.player == null || client.level == null) {
             clearPresentation();
             return;
@@ -190,11 +191,13 @@ public final class MedicalClient {
         currentPlayer=null;waitingForLiveBody=false;
     }
     public static boolean blocksInventory(Minecraft client) {
+        if (AftermathClient.locked()) return true;
         return client.player != null && client.player.isAlive() && !client.player.isCreative()
                 && !client.player.isSpectator() && ClientMedicalState.received()
                 && ClientMedicalState.snapshot().mode() == BodySnapshot.Mode.UNCONSCIOUS;
     }
     public static boolean blocksPause(Minecraft client) {
+        if (AftermathClient.locked()) return true;
         return client.level!=null&&client.player!=null&&client.player.isAlive()
                 &&ClientMedicalState.received()
                 &&MedicalPausePolicy.blocked(ClientMedicalState.snapshot());
@@ -241,6 +244,7 @@ public final class MedicalClient {
     }
 
     public static void extractHud(GuiGraphicsExtractor graphics) {
+        if (AftermathClient.active()) return;
         Minecraft client = Minecraft.getInstance();
         if (client.player == null || !ClientMedicalState.received()) return;
         BodySnapshot body = ClientMedicalState.snapshot();
@@ -297,6 +301,7 @@ public final class MedicalClient {
     }
     /** Single late-frame owner: all critical UI is above the world/screen, never a cached HUD child. */
     public static void extractFinalOverlay(GuiGraphicsExtractor graphics) {
+        if (AftermathClient.active()) {AftermathClient.extractOverlay(graphics); return;}
         Minecraft client=Minecraft.getInstance();
         if(client.level==null||client.player==null||!ClientMedicalState.received())return;
         var screen=client.gui.screen();

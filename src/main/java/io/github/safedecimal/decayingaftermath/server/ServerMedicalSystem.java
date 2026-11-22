@@ -86,6 +86,7 @@ public final class ServerMedicalSystem {
         io.github.safedecimal.decayingaftermath.compat.MedicalVisualNetwork.sync(player, snapshot);
     }
     public static boolean canAct(ServerPlayer player) {
+        if (ServerAftermathSystem.active(player)) return false;
         if (player.isCreative() || player.isSpectator()) return true;
         Mode mode = get(player).mode();
         return player.isAlive() && (mode == Mode.CONSCIOUS || mode == Mode.LAST_STANDING || mode == Mode.DYING);
@@ -139,6 +140,7 @@ public final class ServerMedicalSystem {
     public static void applyDamage(ServerPlayer player, DamageSource source, float amount) {
         if (!Float.isFinite(amount) || amount <= 0) return;
         BodyModel model = get(player);
+        ServerAftermathSystem.rememberMood(player,model.snapshot());
         LAST_SOURCE.put(player, source);
         if (source.is(DamageTypes.GENERIC_KILL) || source.is(DamageTypes.FELL_OUT_OF_WORLD)) model.kill();
         else if (source.is(DamageTypeTags.IS_FALL)) model.fall(amount);
@@ -170,6 +172,7 @@ public final class ServerMedicalSystem {
     /** A mod's direct HP delta has no reliable hit position; route it to the torso once. */
     public static void directHealth(ServerPlayer player, float requested) {
         if (!Float.isFinite(requested)) { mirrorHealth(player); return; }
+        ServerAftermathSystem.rememberMood(player,get(player).snapshot());
         float delta = requested - player.getHealth();
         if (delta < 0) {
             DamageSource source = MedicalDamageContext.activeDamageSource(player);
@@ -200,6 +203,7 @@ public final class ServerMedicalSystem {
         }
         boolean wasAlive = player.isAlive();
         if (!wasAlive) return;
+        ServerAftermathSystem.rememberMood(player,model.snapshot());
         if(player.tickCount%20==0||!CARRIED_MASS.containsKey(player))CARRIED_MASS.put(player,InventoryMass.carried(player));
         if(player.isSleeping())SLEEP_TICKS.merge(player,1,Integer::sum);
         else {
@@ -293,6 +297,7 @@ public final class ServerMedicalSystem {
     }
 
     public static void save(ServerPlayer player, ValueOutput output) {
+        ServerAftermathSystem.save(player,output);
         BodyModel.SavedState saved = get(player).saveState(); BodySnapshot body = saved.snapshot();
         ValueOutput node = output.child(SAVE_KEY);
         node.putInt("version", 3); node.putFloat("blood", body.blood()); node.putFloat("oxygen", body.oxygen());
@@ -353,6 +358,8 @@ public final class ServerMedicalSystem {
             model=BodyModel.restoreState(SurvivalPersistence.load(node,legacy));
         }
         owner(player).decayingAftermath$setBody(model); mirrorHealth(player);
+        ServerAftermathSystem.load(player,input);
+        ServerAftermathSystem.rememberMood(player,model.snapshot());
     }
     private static float number(ValueInput node, String key, float fallback, float maximum) {
         float value = node.getFloatOr(key, fallback);
