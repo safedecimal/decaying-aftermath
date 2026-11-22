@@ -22,6 +22,18 @@ test {
     useJUnitPlatform()
 }
 
+// Opt-in real Minecraft/GPU regression; never starts a client during normal CI build.
+if (providers.gradleProperty('medicalClientTest').isPresent()) {
+    fabricApi.configureTests {
+        createSourceSet = true
+        modId = 'decaying_aftermath_guitest'
+        enableGameTests = false
+        enableClientGameTests = true
+        eula = true
+        clearRunDirectory = false
+    }
+}
+
 // Reproducible CU presentation and packaged-resource checks, without launching either game.
 tasks.register('verifyMedicalPresentation', Test) {
     description = 'Verify CU asset bindings, pulse selection, native ECG and presentation timing.'

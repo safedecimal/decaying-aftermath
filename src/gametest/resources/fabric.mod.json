@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "id": "decaying_aftermath_guitest",
+  "version": "1.0.0",
+  "name": "Medical GUI regression (test only)",
+  "environment": "client",
+  "entrypoints": {
+    "fabric-client-gametest": ["io.github.safedecimal.decayingaftermath.client.MedicalGuiClientGameTest"]
+  },
+  "depends": {"decaying_aftermath": "*", "fabric-client-gametest-api-v1": "*"}
+}

@@ -348,9 +348,7 @@ public final class MedicalProcedureScreen extends Screen {
         int gy=-lines.size()*11-17;for(String line:lines) {graphics.centeredText(font,line,128,gy,0xFFE4E9E4);gy+=11;}
         graphics.pose().popMatrix();
         graphics.centeredText(font,Component.translatable("decaying_aftermath.procedure.cancel").getString(),width/2,Math.min(height-12,(int)(oy+272*scale+6)),0xFFB8C0BA);
-        var mode=ClientMedicalState.snapshot().mode();
-        if(mode==BodySnapshot.Mode.DYING||mode==BodySnapshot.Mode.LAST_STANDING)MedicalClient.extractHud(graphics);
-        else MedicalClient.extractPain(graphics);
+        // Medical foreground is extracted once at the end of Gui.extractRenderState.
         MedicalPanelRenderer.extractTooltip(graphics,MedicalPanelLayout.forScreen(width,height),mouseX,mouseY);
     }
     private int rollSize() {double scale=1-(1-remaining)*(1-remaining);return Math.max(1,(int)(78*scale));}

@@ -20,7 +20,7 @@ public final class MedicalDeathMusicState {
     public Actions advance(BodySnapshot body) {
         // CU brainDying is absent perfusion and unconsciousness, not only a mode countdown.
         if(body.cardiacArrest())return advance(Mode.DYING,0);
-        if(body.mode()!=Mode.DYING&&body.mode()!=Mode.DEAD)playedDying=false;
+        if(body.mode()==Mode.CONSCIOUS&&body.blood()>.5f&&body.oxygen()>.65f&&body.brainHealth()>.3f)playedDying=false;
         return advance(body.mode(),body.consciousnessProgress());
     }
 

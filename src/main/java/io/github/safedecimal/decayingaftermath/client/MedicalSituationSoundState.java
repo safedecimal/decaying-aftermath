@@ -20,6 +20,9 @@ public final class MedicalSituationSoundState {
                 &&(body.cardiacArrest()||body.oxygen()<.65f||body.blood()<.4f
                 ||body.brainHealth()<.3f||Math.max(body.survival().thermalStress(),body.survival().nausea())>.75f);
         float dying = deteriorating?1:0;
-        return new Volumes(pain, exhausted, tired, dying);
+        if(dying>0)return new Volumes(0,0,0,dying);
+        if(pain>0)return new Volumes(pain,0,0,0);
+        if(tired>0)return new Volumes(0,0,tired,0);
+        return new Volumes(0,exhausted,0,0);
     }
 }

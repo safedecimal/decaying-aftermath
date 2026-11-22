@@ -94,11 +94,7 @@ public final class MedicalInventoryScreen extends AbstractContainerScreen<Invent
             recipeBook.extractRenderState(graphics,mouseX,mouseY,partialTick);
             recipeBook.extractTooltip(graphics,mouseX,mouseY,hoveredSlot);
         }
-        // Screens render after HUD elements; keep the unconscious/Last Standing presentation above this screen too.
-        if(body.mode()==BodySnapshot.Mode.UNCONSCIOUS||body.mode()==BodySnapshot.Mode.LAST_STANDING
-                ||body.mode()==BodySnapshot.Mode.DYING)
-            MedicalClient.extractHud(graphics);
-        else MedicalClient.extractPain(graphics);
+        // Medical foreground is extracted once at the end of Gui.extractRenderState.
         MedicalPanelRenderer.extractTooltip(graphics,panel,mouseX,mouseY);
         if(minecraft.gui.screen()==this&&minecraft.isWindowActive()) {
             graphics.nextStratum();

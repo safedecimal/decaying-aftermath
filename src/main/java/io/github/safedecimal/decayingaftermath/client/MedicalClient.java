@@ -3,7 +3,6 @@ package io.github.safedecimal.decayingaftermath.client;
 import io.github.safedecimal.decayingaftermath.DecayingAftermath;
 import io.github.safedecimal.decayingaftermath.medical.BodySnapshot;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -30,7 +29,8 @@ public final class MedicalClient {
     private static boolean standKeyHeld;
     private static boolean playedDrone;
     private static MedicalLoopSound criticalLoop, unconsciousLoop;
-    private static MedicalLoopSound painLoop, exhaustedLoop, tiredLoop, dyingLoop;
+    private static MedicalMusicSound scoreMusic;
+    private static final MedicalScoreState SCORE=new MedicalScoreState();
     private static MedicalMusicSound dyingMusic,deadMusic;
     private static final MedicalDeathMusicState DEATH_MUSIC=new MedicalDeathMusicState();
     private static final MedicalPainState PAIN=new MedicalPainState();
@@ -46,11 +46,6 @@ public final class MedicalClient {
         registered = true;
         ClientTickEvents.END_CLIENT_TICK.register(client -> tick(client));
         ClientPlayConnectionEvents.DISCONNECT.register((handler,client)->clearPresentation());
-        HudElementRegistry.addLast(id("medical_condition"), (graphics, delta) -> {
-            Object screen=Minecraft.getInstance().gui.screen();
-            // These two screens explicitly extract after their own contents; never composite twice.
-            if(!(screen instanceof MedicalInventoryScreen)&&!(screen instanceof MedicalProcedureScreen))extractHud(graphics);
-        });
     }
 
     private static void tick(Minecraft client) {
@@ -99,8 +94,7 @@ public final class MedicalClient {
         boolean audioAlive = !intro && body.mode() != BodySnapshot.Mode.DEAD;
         updateCriticalLoops(body, seconds, audioAlive && body.mode() != BodySnapshot.Mode.DYING
                 && MedicalPresentationPolicy.criticalAmbience(body));
-        updateSituationLoops(body, seconds, audioAlive && body.mode() != BodySnapshot.Mode.DYING
-                || body.mode() == BodySnapshot.Mode.DYING && !DEATH_MUSIC.preDeathStarted());
+        updateScore(body,seconds,!audioAlive);
         // The monitor track is also the heartbeat for the blackout HUD.
         boolean woundView = client.gui.screen() instanceof MedicalInventoryScreen;
         String beat = intro && !MedicalPresentationPolicy.criticalAlarm(body)
@@ -138,8 +132,9 @@ public final class MedicalClient {
         }
         if (criticalLoop == null) return;
         boolean unconscious = body.mode() == BodySnapshot.Mode.UNCONSCIOUS;
-        criticalLoop.fadeTo(enabled && !unconscious ? .65f : 0, seconds);
-        unconsciousLoop.fadeTo(enabled && unconscious ? .65f : 0, seconds);
+        float ambience=scoreMusic!=null||dyingMusic!=null?.12f:.65f;
+        criticalLoop.fadeTo(enabled && !unconscious ? ambience : 0, seconds);
+        unconsciousLoop.fadeTo(enabled && unconscious ? ambience : 0, seconds);
         if (!enabled && criticalLoop.volume() == 0 && unconsciousLoop.volume() == 0) closeCriticalLoops();
     }
     private static void closeCriticalLoops() {
@@ -147,28 +142,17 @@ public final class MedicalClient {
         if (unconsciousLoop != null) unconsciousLoop.close();
         criticalLoop = unconsciousLoop = null;
     }
-    private static void updateSituationLoops(BodySnapshot body, double seconds, boolean enabled) {
-        var volumes = enabled ? MedicalSituationSoundState.volumes(body)
-                : new MedicalSituationSoundState.Volumes(0, 0, 0, 0);
-        painLoop = updateSituationLoop(painLoop, "pain_drone", volumes.pain(), seconds);
-        exhaustedLoop = updateSituationLoop(exhaustedLoop, "exhausted_drone", volumes.exhausted(), seconds);
-        tiredLoop = updateSituationLoop(tiredLoop, "tired_drone", volumes.tired(), seconds);
-        dyingLoop = updateSituationLoop(dyingLoop, "dying_drone", volumes.dying(), seconds);
+    private static void updateScore(BodySnapshot body,double seconds,boolean suppressed) {
+        var action=SCORE.advance(body,suppressed);
+        if(action.stop()&&scoreMusic!=null) {scoreMusic.close();scoreMusic=null;}
+        if(action.start())scoreMusic=MedicalMusicSound.start(action.cue(),false,action.volume());
+        if(scoreMusic!=null) {
+            scoreMusic.fadeTo(dyingMusic!=null?action.volume()*.3f:action.volume(),seconds);
+            if(scoreMusic.finished(seconds)) {scoreMusic.close();scoreMusic=null;}
+        }
     }
-    private static MedicalLoopSound updateSituationLoop(MedicalLoopSound sound, String name,
-            float target, double seconds) {
-        if (sound == null && target > .001f) sound = MedicalLoopSound.start(name, 0, 1);
-        if (sound == null) return null;
-        sound.fadeTo(target * .65f, seconds);
-        if (target <= .001f && sound.volume() <= .001f) { sound.close(); return null; }
-        return sound;
-    }
-    private static void closeSituationLoops() {
-        if (painLoop != null) painLoop.close();
-        if (exhaustedLoop != null) exhaustedLoop.close();
-        if (tiredLoop != null) tiredLoop.close();
-        if (dyingLoop != null) dyingLoop.close();
-        painLoop = exhaustedLoop = tiredLoop = dyingLoop = null;
+    private static void closeScore() {
+        if(scoreMusic!=null)scoreMusic.close();scoreMusic=null;SCORE.reset();
     }
     private static void updateDeathMusic(BodySnapshot body,double seconds) {
         var action=DEATH_MUSIC.advance(body);
@@ -181,12 +165,16 @@ public final class MedicalClient {
             if(dyingMusic!=null) {dyingMusic.close();dyingMusic=null;}
             deadMusic=MedicalMusicSound.start("death_music",false);
         }
-        if(dyingMusic!=null) {dyingMusic.fadeTo(.8f,seconds);dyingMusic.ensurePlaying(seconds);}
+        if(dyingMusic!=null) {
+            dyingMusic.fadeTo(.8f,seconds);
+            if(dyingMusic.finished(seconds)) {dyingMusic.close();dyingMusic=null;}
+        }
+        if(deadMusic!=null&&deadMusic.finished(seconds)) {deadMusic.close();deadMusic=null;}
     }
     private static void clearPresentation() {
         stop("heartbeat");stop("heartbeat_heavy");stop("heartbeat_monitor");activeBeat=null;
         stop("unconscious");stop("last_standing");stop("last_standing_drone");
-        closeCriticalLoops(); closeSituationLoops();
+        closeCriticalLoops(); closeScore();
         if(dyingMusic!=null)dyingMusic.close();if(deadMusic!=null)deadMusic.close();
         dyingMusic=deadMusic=null;DEATH_MUSIC.reset();
         HEARTBEAT_FOV.reset();
@@ -295,6 +283,17 @@ public final class MedicalClient {
         // Keep the medical readouts legible above the edge-darkening during the rescue window.
         if(body.mode()==BodySnapshot.Mode.DYING&&isMedicalPanelOpen(client))
             MedicalPanelRenderer.extract(graphics,MedicalPanelLayout.forScreen(graphics.guiWidth(),graphics.guiHeight()));
+    }
+    /** Single late-frame owner: all critical UI is above the world/screen, never a cached HUD child. */
+    public static void extractFinalOverlay(GuiGraphicsExtractor graphics) {
+        Minecraft client=Minecraft.getInstance();
+        if(client.level==null||client.player==null||!ClientMedicalState.received())return;
+        var screen=client.gui.screen();
+        // Menus/chat stay usable; world and medical minigames receive the medical foreground.
+        if(screen!=null&&!(screen instanceof MedicalInventoryScreen)&&!(screen instanceof MedicalProcedureScreen)
+                &&!(screen instanceof DefibScreen))return;
+        graphics.nextStratum();graphics.pose().pushMatrix();graphics.pose().identity();
+        try {extractHud(graphics);} finally {graphics.pose().popMatrix();}
     }
 
     static void extractRecoveryRing(GuiGraphicsExtractor graphics, ConsciousnessLayout box, BodySnapshot body, double alpha) {
