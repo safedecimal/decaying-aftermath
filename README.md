@@ -61,3 +61,7 @@ git push origin main
 ```
 
 The release workflow runs when `VERSION` changes. It builds the mod and publishes the JAR to GitHub Releases. Use a new unused semantic version in `VERSION` for each release.
+
+## CU defibrillators (0.4.22)
+
+The old symbol puzzle and three rhythm locks are removed. Original CU electrode dragging, dial, charge/shock buttons, art, numeric font and audio are ported. LMB interacts with the inertial hand; RMB/Esc exits. Update both client and server. See [port notes](docs/CU_DEFIBRILLATORS_0.4.22.md) for verified source bindings and explicit adaptations.

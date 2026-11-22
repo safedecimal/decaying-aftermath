@@ -1,0 +1,2175 @@
+{
+  "source_assembly_sha256": "48c7f2296fc4a659faae3b1822884ca5b7ff73d6767ef159e6a6c2bc0b2d38f1",
+  "source_mvid": "a598f273-a4d7-465b-9ef9-4ff70b39d5e4",
+  "prefab_methods": {
+    "AEDMinigame.Start": "0x0600049C",
+    "AEDMinigame.Update": "0x0600049D",
+    "ManualDefibMinigame.Start": "0x06000492",
+    "ManualDefibMinigame.Update": "0x06000496"
+  },
+  "records": [
+    {
+      "source_file": "resources.assets",
+      "path_id": 2580,
+      "raw_object_sha256": "750be50f8bf11b1e9ffee653b004e5f2cd5e1c887a5c327a9f1da66cbd4fb12e",
+      "alias": "manual_screen",
+      "source_name": "defibBackground",
+      "dimensions": [
+        256,
+        220
+      ],
+      "binding": {
+        "prefab_child": "/ManualDefibMinigame/Screen",
+        "component": {
+          "source_file": "resources.assets",
+          "path_id": 12361,
+          "raw_object_sha256": "a69275b426678d89e067f750a0bf88d80c8b5edce1b39d0a6a18fd9179f6f0ac"
+        },
+        "rect": {
+          "m_GameObject": {
+            "m_FileID": 0,
+            "m_PathID": 5086
+          },
+          "m_LocalRotation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "w": 1.0
+          },
+          "m_LocalPosition": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "m_LocalScale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "m_Children": [
+            {
+              "m_FileID": 0,
+              "m_PathID": 11298
+            },
+            {
+              "m_FileID": 0,
+              "m_PathID": 11319
+            },
+            {
+              "m_FileID": 0,
+              "m_PathID": 11362
+            },
+            {
+              "m_FileID": 0,
+              "m_PathID": 11189
+            },
+            {
+              "m_FileID": 0,
+              "m_PathID": 11230
+            },
+            {
+              "m_FileID": 0,
+              "m_PathID": 11305
+            },
+            {
+              "m_FileID": 0,
+              "m_PathID": 10752
+            },
+            {
+              "m_FileID": 0,
+              "m_PathID": 11344
+            },
+            {
+              "m_FileID": 0,
+              "m_PathID": 10903
+            },
+            {
+              "m_FileID": 0,
+              "m_PathID": 11035
+            },
+            {
+              "m_FileID": 0,
+              "m_PathID": 11143
+            }
+          ],
+          "m_Father": {
+            "m_FileID": 0,
+            "m_PathID": 11040
+          },
+          "m_AnchorMin": {
+            "x": 0.5,
+            "y": 0.5
+          },
+          "m_AnchorMax": {
+            "x": 0.5,
+            "y": 0.5
+          },
+          "m_AnchoredPosition": {
+            "x": 0.0,
+            "y": 33.0
+          },
+          "m_SizeDelta": {
+            "x": 768.0001220703125,
+            "y": 660.0001220703125
+          },
+          "m_Pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        "color": {
+          "r": 1.0,
+          "g": 1.0,
+          "b": 1.0,
+          "a": 1.0
+        },
+        "preserve_aspect": 0
+      },
+      "destination": "textures/gui/defib/manual_screen.png",
+      "output_sha256": "e6628f7df8f0bcd5c8d752cc81c01674b537eb819ccf3bff8543d50cee0958d4",
+      "transform": "Original Sprite pixels and full authored canvas; no replacement artwork"
+    },
+    {
+      "source_file": "resources.assets",
+      "path_id": 2209,
+      "raw_object_sha256": "aaa477b728e1d9a7b608c6072cf327eb4114552d454c2b23a312c80d8a3d4105",
+      "alias": "manual_screen_battery",
+      "source_name": "manualDefibBattery",
+      "dimensions": [
+        13,
+        9
+      ],
+      "binding": {
+        "prefab_child": "/ManualDefibMinigame/Screen/Battery",
+        "component": {
+          "source_file": "resources.assets",
+          "path_id": 12424,
+          "raw_object_sha256": "bfd5bb87066dc1b6285151c1574130638bc628ae32ec2a6e3d6a01fe08f97c08"
+        },
+        "rect": {
+          "m_GameObject": {
+            "m_FileID": 0,
+            "m_PathID": 4531
+          },
+          "m_LocalRotation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "w": 1.0
+          },
+          "m_LocalPosition": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "m_LocalScale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "m_Children": [],
+          "m_Father": {
+            "m_FileID": 0,
+            "m_PathID": 11046
+          },
+          "m_AnchorMin": {
+            "x": 0.5,
+            "y": 0.5
+          },
+          "m_AnchorMax": {
+            "x": 0.5,
+            "y": 0.5
+          },
+          "m_AnchoredPosition": {
+            "x": 232.5,
+            "y": 181.5
+          },
+          "m_SizeDelta": {
+            "x": 39.00000762939453,
+            "y": 27.000003814697266
+          },
+          "m_Pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        "color": {
+          "r": 1.0,
+          "g": 1.0,
+          "b": 1.0,
+          "a": 1.0
+        },
+        "preserve_aspect": 0
+      },
+      "destination": "textures/gui/defib/manual_screen_battery.png",
+      "output_sha256": "50e2f9fc005290d8c359439533719970e50801a03fb5748bd53fb8881e2b8e52",
+      "transform": "Original Sprite pixels and full authored canvas; no replacement artwork"
+    },
+    {
+      "source_file": "resources.assets",
+      "path_id": 2334,
+      "raw_object_sha256": "ca2d0b91b0144a5e5d93417f50982331ef72d4abbd6aa00faed1999a4e86a4c0",
+      "alias": "manual_screen_charging",
+      "source_name": "manualDefibCharging",
+      "dimensions": [
+        33,
+        8
+      ],
+      "binding": {
+        "prefab_child": "/ManualDefibMinigame/Screen/Charging",
+        "component": {
+          "source_file": "resources.assets",
+          "path_id": 13698,
+          "raw_object_sha256": "510e66a7d4562053c757187708bb0add8cc17949221634c90c9bb859fd805c25"
+        },
+        "rect": {
+          "m_GameObject": {
+            "m_FileID": 0,
+            "m_PathID": 5131
+          },
+          "m_LocalRotation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "w": 1.0
+          },
+          "m_LocalPosition": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "m_LocalScale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "m_Children": [],
+          "m_Father": {
+            "m_FileID": 0,
+            "m_PathID": 11046
+          },
+          "m_AnchorMin": {
+            "x": 0.5,
+            "y": 0.5
+          },
+          "m_AnchorMax": {
+            "x": 0.5,
+            "y": 0.5
+          },
+          "m_AnchoredPosition": {
+            "x": 151.5,
+            "y": 171.0
+          },
+          "m_SizeDelta": {
+            "x": 99.00001525878906,
+            "y": 24.000003814697266
+          },
+          "m_Pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        "color": {
+          "r": 1.0,
+          "g": 1.0,
+          "b": 1.0,
+          "a": 1.0
+        },
+        "preserve_aspect": 0
+      },
+      "destination": "textures/gui/defib/manual_screen_charging.png",
+      "output_sha256": "4613849a42d27dcda1ebec2305d248c1e795c4fa8fc0cc5954cfc8272a852487",
+      "transform": "Original Sprite pixels and full authored canvas; no replacement artwork"
+    },
+    {
+      "source_file": "resources.assets",
+      "path_id": 2857,
+      "raw_object_sha256": "b50a38de67dc6256d49199a22659f7beb88f0a7481ce66b4ced441aaea6f537a",
+      "alias": "manual_dial",
+      "source_name": "manualDefibDial",
+      "dimensions": [
+        50,
+        50
+      ],
+      "binding": {
+        "prefab_child": "/ManualDefibMinigame/Dial",
+        "component": {
+          "source_file": "resources.assets",
+          "path_id": 13098,
+          "raw_object_sha256": "e278aab13da09432914cd46e75adb7719fa26966a3e69e918a23e72460dd94c4"
+        },
+        "rect": {
+          "m_GameObject": {
+            "m_FileID": 0,
+            "m_PathID": 4680
+          },
+          "m_LocalRotation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "w": 1.0
+          },
+          "m_LocalPosition": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "m_LocalScale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "m_Children": [],
+          "m_Father": {
+            "m_FileID": 0,
+            "m_PathID": 11040
+          },
+          "m_AnchorMin": {
+            "x": 0.5,
+            "y": 0.5
+          },
+          "m_AnchorMax": {
+            "x": 0.5,
+            "y": 0.5
+          },
+          "m_AnchoredPosition": {
+            "x": -225.0,
+            "y": -174.0
+          },
+          "m_SizeDelta": {
+            "x": 150.00001525878906,
+            "y": 150.00001525878906
+          },
+          "m_Pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        "color": {
+          "r": 1.0,
+          "g": 1.0,
+          "b": 1.0,
+          "a": 1.0
+        },
+        "preserve_aspect": 0
+      },
+      "destination": "textures/gui/defib/manual_dial.png",
+      "output_sha256": "98308e79360b484b29df8d7785ca8983030ef4a4133a1f69ddaa320953104e0e",
+      "transform": "Original Sprite pixels and full authored canvas; no replacement artwork"
+    },
+    {
+      "source_file": "resources.assets",
+      "path_id": 2815,
+      "raw_object_sha256": "5818c60765e90bcb63a33922e3087aea293303553ec7c7b09af73d2403fc787b",
+      "alias": "manual_charge",
+      "source_name": "manualDefibCharge",
+      "dimensions": [
+        37,
+        37
+      ],
+      "binding": {
+        "prefab_child": "/ManualDefibMinigame/Charge",
+        "component": {
+          "source_file": "resources.assets",
+          "path_id": 12048,
+          "raw_object_sha256": "2db0eafff3c4f2bdadafcc68555da158b8d673dbbef87202a6a8957fada3593c"
+        },
+        "rect": {
+          "m_GameObject": {
+            "m_FileID": 0,
+            "m_PathID": 4963
+          },
+          "m_LocalRotation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "w": 1.0
+          },
+          "m_LocalPosition": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "m_LocalScale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "m_Children": [],
+          "m_Father": {
+            "m_FileID": 0,
+            "m_PathID": 11040
+          },
+          "m_AnchorMin": {
+            "x": 0.5,
+            "y": 0.5
+          },
+          "m_AnchorMax": {
+            "x": 0.5,
+            "y": 0.5
+          },
+          "m_AnchoredPosition": {
+            "x": 8.0,
+            "y": -174.0
+          },
+          "m_SizeDelta": {
+            "x": 111.00001525878906,
+            "y": 111.00001525878906
+          },
+          "m_Pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        "color": {
+          "r": 1.0,
+          "g": 1.0,
+          "b": 1.0,
+          "a": 1.0
+        },
+        "preserve_aspect": 0
+      },
+      "destination": "textures/gui/defib/manual_charge.png",
+      "output_sha256": "a2f1fcc77684156bc2d130d915a3f0f93a019ee346cf284e5c9e34d3da3d8633",
+      "transform": "Original Sprite pixels and full authored canvas; no replacement artwork"
+    },
+    {
+      "source_file": "resources.assets",
+      "path_id": 2178,
+      "raw_object_sha256": "6a33832d4f4e6b404ad3e10dc4eebb4730dae465c10c28a77d491fa739a3b149",
+      "alias": "manual_shock",
+      "source_name": "manualDefibShock",
+      "dimensions": [
+        37,
+        37
+      ],
+      "binding": {
+        "prefab_child": "/ManualDefibMinigame/Shock",
+        "component": {
+          "source_file": "resources.assets",
+          "path_id": 14226,
+          "raw_object_sha256": "3924a3bca27a745bdbc29581ab2bf5680e123599b1709736b8bfe0a650b6cb63"
+        },
+        "rect": {
+          "m_GameObject": {
+            "m_FileID": 0,
+            "m_PathID": 4351
+          },
+          "m_LocalRotation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "w": 1.0
+          },
+          "m_LocalPosition": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "m_LocalScale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "m_Children": [],
+          "m_Father": {
+            "m_FileID": 0,
+            "m_PathID": 11040
+          },
+          "m_AnchorMin": {
+            "x": 0.5,
+            "y": 0.5
+          },
+          "m_AnchorMax": {
+            "x": 0.5,
+            "y": 0.5
+          },
+          "m_AnchoredPosition": {
+            "x": 234.3000030517578,
+            "y": -174.0
+          },
+          "m_SizeDelta": {
+            "x": 111.00001525878906,
+            "y": 111.00001525878906
+          },
+          "m_Pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        "color": {
+          "r": 1.0,
+          "g": 1.0,
+          "b": 1.0,
+          "a": 1.0
+        },
+        "preserve_aspect": 0
+      },
+      "destination": "textures/gui/defib/manual_shock.png",
+      "output_sha256": "ba744a8cd9d045c1744122359fd01db9e56c71c4328ace9a4bae34990203c2de",
+      "transform": "Original Sprite pixels and full authored canvas; no replacement artwork"
+    },
+    {
+      "source_file": "resources.assets",
+      "path_id": 2517,
+      "raw_object_sha256": "16c085907489114cd7b582cea2a729e7ecd3dbfa82fc38d5f59b791c6cb0569c",
+      "alias": "aed_container_line",
+      "source_name": "aedline",
+      "dimensions": [
+        129,
+        128
+      ],
+      "binding": {
+        "prefab_child": "/AEDMinigame/Container/Line",
+        "component": {
+          "source_file": "resources.assets",
+          "path_id": 12342,
+          "raw_object_sha256": "814cac6b9fc066b2331497dbf5144b0dd3a1a826388a092b1d54546d998409f5"
+        },
+        "rect": {
+          "m_GameObject": {
+            "m_FileID": 0,
+            "m_PathID": 3573
+          },
+          "m_LocalRotation": {
+            "x": -0.0,
+            "y": -0.0,
+            "z": -0.0,
+            "w": 1.0
+          },
+          "m_LocalPosition": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "m_LocalScale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "m_Children": [],
+          "m_Father": {
+            "m_FileID": 0,
+            "m_PathID": 11395
+          },
+          "m_AnchorMin": {
+            "x": 0.5,
+            "y": 0.5
+          },
+          "m_AnchorMax": {
+            "x": 0.5,
+            "y": 0.5
+          },
+          "m_AnchoredPosition": {
+            "x": 0.0,
+            "y": 0.0
+          },
+          "m_SizeDelta": {
+            "x": 774.0003051757812,
+            "y": 768.0003051757812
+          },
+          "m_Pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        "color": {
+          "r": 1.0,
+          "g": 1.0,
+          "b": 1.0,
+          "a": 1.0
+        },
+        "preserve_aspect": 0
+      },
+      "destination": "textures/gui/defib/aed_container_line.png",
+      "output_sha256": "9be0db0f03ea0d2f78bc82be52067e5e9879b498d5e1d8c5450946234b41adc8",
+      "transform": "Original Sprite pixels and full authored canvas; no replacement artwork"
+    },
+    {
+      "source_file": "resources.assets",
+      "path_id": 2706,
+      "raw_object_sha256": "b53d6ebf3ac56aac9716b3cd4215d955b796ccc8bf517c0b259585f0e5c6cd21",
+      "alias": "aed_container_line_1",
+      "source_name": "aedsideline",
+      "dimensions": [
+        69,
+        1
+      ],
+      "binding": {
+        "prefab_child": "/AEDMinigame/Container/Line (1)",
+        "component": {
+          "source_file": "resources.assets",
+          "path_id": 12697,
+          "raw_object_sha256": "f166f5e0b84ca1b3c35c9e425c17ce97a54bd0e69624dbf04c52a146ca595c1e"
+        },
+        "rect": {
+          "m_GameObject": {
+            "m_FileID": 0,
+            "m_PathID": 3639
+          },
+          "m_LocalRotation": {
+            "x": -0.0,
+            "y": -0.0,
+            "z": -0.0,
+            "w": 1.0
+          },
+          "m_LocalPosition": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "m_LocalScale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "m_Children": [],
+          "m_Father": {
+            "m_FileID": 0,
+            "m_PathID": 11395
+          },
+          "m_AnchorMin": {
+            "x": 0.5,
+            "y": 0.5
+          },
+          "m_AnchorMax": {
+            "x": 0.5,
+            "y": 0.5
+          },
+          "m_AnchoredPosition": {
+            "x": -209.8000030517578,
+            "y": 155.1999969482422
+          },
+          "m_SizeDelta": {
+            "x": 414.00018310546875,
+            "y": 60.0
+          },
+          "m_Pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        "color": {
+          "r": 1.0,
+          "g": 1.0,
+          "b": 1.0,
+          "a": 0.6666666865348816
+        },
+        "preserve_aspect": 0
+      },
+      "destination": "textures/gui/defib/aed_container_line_1.png",
+      "output_sha256": "0f9974485c72b3d6ab6668bb189acba4777a416e4788b0734a1f356853f6aa99",
+      "transform": "Original Sprite pixels and full authored canvas; no replacement artwork"
+    },
+    {
+      "source_file": "resources.assets",
+      "path_id": 2706,
+      "raw_object_sha256": "b53d6ebf3ac56aac9716b3cd4215d955b796ccc8bf517c0b259585f0e5c6cd21",
+      "alias": "aed_container_line_2",
+      "source_name": "aedsideline",
+      "dimensions": [
+        69,
+        1
+      ],
+      "binding": {
+        "prefab_child": "/AEDMinigame/Container/Line (2)",
+        "component": {
+          "source_file": "resources.assets",
+          "path_id": 12288,
+          "raw_object_sha256": "674e0bb9d8f9df507735ec63fa4fa6c618988e9e1fd1a1b3300d176702cbcadd"
+        },
+        "rect": {
+          "m_GameObject": {
+            "m_FileID": 0,
+            "m_PathID": 3617
+          },
+          "m_LocalRotation": {
+            "x": -0.0,
+            "y": -0.0,
+            "z": -0.0,
+            "w": 1.0
+          },
+          "m_LocalPosition": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "m_LocalScale": {
+            "x": -1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "m_Children": [],
+          "m_Father": {
+            "m_FileID": 0,
+            "m_PathID": 11395
+          },
+          "m_AnchorMin": {
+            "x": 0.5,
+            "y": 0.5
+          },
+          "m_AnchorMax": {
+            "x": 0.5,
+            "y": 0.5
+          },
+          "m_AnchoredPosition": {
+            "x": 209.89999389648438,
+            "y": -141.8000030517578
+          },
+          "m_SizeDelta": {
+            "x": 414.00018310546875,
+            "y": 60.00001907348633
+          },
+          "m_Pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        "color": {
+          "r": 1.0,
+          "g": 1.0,
+          "b": 1.0,
+          "a": 0.6666666865348816
+        },
+        "preserve_aspect": 0
+      },
+      "destination": "textures/gui/defib/aed_container_line_2.png",
+      "output_sha256": "0f9974485c72b3d6ab6668bb189acba4777a416e4788b0734a1f356853f6aa99",
+      "transform": "Original Sprite pixels and full authored canvas; no replacement artwork"
+    },
+    {
+      "source_file": "resources.assets",
+      "path_id": 2434,
+      "raw_object_sha256": "e0b74da674ca64590ac26711648beb4fcb31fbb0b87977c6f102eb70af1025fa",
+      "alias": "aed_pad1",
+      "source_name": "aedpad1",
+      "dimensions": [
+        89,
+        114
+      ],
+      "binding": {
+        "prefab_child": "/AEDMinigame/Pad1",
+        "component": {
+          "source_file": "resources.assets",
+          "path_id": 12888,
+          "raw_object_sha256": "47751ca6df09f85c5c2f166c519970af6ec41fb9a5fe52e5e17c94f316402c84"
+        },
+        "rect": {
+          "m_GameObject": {
+            "m_FileID": 0,
+            "m_PathID": 3572
+          },
+          "m_LocalRotation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "w": 1.0
+          },
+          "m_LocalPosition": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "m_LocalScale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "m_Children": [],
+          "m_Father": {
+            "m_FileID": 0,
+            "m_PathID": 11279
+          },
+          "m_AnchorMin": {
+            "x": 0.5,
+            "y": 0.5
+          },
+          "m_AnchorMax": {
+            "x": 0.5,
+            "y": 0.5
+          },
+          "m_AnchoredPosition": {
+            "x": 0.0,
+            "y": 153.0
+          },
+          "m_SizeDelta": {
+            "x": 267.0000305175781,
+            "y": 342.00006103515625
+          },
+          "m_Pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        "color": {
+          "r": 1.0,
+          "g": 1.0,
+          "b": 1.0,
+          "a": 1.0
+        },
+        "preserve_aspect": 0
+      },
+      "destination": "textures/gui/defib/aed_pad1.png",
+      "output_sha256": "bc0ea130698650f858dbfb054669124d7bb678707afb922fe1e34b832254a061",
+      "transform": "Original Sprite pixels and full authored canvas; no replacement artwork"
+    },
+    {
+      "source_file": "resources.assets",
+      "path_id": 2822,
+      "raw_object_sha256": "25481629f3e743aa30e7bb464bae6458b59dd93f3585dc5d60e2922d4e5b550d",
+      "alias": "aed_pad2",
+      "source_name": "aedpad2",
+      "dimensions": [
+        89,
+        92
+      ],
+      "binding": {
+        "prefab_child": "/AEDMinigame/Pad2",
+        "component": {
+          "source_file": "resources.assets",
+          "path_id": 14244,
+          "raw_object_sha256": "7a15668e35212e7487215a569466d323e43a6c86d1711d10905b3557b4b847fc"
+        },
+        "rect": {
+          "m_GameObject": {
+            "m_FileID": 0,
+            "m_PathID": 5324
+          },
+          "m_LocalRotation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "w": 1.0
+          },
+          "m_LocalPosition": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "m_LocalScale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "m_Children": [],
+          "m_Father": {
+            "m_FileID": 0,
+            "m_PathID": 11279
+          },
+          "m_AnchorMin": {
+            "x": 0.5,
+            "y": 0.5
+          },
+          "m_AnchorMax": {
+            "x": 0.5,
+            "y": 0.5
+          },
+          "m_AnchoredPosition": {
+            "x": 0.0,
+            "y": -141.0
+          },
+          "m_SizeDelta": {
+            "x": 267.0000305175781,
+            "y": 276.0000305175781
+          },
+          "m_Pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        "color": {
+          "r": 1.0,
+          "g": 1.0,
+          "b": 1.0,
+          "a": 1.0
+        },
+        "preserve_aspect": 0
+      },
+      "destination": "textures/gui/defib/aed_pad2.png",
+      "output_sha256": "3807755d66cbd8ee9887c579cf8c90767a9cb16d9c851e4cefa10bb981e08cbd",
+      "transform": "Original Sprite pixels and full authored canvas; no replacement artwork"
+    },
+    {
+      "source_file": "resources.assets",
+      "path_id": 2482,
+      "raw_object_sha256": "424c277ee7da50a076797864c6d96d4cfe2ffbed29817d2990fff7d342036baa",
+      "alias": "aed_shock",
+      "source_name": "aedbutton",
+      "dimensions": [
+        47,
+        47
+      ],
+      "binding": {
+        "prefab_child": "/AEDMinigame/Shock",
+        "component": {
+          "source_file": "resources.assets",
+          "path_id": 14322,
+          "raw_object_sha256": "107e7784c633b3f1b96afe95974248f153c3c4d50190f54f94c05a0d00fa668a"
+        },
+        "rect": {
+          "m_GameObject": {
+            "m_FileID": 0,
+            "m_PathID": 5173
+          },
+          "m_LocalRotation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "w": 1.0
+          },
+          "m_LocalPosition": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "m_LocalScale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "m_Children": [],
+          "m_Father": {
+            "m_FileID": 0,
+            "m_PathID": 11279
+          },
+          "m_AnchorMin": {
+            "x": 0.5,
+            "y": 0.5
+          },
+          "m_AnchorMax": {
+            "x": 0.5,
+            "y": 0.5
+          },
+          "m_AnchoredPosition": {
+            "x": 0.0,
+            "y": -421.0
+          },
+          "m_SizeDelta": {
+            "x": 141.00001525878906,
+            "y": 141.00001525878906
+          },
+          "m_Pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        "color": {
+          "r": 1.0,
+          "g": 1.0,
+          "b": 1.0,
+          "a": 1.0
+        },
+        "preserve_aspect": 0
+      },
+      "destination": "textures/gui/defib/aed_shock.png",
+      "output_sha256": "3b715e5815e35af194ab0a54f8e5915e037a0b62f0d58c8ed110ea7619136458",
+      "transform": "Original Sprite pixels and full authored canvas; no replacement artwork"
+    },
+    {
+      "source_file": "sharedassets1.assets",
+      "path_id": 403,
+      "raw_object_sha256": "f213093e7ed1c1a01a4a0c59f00b0dc90194f20cc88907d2bbd07782781ef666",
+      "alias": "hand_0",
+      "source_name": "handGraspIdle1alt",
+      "dimensions": [
+        256,
+        630
+      ],
+      "binding": {
+        "MinigameBase": {
+          "source_file": "level1",
+          "path_id": 1654,
+          "raw_object_sha256": "4adbb4ee4bc157a885c252a8b98a547a03ea4758b7e6aa313fdc06d1c8be3a8a"
+        },
+        "field": "handSpritesFurless",
+        "index": 0
+      },
+      "destination": "textures/gui/defib/hand_0.png",
+      "output_sha256": "ebd96611ac6336d1a265afb4cc072ce58a3eaf704fbc84a489ea80fd736e08d6",
+      "transform": "Original Sprite pixels and full authored canvas; no replacement artwork"
+    },
+    {
+      "source_file": "sharedassets1.assets",
+      "path_id": 513,
+      "raw_object_sha256": "5d1e5eb5d3fed4fe6ddfeaddf8bc1ccffa1bcbbb0b7ea43c87629eeadffdd999",
+      "alias": "hand_1",
+      "source_name": "handGraspIdle2alt",
+      "dimensions": [
+        256,
+        630
+      ],
+      "binding": {
+        "MinigameBase": {
+          "source_file": "level1",
+          "path_id": 1654,
+          "raw_object_sha256": "4adbb4ee4bc157a885c252a8b98a547a03ea4758b7e6aa313fdc06d1c8be3a8a"
+        },
+        "field": "handSpritesFurless",
+        "index": 1
+      },
+      "destination": "textures/gui/defib/hand_1.png",
+      "output_sha256": "5effb30587982afdbb40dcae780afc08cad943b8095b43639875ea4787dfc67b",
+      "transform": "Original Sprite pixels and full authored canvas; no replacement artwork"
+    },
+    {
+      "source_file": "sharedassets1.assets",
+      "path_id": 510,
+      "raw_object_sha256": "b5205ce9e66ce074b59480f593fa995958f3600abf5facd393ce10d1eb61d30e",
+      "alias": "hand_2",
+      "source_name": "handGraspClickalt",
+      "dimensions": [
+        256,
+        630
+      ],
+      "binding": {
+        "MinigameBase": {
+          "source_file": "level1",
+          "path_id": 1654,
+          "raw_object_sha256": "4adbb4ee4bc157a885c252a8b98a547a03ea4758b7e6aa313fdc06d1c8be3a8a"
+        },
+        "field": "handSpritesFurless",
+        "index": 2
+      },
+      "destination": "textures/gui/defib/hand_2.png",
+      "output_sha256": "6870d79204f12ab1b1ef50c612da986e1414d4588f980c5056757c248ce527b5",
+      "transform": "Original Sprite pixels and full authored canvas; no replacement artwork"
+    },
+    {
+      "source_file": "sharedassets1.assets",
+      "path_id": 458,
+      "raw_object_sha256": "33e38e5cfd9e779d2309d8cd4018717ff926503eb1bd805d9b4b0447d4a10742",
+      "alias": "hand_3",
+      "source_name": "handPointIdle1alt",
+      "dimensions": [
+        256,
+        630
+      ],
+      "binding": {
+        "MinigameBase": {
+          "source_file": "level1",
+          "path_id": 1654,
+          "raw_object_sha256": "4adbb4ee4bc157a885c252a8b98a547a03ea4758b7e6aa313fdc06d1c8be3a8a"
+        },
+        "field": "handSpritesFurless",
+        "index": 3
+      },
+      "destination": "textures/gui/defib/hand_3.png",
+      "output_sha256": "7d023ce7fde866c6ec3f05cd6bb62912940808d21cc464d9a2579fa0ed173d87",
+      "transform": "Original Sprite pixels and full authored canvas; no replacement artwork"
+    },
+    {
+      "source_file": "sharedassets1.assets",
+      "path_id": 505,
+      "raw_object_sha256": "3bfe274c01cef36a83e33d8af6413ffe1d3b47c4f0aca322d9ea7e89a8c85434",
+      "alias": "hand_4",
+      "source_name": "handPointIdle2alt",
+      "dimensions": [
+        256,
+        630
+      ],
+      "binding": {
+        "MinigameBase": {
+          "source_file": "level1",
+          "path_id": 1654,
+          "raw_object_sha256": "4adbb4ee4bc157a885c252a8b98a547a03ea4758b7e6aa313fdc06d1c8be3a8a"
+        },
+        "field": "handSpritesFurless",
+        "index": 4
+      },
+      "destination": "textures/gui/defib/hand_4.png",
+      "output_sha256": "017a285a5be2c5562a6168cf6a7c90d8b36df86267f649bb7e7d058e485765c6",
+      "transform": "Original Sprite pixels and full authored canvas; no replacement artwork"
+    },
+    {
+      "source_file": "sharedassets1.assets",
+      "path_id": 469,
+      "raw_object_sha256": "989594b4b52fcac32b77f148c2003b2be28b180a55cba3ff4cc54f63f37dc0f3",
+      "alias": "hand_5",
+      "source_name": "handPointClickalt",
+      "dimensions": [
+        256,
+        630
+      ],
+      "binding": {
+        "MinigameBase": {
+          "source_file": "level1",
+          "path_id": 1654,
+          "raw_object_sha256": "4adbb4ee4bc157a885c252a8b98a547a03ea4758b7e6aa313fdc06d1c8be3a8a"
+        },
+        "field": "handSpritesFurless",
+        "index": 5
+      },
+      "destination": "textures/gui/defib/hand_5.png",
+      "output_sha256": "cf135229fac4691c9804a3e8e0d6ed744ecedf5631f47820afba6d5450bc313e",
+      "transform": "Original Sprite pixels and full authored canvas; no replacement artwork"
+    },
+    {
+      "source_file": "sharedassets1.assets",
+      "path_id": 377,
+      "raw_object_sha256": "5dbdee37a35eeb0ff624e002d3794f073d9eaa2acc134b234314eeb32eea08d1",
+      "alias": "base_minigamescreen",
+      "source_name": "uigradientblack",
+      "dimensions": [
+        256,
+        256
+      ],
+      "binding": {
+        "prefab_child": "base/MinigameScreen",
+        "component": {
+          "source_file": "level1",
+          "path_id": 1660,
+          "raw_object_sha256": "29c1c19399954007cd07dc1ae60c07bbae2f3042a41283be9db4b9732219a88b"
+        },
+        "rect": {
+          "m_GameObject": {
+            "m_FileID": 0,
+            "m_PathID": 94
+          },
+          "m_LocalRotation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "w": 1.0
+          },
+          "m_LocalPosition": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "m_LocalScale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "m_Children": [
+            {
+              "m_FileID": 0,
+              "m_PathID": 1044
+            },
+            {
+              "m_FileID": 0,
+              "m_PathID": 1204
+            },
+            {
+              "m_FileID": 0,
+              "m_PathID": 1039
+            },
+            {
+              "m_FileID": 0,
+              "m_PathID": 1085
+            },
+            {
+              "m_FileID": 0,
+              "m_PathID": 1418
+            },
+            {
+              "m_FileID": 0,
+              "m_PathID": 1380
+            },
+            {
+              "m_FileID": 0,
+              "m_PathID": 1091
+            },
+            {
+              "m_FileID": 0,
+              "m_PathID": 1308
+            }
+          ],
+          "m_Father": {
+            "m_FileID": 0,
+            "m_PathID": 1075
+          },
+          "m_AnchorMin": {
+            "x": 0.5,
+            "y": 0.5
+          },
+          "m_AnchorMax": {
+            "x": 0.5,
+            "y": 0.5
+          },
+          "m_AnchoredPosition": {
+            "x": 0.0,
+            "y": 0.0
+          },
+          "m_SizeDelta": {
+            "x": 1047.697265625,
+            "y": 1047.697265625
+          },
+          "m_Pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        "color": {
+          "r": 1.0,
+          "g": 1.0,
+          "b": 1.0,
+          "a": 1.0
+        },
+        "preserve_aspect": 0
+      },
+      "destination": "textures/gui/defib/base_minigamescreen.png",
+      "output_sha256": "df4b1aa61a2e2c7f68ae793e28db83841164b77f2de1d1795584bafe998044b9",
+      "transform": "Original Sprite pixels and full authored canvas; no replacement artwork"
+    },
+    {
+      "source_file": "resources.assets",
+      "path_id": 2278,
+      "raw_object_sha256": "d0f70b0737d183c5417f33bdb8e1449176facc738becffe8bda49220d8ad4cac",
+      "alias": "device_manual_defibrillator",
+      "source_name": "manualdefibrillator",
+      "dimensions": [
+        14,
+        10
+      ],
+      "binding": {
+        "native_Item": {
+          "source_file": "resources.assets",
+          "path_id": 12148,
+          "raw_object_sha256": "137e9c9fbbce40ee5b39961cdd10743525cddc05e87ab818903dafef043ea263"
+        },
+        "id": "manualdefibrillator",
+        "renderer": {
+          "source_file": "resources.assets",
+          "path_id": 10234,
+          "raw_object_sha256": "d09a7321f3558268a10a465203257505ab258241ae32fb7ac559fb436bf5ac66"
+        }
+      },
+      "destination": "textures/gui/defib/device_manual_defibrillator.png",
+      "output_sha256": "c54ddd870557d81f9778dbaf9423d3abcf0d9b625be5acf03fea390fa83d629b",
+      "transform": "Original Sprite pixels and full authored canvas; no replacement artwork"
+    },
+    {
+      "source_file": "resources.assets",
+      "path_id": 2278,
+      "raw_object_sha256": "d0f70b0737d183c5417f33bdb8e1449176facc738becffe8bda49220d8ad4cac",
+      "alias": "inventory_manual_defibrillator",
+      "source_name": "manualdefibrillator",
+      "dimensions": [
+        16,
+        16
+      ],
+      "binding": {
+        "native_Item": {
+          "source_file": "resources.assets",
+          "path_id": 12148,
+          "raw_object_sha256": "137e9c9fbbce40ee5b39961cdd10743525cddc05e87ab818903dafef043ea263"
+        },
+        "id": "manualdefibrillator",
+        "renderer": {
+          "source_file": "resources.assets",
+          "path_id": 10234,
+          "raw_object_sha256": "d09a7321f3558268a10a465203257505ab258241ae32fb7ac559fb436bf5ac66"
+        }
+      },
+      "destination": "textures/item/manual_defibrillator.png",
+      "output_sha256": "a6bb57f3bc91d8c924ae1d0147998ab337297530aecc5bf1923e176d49e9332c",
+      "transform": "Native CU Item/Sprite; integer nearest-neighbour scale and transparent Minecraft item canvas padding"
+    },
+    {
+      "source_file": "resources.assets",
+      "path_id": 3121,
+      "raw_object_sha256": "b65f4b6682c6555cc9f3b4f2beab0fee3a8117fe9c2d3c78efb1eb38dfcf3f68",
+      "alias": "device_aed",
+      "source_name": "aed",
+      "dimensions": [
+        12,
+        12
+      ],
+      "binding": {
+        "native_Item": {
+          "source_file": "resources.assets",
+          "path_id": 12561,
+          "raw_object_sha256": "d96bcc0f0115ff87a6d883e23064c16125be6b9f07314c4aaf9cd972e4aca291"
+        },
+        "id": "aed",
+        "renderer": {
+          "source_file": "resources.assets",
+          "path_id": 9415,
+          "raw_object_sha256": "bd16a522cdcf0e927b16c388643ac0bc8daa5403e390ab1987b31f2ff6faf023"
+        }
+      },
+      "destination": "textures/gui/defib/device_aed.png",
+      "output_sha256": "0a3d2bd2c3794d9849cec5b3bb5f214ac98dc61906f7eaa8fe86b66cd9b9fd11",
+      "transform": "Original Sprite pixels and full authored canvas; no replacement artwork"
+    },
+    {
+      "source_file": "resources.assets",
+      "path_id": 3121,
+      "raw_object_sha256": "b65f4b6682c6555cc9f3b4f2beab0fee3a8117fe9c2d3c78efb1eb38dfcf3f68",
+      "alias": "inventory_aed",
+      "source_name": "aed",
+      "dimensions": [
+        16,
+        16
+      ],
+      "binding": {
+        "native_Item": {
+          "source_file": "resources.assets",
+          "path_id": 12561,
+          "raw_object_sha256": "d96bcc0f0115ff87a6d883e23064c16125be6b9f07314c4aaf9cd972e4aca291"
+        },
+        "id": "aed",
+        "renderer": {
+          "source_file": "resources.assets",
+          "path_id": 9415,
+          "raw_object_sha256": "bd16a522cdcf0e927b16c388643ac0bc8daa5403e390ab1987b31f2ff6faf023"
+        }
+      },
+      "destination": "textures/item/aed.png",
+      "output_sha256": "c21295e2c241922b569621c3708cfd15a3a2fd1236739cbab09b6e84169e12ea",
+      "transform": "Native CU Item/Sprite; integer nearest-neighbour scale and transparent Minecraft item canvas padding"
+    }
+  ],
+  "sounds": [
+    {
+      "source_file": "resources.assets",
+      "path_id": 1582,
+      "raw_object_sha256": "90307abb69111c77554fbce9fb61c4562d98594d176804fd241c5feb76b95103",
+      "alias": "aedstart",
+      "binding": "Sound.Play -> Resources.Load<AudioClip>(Sounds/aedstart)",
+      "destination": "sounds/cu_aedstart.ogg",
+      "native_sample_sha256": "615b82a296267b7000b22a0548e08656d5a039461304ec66b10f3541e14d0c5d",
+      "output_sha256": "58d2f156f20c24fb46e58e365abdae114a5cee72d64dbfa2a7da433b806942d7",
+      "sample_rate": 44100,
+      "frames": 22852,
+      "channels": 2,
+      "transform": "Decoded native samples encoded as Minecraft OGG/Vorbis; rate/channels/frame count unchanged"
+    },
+    {
+      "source_file": "resources.assets",
+      "path_id": 1607,
+      "raw_object_sha256": "a5baa63ede9a9d092960835ed44569a23cee8330704e8aca7b211eba7f26ace6",
+      "alias": "aedcharge",
+      "binding": "Sound.Play -> Resources.Load<AudioClip>(Sounds/aedcharge)",
+      "destination": "sounds/cu_aedcharge.ogg",
+      "native_sample_sha256": "8393b73f9d25db868aea8a8742cefe97ba26419dfc393c862174da11e064d1cf",
+      "output_sha256": "c4f72ee67edc109fa3453d90d1c760adcda5259626424a5644490b4b0bdeb672",
+      "sample_rate": 44100,
+      "frames": 182113,
+      "channels": 2,
+      "transform": "Decoded native samples encoded as Minecraft OGG/Vorbis; rate/channels/frame count unchanged"
+    },
+    {
+      "source_file": "resources.assets",
+      "path_id": 1640,
+      "raw_object_sha256": "8b34dbe38eab232be235d105c71eb260c3fc6fd589488752959a7054ecc42352",
+      "alias": "manualdefib",
+      "binding": "Sound.Play -> Resources.Load<AudioClip>(Sounds/manualdefib)",
+      "destination": "sounds/cu_manualdefib.ogg",
+      "native_sample_sha256": "634b12d9d91a1b75767c755b71d5c7656fc05bb9eba102f762799262a16908f6",
+      "output_sha256": "76a32509999333b787c49e86bb036b34cab9565673e1b025c1a5e77c77debcec",
+      "sample_rate": 44100,
+      "frames": 26501,
+      "channels": 2,
+      "transform": "Decoded native samples encoded as Minecraft OGG/Vorbis; rate/channels/frame count unchanged"
+    },
+    {
+      "source_file": "resources.assets",
+      "path_id": 1647,
+      "raw_object_sha256": "daa0646c71b20ce5727eea0e2023cc4f18e6a62b05c5b26ad5e4638f527136c8",
+      "alias": "aedanalyze",
+      "binding": "Sound.Play -> Resources.Load<AudioClip>(Sounds/aedanalyze)",
+      "destination": "sounds/cu_aedanalyze.ogg",
+      "native_sample_sha256": "de4eb2128ab27451ea1e27a4d71e4340646f8ed725de4bde8d0c152c1fe7ff2c",
+      "output_sha256": "b0007c55c0573dc28e76a321e64ace9530c053989e7abc57199347ce479db393",
+      "sample_rate": 44100,
+      "frames": 201582,
+      "channels": 2,
+      "transform": "Decoded native samples encoded as Minecraft OGG/Vorbis; rate/channels/frame count unchanged"
+    },
+    {
+      "source_file": "resources.assets",
+      "path_id": 1756,
+      "raw_object_sha256": "71235e7333ab650f9f6d41dfdfde83019312a2807cae84705b335c2475a2081b",
+      "alias": "aedfail",
+      "binding": "Sound.Play -> Resources.Load<AudioClip>(Sounds/aedfail)",
+      "destination": "sounds/cu_aedfail.ogg",
+      "native_sample_sha256": "30d4dc63b3c1a8a5a98dc8eab839bd37fc4a574804da5ed34227550a4541db65",
+      "output_sha256": "f0c4e6355b81c303da6a22d957ec7b4e07ee6c1e9a9a410299fed68a3e679274",
+      "sample_rate": 44100,
+      "frames": 23204,
+      "channels": 2,
+      "transform": "Decoded native samples encoded as Minecraft OGG/Vorbis; rate/channels/frame count unchanged"
+    }
+  ],
+  "layout": {
+    "/ManualDefibMinigame": {
+      "position": [
+        0.0,
+        0.0
+      ],
+      "size": {
+        "x": 0.0,
+        "y": 0.0
+      },
+      "game_object": {
+        "source_file": "resources.assets",
+        "path_id": 4150,
+        "raw_object_sha256": "7a679632a82b81a1a429f259b921a3f965aff29746ae2db0c903088dcc86858a"
+      }
+    },
+    "/ManualDefibMinigame/Screen": {
+      "position": [
+        0.0,
+        33.0
+      ],
+      "size": {
+        "x": 768.0001220703125,
+        "y": 660.0001220703125
+      },
+      "game_object": {
+        "source_file": "resources.assets",
+        "path_id": 5086,
+        "raw_object_sha256": "5c101715786a66181f771307096a242e554f3aec67668f743e3bb2ae49b0917e"
+      },
+      "sprite": "manual_screen"
+    },
+    "/ManualDefibMinigame/Screen/ShockCount": {
+      "position": [
+        -220.58619689941406,
+        214.60000610351562
+      ],
+      "size": {
+        "x": 50.91640090942383,
+        "y": 50.0
+      },
+      "game_object": {
+        "source_file": "resources.assets",
+        "path_id": 4410,
+        "raw_object_sha256": "8a202f0b9d9edfe2476d73178e01de86c994ff234757d15ea45a72c475c56647"
+      },
+      "text": {
+        "m_text": "0",
+        "m_fontSize": 33.33300018310547,
+        "m_fontAsset": {
+          "m_FileID": 3,
+          "m_PathID": 210
+        },
+        "m_characterSpacing": 0.0,
+        "m_fontStyle": 0,
+        "m_fontWeight": 400,
+        "m_Color": {
+          "r": 1.0,
+          "g": 1.0,
+          "b": 1.0,
+          "a": 1.0
+        },
+        "m_HorizontalAlignment": 2,
+        "m_VerticalAlignment": 512,
+        "m_enableAutoSizing": 0
+      }
+    },
+    "/ManualDefibMinigame/Screen/ChargeCurrent": {
+      "position": [
+        -76.4000015258789,
+        214.60000610351562
+      ],
+      "size": {
+        "x": 50.91640090942383,
+        "y": 50.0
+      },
+      "game_object": {
+        "source_file": "resources.assets",
+        "path_id": 4424,
+        "raw_object_sha256": "e46ec322182ae6d17f3afff8d41e9e347faef91934c2526903b10e23fe514ad1"
+      },
+      "text": {
+        "m_text": "0",
+        "m_fontSize": 33.33300018310547,
+        "m_fontAsset": {
+          "m_FileID": 3,
+          "m_PathID": 210
+        },
+        "m_characterSpacing": 0.0,
+        "m_fontStyle": 0,
+        "m_fontWeight": 400,
+        "m_Color": {
+          "r": 1.0,
+          "g": 1.0,
+          "b": 1.0,
+          "a": 1.0
+        },
+        "m_HorizontalAlignment": 4,
+        "m_VerticalAlignment": 512,
+        "m_enableAutoSizing": 0
+      }
+    },
+    "/ManualDefibMinigame/Screen/ChargeMax": {
+      "position": [
+        8.5,
+        214.60000610351562
+      ],
+      "size": {
+        "x": 50.91640090942383,
+        "y": 50.0
+      },
+      "game_object": {
+        "source_file": "resources.assets",
+        "path_id": 5214,
+        "raw_object_sha256": "e2086ffd3874cebe29d7e58a6a6b2f1bacf709f81f376e413c3f246cd21750f5"
+      },
+      "text": {
+        "m_text": "200",
+        "m_fontSize": 33.33300018310547,
+        "m_fontAsset": {
+          "m_FileID": 3,
+          "m_PathID": 210
+        },
+        "m_characterSpacing": 0.0,
+        "m_fontStyle": 0,
+        "m_fontWeight": 400,
+        "m_Color": {
+          "r": 1.0,
+          "g": 1.0,
+          "b": 1.0,
+          "a": 1.0
+        },
+        "m_HorizontalAlignment": 1,
+        "m_VerticalAlignment": 512,
+        "m_enableAutoSizing": 0
+      }
+    },
+    "/ManualDefibMinigame/Screen/Battery": {
+      "position": [
+        232.5,
+        214.5
+      ],
+      "size": {
+        "x": 39.00000762939453,
+        "y": 27.000003814697266
+      },
+      "game_object": {
+        "source_file": "resources.assets",
+        "path_id": 4531,
+        "raw_object_sha256": "ec618d45a2d3ccce1a62c057ff500293fc0c2d503105cf75c7a5f53e92e934c1"
+      },
+      "sprite": "manual_screen_battery"
+    },
+    "/ManualDefibMinigame/Screen/ECG": {
+      "position": [
+        -84.00133514404297,
+        127.49870300292969
+      ],
+      "size": {
+        "x": 366.0,
+        "y": 123.0
+      },
+      "game_object": {
+        "source_file": "resources.assets",
+        "path_id": 4438,
+        "raw_object_sha256": "53108aedb3913a39a0032b9650fffb54de0a4d5db45ee5f4a0e27befd858654c"
+      }
+    },
+    "/ManualDefibMinigame/Screen/BPM": {
+      "position": [
+        183.8000030517578,
+        127.4990005493164
+      ],
+      "size": {
+        "x": 50.91640090942383,
+        "y": 50.0
+      },
+      "game_object": {
+        "source_file": "resources.assets",
+        "path_id": 3649,
+        "raw_object_sha256": "fc777ebbfa0475f70269f1eb24615eeee1149edbcee1fe9afe3ce3a048e5ca6f"
+      },
+      "text": {
+        "m_text": "200",
+        "m_fontSize": 66.66666412353516,
+        "m_fontAsset": {
+          "m_FileID": 3,
+          "m_PathID": 210
+        },
+        "m_characterSpacing": 0.0,
+        "m_fontStyle": 0,
+        "m_fontWeight": 400,
+        "m_Color": {
+          "r": 1.0,
+          "g": 1.0,
+          "b": 1.0,
+          "a": 1.0
+        },
+        "m_HorizontalAlignment": 2,
+        "m_VerticalAlignment": 512,
+        "m_enableAutoSizing": 0
+      }
+    },
+    "/ManualDefibMinigame/Screen/Estimate": {
+      "position": [
+        -157.5,
+        19.0
+      ],
+      "size": {
+        "x": 162.73629760742188,
+        "y": 50.0
+      },
+      "game_object": {
+        "source_file": "resources.assets",
+        "path_id": 5264,
+        "raw_object_sha256": "a1ca409bcfff10ce4e15b7275b7686dde47693a5fb7c48b5d39e57db41be9a14"
+      },
+      "text": {
+        "m_text": "74-184",
+        "m_fontSize": 33.33333206176758,
+        "m_fontAsset": {
+          "m_FileID": 3,
+          "m_PathID": 210
+        },
+        "m_characterSpacing": 0.0,
+        "m_fontStyle": 0,
+        "m_fontWeight": 400,
+        "m_Color": {
+          "r": 1.0,
+          "g": 1.0,
+          "b": 1.0,
+          "a": 1.0
+        },
+        "m_HorizontalAlignment": 1,
+        "m_VerticalAlignment": 512,
+        "m_enableAutoSizing": 0
+      }
+    },
+    "/ManualDefibMinigame/Screen/ChargeCurrentTheSecond": {
+      "position": [
+        -157.5,
+        -40.30000305175781
+      ],
+      "size": {
+        "x": 162.73629760742188,
+        "y": 50.0
+      },
+      "game_object": {
+        "source_file": "resources.assets",
+        "path_id": 4375,
+        "raw_object_sha256": "3358a4e9b8137fc100c98d20376675a5b7846f1cab1125629e9d8476c59ee05a"
+      },
+      "text": {
+        "m_text": "200",
+        "m_fontSize": 33.33333206176758,
+        "m_fontAsset": {
+          "m_FileID": 3,
+          "m_PathID": 210
+        },
+        "m_characterSpacing": 0.0,
+        "m_fontStyle": 0,
+        "m_fontWeight": 400,
+        "m_Color": {
+          "r": 1.0,
+          "g": 1.0,
+          "b": 1.0,
+          "a": 1.0
+        },
+        "m_HorizontalAlignment": 1,
+        "m_VerticalAlignment": 512,
+        "m_enableAutoSizing": 0
+      }
+    },
+    "/ManualDefibMinigame/Screen/Pressure": {
+      "position": [
+        119.4000015258789,
+        30.5
+      ],
+      "size": {
+        "x": 162.73629760742188,
+        "y": 50.0
+      },
+      "game_object": {
+        "source_file": "resources.assets",
+        "path_id": 3735,
+        "raw_object_sha256": "9bdfc8f99642b03e5789088ea868db69600e274995127c392f9591e896d0f0b6"
+      },
+      "text": {
+        "m_text": "120/80",
+        "m_fontSize": 33.33333206176758,
+        "m_fontAsset": {
+          "m_FileID": 3,
+          "m_PathID": 210
+        },
+        "m_characterSpacing": 0.0,
+        "m_fontStyle": 0,
+        "m_fontWeight": 400,
+        "m_Color": {
+          "r": 1.0,
+          "g": 1.0,
+          "b": 1.0,
+          "a": 1.0
+        },
+        "m_HorizontalAlignment": 1,
+        "m_VerticalAlignment": 512,
+        "m_enableAutoSizing": 0
+      }
+    },
+    "/ManualDefibMinigame/Screen/Oxygen": {
+      "position": [
+        119.4000015258789,
+        -33.30000305175781
+      ],
+      "size": {
+        "x": 162.73629760742188,
+        "y": 50.0
+      },
+      "game_object": {
+        "source_file": "resources.assets",
+        "path_id": 4422,
+        "raw_object_sha256": "614d0d9d55816a414be23725c9203e387eedb83bc397f27b019eae9ddf9a69b8"
+      },
+      "text": {
+        "m_text": "100%",
+        "m_fontSize": 33.33333206176758,
+        "m_fontAsset": {
+          "m_FileID": 3,
+          "m_PathID": 210
+        },
+        "m_characterSpacing": 0.0,
+        "m_fontStyle": 0,
+        "m_fontWeight": 400,
+        "m_Color": {
+          "r": 1.0,
+          "g": 1.0,
+          "b": 1.0,
+          "a": 1.0
+        },
+        "m_HorizontalAlignment": 1,
+        "m_VerticalAlignment": 512,
+        "m_enableAutoSizing": 0
+      }
+    },
+    "/ManualDefibMinigame/Screen/Charging": {
+      "position": [
+        151.5,
+        204.0
+      ],
+      "size": {
+        "x": 99.00001525878906,
+        "y": 24.000003814697266
+      },
+      "game_object": {
+        "source_file": "resources.assets",
+        "path_id": 5131,
+        "raw_object_sha256": "ae3da3d34260668ee77a27a7d7692e7ac241e9b1942e5a4309b619b56fd692db"
+      },
+      "sprite": "manual_screen_charging"
+    },
+    "/ManualDefibMinigame/Dial": {
+      "position": [
+        -225.0,
+        -174.0
+      ],
+      "size": {
+        "x": 150.00001525878906,
+        "y": 150.00001525878906
+      },
+      "game_object": {
+        "source_file": "resources.assets",
+        "path_id": 4680,
+        "raw_object_sha256": "1fe4bb0bd3b774dcbb5f1a40e1e0be1460c89fb161b36196357e44fbdc31385a"
+      },
+      "sprite": "manual_dial"
+    },
+    "/ManualDefibMinigame/Charge": {
+      "position": [
+        8.0,
+        -174.0
+      ],
+      "size": {
+        "x": 111.00001525878906,
+        "y": 111.00001525878906
+      },
+      "game_object": {
+        "source_file": "resources.assets",
+        "path_id": 4963,
+        "raw_object_sha256": "0a34ded50c2b5ec3d3597a59d5d0a618f26989c251c69c43fb4622585f3421ba"
+      },
+      "sprite": "manual_charge"
+    },
+    "/ManualDefibMinigame/Shock": {
+      "position": [
+        234.3000030517578,
+        -174.0
+      ],
+      "size": {
+        "x": 111.00001525878906,
+        "y": 111.00001525878906
+      },
+      "game_object": {
+        "source_file": "resources.assets",
+        "path_id": 4351,
+        "raw_object_sha256": "b329b249d3f73b618bec93117fdd225b71541480a9f517d598aec9fe41d0696c"
+      },
+      "sprite": "manual_shock"
+    },
+    "/AEDMinigame": {
+      "position": [
+        0.0,
+        0.0
+      ],
+      "size": {
+        "x": 0.0,
+        "y": 0.0
+      },
+      "game_object": {
+        "source_file": "resources.assets",
+        "path_id": 5232,
+        "raw_object_sha256": "4384275cebbe7c1982e746cf805c185a988e6331798c2022c50bd7e0e2b365d1"
+      }
+    },
+    "/AEDMinigame/Container": {
+      "position": [
+        0.0,
+        0.0
+      ],
+      "size": {
+        "x": 0.0,
+        "y": 0.0
+      },
+      "game_object": {
+        "source_file": "resources.assets",
+        "path_id": 4414,
+        "raw_object_sha256": "4bbbbc8ec0c8967f81c0956ff3a0c9aaad5da7e8ae4e3eca1bbc2a023a2ab44a"
+      }
+    },
+    "/AEDMinigame/Container/Line": {
+      "position": [
+        0.0,
+        0.0
+      ],
+      "size": {
+        "x": 774.0003051757812,
+        "y": 768.0003051757812
+      },
+      "game_object": {
+        "source_file": "resources.assets",
+        "path_id": 3573,
+        "raw_object_sha256": "3f03faf9e08a47f15f726482529a60f554d413ec8d6c52180a3eded784809ab9"
+      },
+      "sprite": "aed_container_line"
+    },
+    "/AEDMinigame/Container/Line (1)": {
+      "position": [
+        -209.8000030517578,
+        155.1999969482422
+      ],
+      "size": {
+        "x": 414.00018310546875,
+        "y": 60.0
+      },
+      "game_object": {
+        "source_file": "resources.assets",
+        "path_id": 3639,
+        "raw_object_sha256": "0f5707255a9f08f60d8f16295cf3f053aba5c53b8f771f086dc83c6109856458"
+      },
+      "sprite": "aed_container_line_1"
+    },
+    "/AEDMinigame/Container/Line (2)": {
+      "position": [
+        209.89999389648438,
+        -141.8000030517578
+      ],
+      "size": {
+        "x": 414.00018310546875,
+        "y": 60.00001907348633
+      },
+      "game_object": {
+        "source_file": "resources.assets",
+        "path_id": 3617,
+        "raw_object_sha256": "e6f540f2e0874d33a1c8b5204d29f8878d3e65202c1bdb5e618df17958caa888"
+      },
+      "sprite": "aed_container_line_2"
+    },
+    "/AEDMinigame/Pad1": {
+      "position": [
+        0.0,
+        153.0
+      ],
+      "size": {
+        "x": 267.0000305175781,
+        "y": 342.00006103515625
+      },
+      "game_object": {
+        "source_file": "resources.assets",
+        "path_id": 3572,
+        "raw_object_sha256": "c34a8e5a434f8b6d375c0a83f46f3109edea7a9b80f49545d62a60cb23d6c333"
+      },
+      "sprite": "aed_pad1"
+    },
+    "/AEDMinigame/Pad2": {
+      "position": [
+        0.0,
+        -141.0
+      ],
+      "size": {
+        "x": 267.0000305175781,
+        "y": 276.0000305175781
+      },
+      "game_object": {
+        "source_file": "resources.assets",
+        "path_id": 5324,
+        "raw_object_sha256": "ed619d023e835ca615f3910bd336a37167a8c56d83ecc11dbc28ba54710d2538"
+      },
+      "sprite": "aed_pad2"
+    },
+    "/AEDMinigame/Shock": {
+      "position": [
+        0.0,
+        -421.0
+      ],
+      "size": {
+        "x": 141.00001525878906,
+        "y": 141.00001525878906
+      },
+      "game_object": {
+        "source_file": "resources.assets",
+        "path_id": 5173,
+        "raw_object_sha256": "aa3d50345799a274ee0d585b430a95ca220f7a677b404bc82a7522c24873c4d5"
+      },
+      "sprite": "aed_shock"
+    },
+    "/AEDMinigame/Text": {
+      "position": [
+        0.0,
+        -289.0
+      ],
+      "size": {
+        "x": 1000.0,
+        "y": 50.0
+      },
+      "game_object": {
+        "source_file": "resources.assets",
+        "path_id": 3611,
+        "raw_object_sha256": "3dcceafd794d1f85c9e639acf6424894fe8acede1157864b31871a3101cf1cd9"
+      },
+      "text": {
+        "m_text": "Waiting for pad placement...\nasdasfasfasfa",
+        "m_fontSize": 36.0,
+        "m_fontAsset": {
+          "m_FileID": 3,
+          "m_PathID": 210
+        },
+        "m_characterSpacing": 0.0,
+        "m_fontStyle": 0,
+        "m_fontWeight": 400,
+        "m_Color": {
+          "r": 1.0,
+          "g": 1.0,
+          "b": 1.0,
+          "a": 1.0
+        },
+        "m_HorizontalAlignment": 2,
+        "m_VerticalAlignment": 512,
+        "m_enableAutoSizing": 0
+      }
+    },
+    "base/MinigameScreen": {
+      "position": [
+        0.0,
+        0.0
+      ],
+      "size": {
+        "x": 1047.697265625,
+        "y": 1047.697265625
+      },
+      "game_object": {
+        "source_file": "level1",
+        "path_id": 94,
+        "raw_object_sha256": "4207f31768dc774c46a586bd631403386834f6edef8d549bdce79158a89ba25c"
+      },
+      "sprite": "base_minigamescreen"
+    },
+    "base/MinigameScreen/Container": {
+      "position": [
+        0.459199994802475,
+        414.5299987792969
+      ],
+      "size": {
+        "x": 824.918212890625,
+        "y": 65.31199645996094
+      },
+      "game_object": {
+        "source_file": "level1",
+        "path_id": 54,
+        "raw_object_sha256": "09bc7cb5ff7136c7060b6e86dac1df2e65bfbefdcea6f1cbfc38d6f4d3b1d23b"
+      }
+    },
+    "base/MinigameScreen/Container (1)": {
+      "position": [
+        -284.45001220703125,
+        362.873779296875
+      ],
+      "size": {
+        "x": 255.10000610351562,
+        "y": 37.9994010925293
+      },
+      "game_object": {
+        "source_file": "level1",
+        "path_id": 238,
+        "raw_object_sha256": "4e5ca0292e4f79d0ee5af4f6aad32ad05f8b0b909c4e6d7ee250f4789c4add9e"
+      }
+    },
+    "base/MinigameScreen/Item": {
+      "position": [
+        -381.0,
+        -155.0
+      ],
+      "size": {
+        "x": 30.0,
+        "y": 40.0
+      },
+      "game_object": {
+        "source_file": "level1",
+        "path_id": 48,
+        "raw_object_sha256": "f0f919bf87d3aa68b76f0b6783d9e44d3bb7be11be3650f568c3389ab91de3b3"
+      }
+    },
+    "base/MinigameScreen/ItemName": {
+      "position": [
+        -256.8999938964844,
+        368.8499755859375
+      ],
+      "size": {
+        "x": 200.0,
+        "y": 26.048999786376953
+      },
+      "game_object": {
+        "source_file": "level1",
+        "path_id": 101,
+        "raw_object_sha256": "c2cb162d70de3a8ef6e026345eb1543b48f98fd2bc33a7b122120b15fb4ffba6"
+      },
+      "text": {
+        "m_text": "Morphine (100%)",
+        "m_fontSize": 16.0,
+        "m_fontAsset": {
+          "m_FileID": 5,
+          "m_PathID": 210
+        },
+        "m_characterSpacing": -6.0,
+        "m_fontStyle": 0,
+        "m_fontWeight": 400,
+        "m_Color": {
+          "r": 1.0,
+          "g": 1.0,
+          "b": 1.0,
+          "a": 1.0
+        }
+      }
+    },
+    "base/MinigameScreen/Guide": {
+      "position": [
+        -2.479599970683921e-05,
+        414.52996826171875
+      ],
+      "size": {
+        "x": 925.7169799804688,
+        "y": 65.3030014038086
+      },
+      "game_object": {
+        "source_file": "level1",
+        "path_id": 473,
+        "raw_object_sha256": "f5f76bf6f3e1e556b30c0a8184ec47142c05c311af87c68e79d0a130233e8d44"
+      },
+      "text": {
+        "m_text": "Click and drag the dressing around the limb to bandage.\ndsfgsdgdsgsdhg",
+        "m_fontSize": 20.0,
+        "m_fontAsset": {
+          "m_FileID": 5,
+          "m_PathID": 210
+        },
+        "m_characterSpacing": -6.0,
+        "m_fontStyle": 0,
+        "m_fontWeight": 400,
+        "m_Color": {
+          "r": 1.0,
+          "g": 1.0,
+          "b": 1.0,
+          "a": 1.0
+        }
+      }
+    },
+    "base/MinigameScreen/ExitGuide": {
+      "position": [
+        -2.479599970683921e-05,
+        -451.0
+      ],
+      "size": {
+        "x": 269.5483093261719,
+        "y": 40.773399353027344
+      },
+      "game_object": {
+        "source_file": "level1",
+        "path_id": 429,
+        "raw_object_sha256": "eec3f3769f0abd6d189e7947a0b0679c2ef1291ca49477f4fa03bd9c2d4751e9"
+      },
+      "text": {
+        "m_text": "Press RMB/ESC to exit",
+        "m_fontSize": 16.0,
+        "m_fontAsset": {
+          "m_FileID": 5,
+          "m_PathID": 210
+        },
+        "m_characterSpacing": -6.0,
+        "m_fontStyle": 0,
+        "m_fontWeight": 400,
+        "m_Color": {
+          "r": 1.0,
+          "g": 1.0,
+          "b": 1.0,
+          "a": 1.0
+        }
+      }
+    },
+    "base/MinigameScreen/Hand": {
+      "position": [
+        0.0,
+        0.0
+      ],
+      "size": {
+        "x": 768.0076904296875,
+        "y": 1890.0189208984375
+      },
+      "game_object": {
+        "source_file": "level1",
+        "path_id": 108,
+        "raw_object_sha256": "ea5535ab4a7ce80bd78b38a7e98ef87135134e6c5a4256cc7c527d4fe40c943b"
+      }
+    },
+    "base/MinigameScreen/Inside": {
+      "position": [
+        0.0,
+        0.0
+      ],
+      "size": {
+        "x": 0.0,
+        "y": 0.0
+      },
+      "game_object": {
+        "source_file": "level1",
+        "path_id": 351,
+        "raw_object_sha256": "d94952585572e6fb2d6f36513d40447ac8d88a60175879e70daf395dc0187fa5"
+      }
+    }
+  },
+  "scope": "Original CU defibrillator sprites, bitmap font, layout, sounds and interactions; Minecraft patient physiology and coherent tremor remain explicitly documented adapters",
+  "source_files": {
+    "resources.assets": "81a5f55001875f37d450197151d7b0d3b349e70c47a5adeb0006f9dc4744df64",
+    "level1": "f8c2ea53cab0acb7b333c2165ceba3c36c3963a8ded0196771b8d4d9cc8462b3",
+    "sharedassets1.assets": "befa3e57e3e7edcf40dd1b0108e7a69ab7961e9fe553fa17fdf43dbb747e3016",
+    "sharedassets0.assets": "eaba5973b39543d5d5539c76695008cfdfff50ed588fb7cff345a15a3b4eaa75"
+  },
+  "font": {
+    "family": "Retro Gaming",
+    "point_size": 121,
+    "ascent": 121.00000762939453,
+    "descent": -32.997314453125,
+    "atlas_width": 1024,
+    "atlas_height": 1024,
+    "source_file": "sharedassets0.assets",
+    "font_path_id": 210,
+    "source_font_sha256": "4bcf0028a28360568f2023a53cff6c581e09919cae6a5f3215df889bb997b63c",
+    "texture_path_id": 5,
+    "source_texture_sha256": "68072ebb5e15efda1fbdda1c1aa84c49702ab7aaecaf1179fe2dd3097f4a7bad",
+    "atlas_sha256": "052cb280486e0df80b4fc10be714ea18f11f7e5244d195bcbc8c3080accbdc0b",
+    "atlas_render_mode": 4122,
+    "transform": "Original CU Retro GamingPix SDF atlas rasterized at the neutral 0.5 contour for Minecraft GUI; authored glyph metrics and atlas rectangles retained; no invented glyph shapes"
+  }
+}

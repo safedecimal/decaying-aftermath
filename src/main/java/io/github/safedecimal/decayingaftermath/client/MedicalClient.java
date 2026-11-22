@@ -355,7 +355,8 @@ public final class MedicalClient {
                 || client.gui.screen() instanceof InventoryScreen);
     }
     public static boolean isMedicalPanelOpen(Minecraft client) {
-        return isInventoryOpen(client)||client.player!=null&&client.gui.screen() instanceof MedicalProcedureScreen;
+        return isInventoryOpen(client)||client.player!=null&&(client.gui.screen() instanceof MedicalProcedureScreen
+                ||client.gui.screen() instanceof DefibScreen);
     }
     private static void stop(String name) { Minecraft.getInstance().getSoundManager().stop(id(name), null); }
     static Identifier id(String path) { return Identifier.fromNamespaceAndPath(DecayingAftermath.MOD_ID,path); }

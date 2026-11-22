@@ -1,10 +1,6 @@
 package io.github.safedecimal.decayingaftermath.client;
 
-import io.github.safedecimal.decayingaftermath.DecayingAftermath;
-import io.github.safedecimal.decayingaftermath.medical.BodySnapshot;
 import io.github.safedecimal.decayingaftermath.medical.DefibGame;
-import io.github.safedecimal.decayingaftermath.medical.MedicalItems;
-import io.github.safedecimal.decayingaftermath.medical.MedicalPhysiology;
 import io.github.safedecimal.decayingaftermath.network.DefibNetwork;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -12,278 +8,201 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
-import net.minecraft.sounds.SoundEvent;
-import net.minecraft.world.item.ItemStack;
 
-/** CU-monitor-style presentation of the two defibrillator procedures (pads + automatic shock, or rhythm-lock). */
+/** Original CU prefab geometry, sprites, inertial hand and separate charge/shock controls. */
 public final class DefibScreen extends Screen {
     private static final String KEY="decaying_aftermath.defib.";
-    private static final Identifier MONITOR_FONT=id("textures/font/monitor.png");
-    private static final int WIDTH=280, HEIGHT=182, HEADER_H=24;
-    private static final int FRAME_X=8, FRAME_Y=28, FRAME_W=264, FRAME_H=136;
-    private static final int ECG_X=13, ECG_Y=48, ECG_W=254, ECG_H=32;
-    private static final int STRIP_X=14, STRIP_Y=114, STRIP_W=252, STRIP_H=14;
-    private static final int CELL_W=116, CELL_H=34;
-    private static final int BG=0xFF141F1C, HEADER_BG=0xFF1F302A, EDGE=0xFF33524A, SCREEN_BG=0xFF07110E,
-            SCREEN_EDGE=0xFF274A3C, TRACK=0xFF13231E, WINDOW=0xFF327D59, PHOSPHOR=0xFF18B93B,
-            ECG_COLOR=0x002BE080, TEXT=0xFFFFF2D6, MUTED=0xFF9DB4A6, GREEN=0xFF7FE4A7,
-            AMBER=0xFFFFA763, RED=0xFFF19486, DIM=0xFF5E7368;
-    private static final String[] SYMBOLS={"◆","●","■","▲"};
-
-    private final int session,layout;
+    private final int session;
     private final boolean automatic;
-    private int pads,locks,result,wait,feedback,flash,lockFlash,ticks;
-    private long readyAt=Long.MIN_VALUE;
-    private final EcgTrace ecg=new EcgTrace();
+    private final Screen previous;
+    private final DefibHandMotion hand=new DefibHandMotion();
+    private final ProcedureCursor cursor=new ProcedureCursor();
+    private final EcgTrace ecg=new EcgTrace(122,41);
+    private DefibNetwork.State state;
+    private float scale=1,pad0X,pad0Y,pad1X,pad1Y,offsetX,offsetY,dialCharge;
+    private double pointerX,pointerY;
+    private int ox,oy,held=-1,idleVariant,staleTicks;
+    private boolean pressed,aborted;
 
-    private DefibScreen(DefibNetwork.State state) {
+    private DefibScreen(DefibNetwork.State state,Screen previous) {
         super(Component.translatable(KEY+(state.automatic()?"automatic":"manual")));
-        session=state.session();layout=state.layout()&3;automatic=state.automatic();
-        pads=state.pads();locks=state.locks();result=state.result();readyAt=state.readyAt();
+        session=state.session();automatic=state.automatic();this.previous=previous;this.state=state;
+        pad0X=state.pad0X();pad0Y=state.pad0Y();pad1X=state.pad1X();pad1Y=state.pad1Y();
+        dialCharge=state.desiredCharge();idleVariant=session&1;
+        if(automatic)MedicalClient.sound("cu_aedstart",1,1);
     }
     public static void register() {
         ClientPlayNetworking.registerGlobalReceiver(DefibNetwork.State.TYPE,(state,context)->context.client().execute(()->{
-            if(state.result()==DefibNetwork.OPEN) context.client().gui.setScreen(new DefibScreen(state));
-            else if(context.client().gui.screen() instanceof DefibScreen screen && screen.session==state.session()) screen.update(state);
+            if(state.result()==DefibNetwork.OPEN)
+                context.client().gui.setScreen(new DefibScreen(state,context.client().gui.screen()));
+            else if(context.client().gui.screen() instanceof DefibScreen screen&&screen.session==state.session())screen.update(state);
         }));
     }
-    private void update(DefibNetwork.State state) {
-        pads=state.pads();locks=state.locks();result=state.result();wait=0;readyAt=state.readyAt();
-        if(result==DefibNetwork.MISS)feedback=15;
-        if(result==DefibNetwork.PROGRESS) {
-            if(!automatic)lockFlash=10;
-            beep(1.4f);
+    @Override protected void init() {
+        scale=Math.max(.25f,Math.min(1f,Math.min((width-16f)/262,(height-16f)/262)));
+        ox=Math.round((width-256*scale)/2);oy=Math.round((height-256*scale)/2);
+    }
+    private DefibGame.Stage stage() {return DefibGame.Stage.values()[Math.clamp(state.stage(),0,5)];}
+    private void update(DefibNetwork.State next) {
+        if(automatic&&next.stage()!=state.stage()) {
+            String sound=switch(DefibGame.Stage.values()[Math.clamp(next.stage(),0,5)]) {
+                case ANALYZING -> "cu_aedanalyze";
+                case READY -> "cu_aedstart";
+                case NO_SHOCK -> "cu_aedfail";
+                case CHARGING -> "cu_aedcharge";
+                default -> null;
+            };
+            if(sound!=null)MedicalClient.sound(sound,1,1);
         }
-        if(result==DefibNetwork.DONE) {flash=16;pling();}
+        if(!automatic&&next.shocks()>state.shocks())MedicalClient.sound("cu_manualdefib",1,1);
+        if(held!=0) {pad0X=next.pad0X();pad0Y=next.pad0Y();}
+        if(held!=1) {pad1X=next.pad1X();pad1Y=next.pad1Y();}
+        if(held!=2)dialCharge=next.desiredCharge();
+        aborted|=next.result()==DefibNetwork.ABORT;
+        state=next;staleTicks=0;
     }
-    private boolean finished() {return result==DefibNetwork.DONE||result==DefibNetwork.ABORT;}
     private void send(int control) {
-        if(ClientPlayNetworking.canSend(DefibNetwork.Input.TYPE))
-            ClientPlayNetworking.send(new DefibNetwork.Input(session,control));
-    }
-    private void beep(float pitch) {
-        if(minecraft!=null)MedicalClient.sound("text_ping",.35f,pitch);
-    }
-    private void pling() {
-        if(minecraft!=null)minecraft.getSoundManager().play(SimpleSoundInstance.forUI(
-                SoundEvent.createVariableRangeEvent(Identifier.withDefaultNamespace("block.note_block.pling")),1.2f,.8f));
+        if(ClientPlayNetworking.canSend(DefibNetwork.Input.TYPE))ClientPlayNetworking.send(
+                new DefibNetwork.Input(session,control,(float)Math.clamp(hand.x(),-524,524),(float)Math.clamp(hand.y(),-524,524)));
     }
     @Override public boolean isPauseScreen() {return false;}
-    @Override public void removed() {if(!finished())send(DefibGame.CANCEL);super.removed();}
+    @Override public void onClose() {minecraft.gui.setScreen(minecraft.player!=null&&minecraft.player.isAlive()?previous:null);}
+    @Override public void removed() {send(DefibGame.CANCEL);cursor.restore();super.removed();}
+    private void target(double x,double y) {
+        pointerX=Math.clamp(((x-ox)/scale-128)*4,-524,524);
+        pointerY=Math.clamp((128-(y-oy)/scale)*4,-524,524);
+    }
+    @Override public void mouseMoved(double x,double y) {target(x,y);}
+    @Override public boolean mouseDragged(MouseButtonEvent event,double dx,double dy) {target(event.x(),event.y());return pressed;}
     @Override public void tick() {
-        if(minecraft==null||minecraft.player==null||!minecraft.player.isAlive()){onClose();return;}
-        ticks++;
-        if(wait>0)wait--; if(feedback>0)feedback--;
-        if(lockFlash>0)lockFlash--; if(flash>0)flash--;
-        if(finished())return;
-        BodySnapshot body=ClientMedicalState.snapshot();
-        if(Float.isFinite(body.bpm()))ecg.advance(0.05,Math.max(0,body.bpm()));
-    }
-    private int x() {return (width-WIDTH)/2;}
-    private int y() {return (height-HEIGHT)/2;}
-    private long now() {return minecraft==null||minecraft.level==null?0:minecraft.level.getGameTime();}
-    private int phase() {
-        if(readyAt==Long.MIN_VALUE)return -1;
-        long elapsed=now()-readyAt;
-        return elapsed<0?-1:(int)(elapsed%DefibGame.CYCLE);
-    }
-    private boolean windowOpen(int phase) {return phase>=DefibGame.WINDOW_MIN && phase<=DefibGame.WINDOW_MAX;}
-    private int progress() {
-        if(readyAt==Long.MIN_VALUE)return 0;
-        long elapsed=now()-readyAt;
-        return elapsed<0?0:Math.clamp((int)(elapsed*100/DefibGame.SCAN),0,100);
-    }
-    private boolean in(int px,int py,int bw,int bh,MouseButtonEvent e) {
-        double mx=e.x()-x(), my=e.y()-y(); return mx>=px && mx<px+bw && my>=py && my<py+bh;
-    }
-    private int cellX(int i) {return (i%2)==0?30:156;}
-    private int cellY(int i) {return (i/2)==0?58:100;}
-    private int cellAt(MouseButtonEvent e) {
-        double mx=e.x()-x(), my=e.y()-y();
-        for(int i=0;i<4;i++) {
-            int lx=cellX(i), ly=cellY(i);
-            if(mx>=lx && mx<lx+CELL_W && my>=ly && my<ly+CELL_H)return i;
+        if(minecraft.player==null||!minecraft.player.isAlive()) {onClose();return;}
+        if(++staleTicks>200)aborted=true;
+        if(aborted)return;
+        var body=ClientMedicalState.snapshot();hand.beginTick();
+        for(int i=0;i<3;i++)hand.step(pointerX,pointerY,body.pain(),body.consciousness(),held==2);
+        if(pressed&&held>=0) {
+            if(held==0) {pad0X=(float)hand.x()+offsetX;pad0Y=(float)hand.y()+offsetY;}
+            if(held==1) {pad1X=(float)hand.x()+offsetX;pad1Y=(float)hand.y()+offsetY;}
+            if(held==2)dialCharge=DefibGame.chargeForAngle(angle((float)hand.x(),(float)hand.y()));
+            send(DefibGame.MOVE);
         }
-        return -1;
+        ecg.advance(.05,state.bpm());
     }
     @Override public boolean mouseClicked(MouseButtonEvent event,boolean doubleClick) {
-        if(event.button()!=1)return false;
-        if(finished()) {if(in(WIDTH/2-75,112,150,24,event))onClose();return true;}
-        if(automatic&&pads<2) {
-            int cell=cellAt(event);
-            if(cell>=0)act(cell);
-            return true;
-        }
-        if(!automatic&&pads==2&&in(WIDTH/2-75,140,150,24,event))act(DefibGame.CONFIRM);
+        if(event.button()==1) {onClose();return true;} // CU: attack/LMB interacts; RMB/ESC exits.
+        if(event.button()!=0)return false;
+        if(aborted) {onClose();return true;}
+        target(event.x(),event.y());pressed=true;
+        float x=(float)hand.x(),y=(float)hand.y();
+        if(automatic&&stage()==DefibGame.Stage.PLACING) {
+            for(int pad=1;pad>=0;pad--) {
+                float px=pad==0?pad0X:pad1X,py=pad==0?pad0Y:pad1Y;
+                if(DefibGame.hit(x,y,px,py,267,pad==0?342:276)) {
+                    held=pad;offsetX=px-x;offsetY=py-y;send(pad);break;
+                }
+            }
+        } else if(automatic) {
+            if(DefibGame.hit(x,y,0,-421,141,141))send(DefibGame.CONFIRM);
+        } else if(DefibGame.hit(x,y,-225,-174,150,150)) {held=2;send(DefibGame.DIAL);}
+        else if(DefibGame.hit(x,y,8,-174,111,111))send(DefibGame.CHARGE);
+        else if(DefibGame.hit(x,y,234.3f,-174,111,111))send(DefibGame.SHOCK);
         return true;
     }
-    @Override public boolean keyPressed(KeyEvent event) {
-        int key=event.key();
-        if(finished()&&(key==257||key==32)){onClose();return true;}
-        if(automatic&&pads<2&&key>=49&&key<=52){act(key-49);return true;}
-        if(!automatic&&pads==2&&(key==32||key==257)){act(DefibGame.CONFIRM);return true;}
-        return super.keyPressed(event);
+    @Override public boolean mouseReleased(MouseButtonEvent event) {
+        if(event.button()!=0)return false;
+        if(held>=0)send(DefibGame.RELEASE);
+        held=-1;pressed=false;idleVariant^=1;return true;
     }
-    private void act(int control) {
-        if(finished()||wait>0)return;
-        wait=6;send(control);
+    @Override public boolean keyPressed(KeyEvent event) {return super.keyPressed(event);}
+    private static float angle(float x,float y) {
+        float a=(float)Math.toDegrees(Math.atan2(y+174,x+225))-90;return (a+540)%360-180;
     }
-    private void center(GuiGraphicsExtractor g,Component text,int yy,int color) {
-        g.centeredText(font,text.getString(),WIDTH/2,yy,color);
+    private static void sprite(GuiGraphicsExtractor g,String name,float cx,float cy,int w,int h,int sw,int sh,int color) {
+        g.blit(RenderPipelines.GUI_TEXTURED,Identifier.fromNamespaceAndPath("decaying_aftermath","textures/gui/defib/"+name+".png"),
+                Math.round(128+cx*.25f-w*.125f),Math.round(128-cy*.25f-h*.125f),0f,0f,
+                Math.round(w*.25f),Math.round(h*.25f),sw,sh,sw,sh,color);
     }
-    private void button(GuiGraphicsExtractor g,int px,int py,int w,int h,String label,int color) {
-        g.fill(px,py,px+w,py+h,0xFF263731);
-        g.outline(px,py,w,h,color);
-        g.centeredText(font,label,px+w/2,py+(h-8)/2,color);
+    private void text(GuiGraphicsExtractor g,String text,float x,float y,float nativeSize,float nativeWidth,int color) {
+        text(g,text,x,y,nativeSize,nativeWidth,color,2);
     }
-    private void frame(GuiGraphicsExtractor g) {
-        g.fill(0,0,WIDTH,HEIGHT,BG);
-        g.fill(0,0,WIDTH,HEADER_H,HEADER_BG);
-        g.outline(0,0,WIDTH,HEIGHT,EDGE);
-        g.fill(0,HEADER_H,WIDTH,HEADER_H+1,0xFF0B1411);
+    private void text(GuiGraphicsExtractor g,String text,float x,float y,float nativeSize,float nativeWidth,int color,int alignment) {
+        if(CuDefibFont.draw(g,text,x,y,nativeSize,nativeWidth,color,alignment))return;
+        // The original CU Retro GamingPix face is ASCII-only. Russian text needs the host fallback font.
+        float size=nativeSize/36f;
+        if(font.width(text)*size>nativeWidth*.25f)size=nativeWidth*.25f/Math.max(1,font.width(text));
+        float offset=alignment==1?-nativeWidth*.125f+font.width(text)*size/2:alignment==4?nativeWidth*.125f-font.width(text)*size/2:0;
+        g.pose().pushMatrix();g.pose().translate(128+x*.25f+offset,128-y*.25f);g.pose().scale(size,size);
+        g.centeredText(font,text,0,-4,color);g.pose().popMatrix();
     }
-    private void header(GuiGraphicsExtractor g) {
-        g.item(new ItemStack(automatic?MedicalItems.AED:MedicalItems.MANUAL_DEFIBRILLATOR),7,5);
-        center(g,getTitle(),8,TEXT);
-        g.centeredText(font,"ESC",WIDTH-22,8,DIM);
-    }
-    private void monitor(GuiGraphicsExtractor g) {
-        g.fill(FRAME_X,FRAME_Y,FRAME_X+FRAME_W,FRAME_Y+FRAME_H,SCREEN_BG);
-        g.outline(FRAME_X,FRAME_Y,FRAME_W,FRAME_H,SCREEN_EDGE);
-    }
-    private void monitorTitle(GuiGraphicsExtractor g,String left,String right,int color) {
-        monitorText(g,left,FRAME_X+12,FRAME_Y+10,PHOSPHOR);
-        if(right!=null&&!right.isEmpty()) {
-            int width=0;for(int i=0;i<right.length();i++)width+=MedicalPanelGlyphs.advance(right.charAt(i));
-            monitorText(g,right,FRAME_X+FRAME_W-12-width,FRAME_Y+10,color);
-        }
-    }
-    private void monitorText(GuiGraphicsExtractor g,String value,int x,int y,int color) {
-        if(value==null||value.isEmpty())return;
-        for(int i=0;i<value.length();i++) {
-            int glyph=MedicalPanelGlyphs.index(value.charAt(i));
-            g.blit(RenderPipelines.GUI_TEXTURED,MONITOR_FONT,x,y,(glyph%16)*8f,(glyph/16)*10f,8,10,128,60,color);
-            x+=MedicalPanelGlyphs.advance(value.charAt(i));
-        }
-    }
-    private void ecg(GuiGraphicsExtractor g,int x,int y,int w,int h) {
-        g.fill(x,y,x+w,y+h,0xFF060F0C);
-        int srcW=EcgTrace.WIDTH, srcH=EcgTrace.HEIGHT;
-        for(int column=0;column<srcW;column++) {
-            int gx=x+column*w/srcW;
-            int gw=(column+1)*w/srcW-gx; if(gw<1)gw=1;
-            for(int row=0;row<srcH;row++) {
-                int alpha=ecg.alpha(column,row);
-                if(alpha==0)continue;
-                int gy=y+row*h/srcH;
-                int gh=(row+1)*h/srcH-gy; if(gh<1)gh=1;
-                g.fill(gx,gy,gx+gw,gy+gh,(alpha<<24)|ECG_COLOR);
-            }
-        }
-        g.fill(x,y+h/2,x+w,y+h/2+1,0x001B4D2E);
-    }
-    private void strip(GuiGraphicsExtractor g,int x,int y,int w,int h,int phase,boolean flashed) {
-        g.fill(x,y,x+w,y+h,flashed?0xFF153A28:TRACK);
-        int zx=x+w*DefibGame.WINDOW_MIN/(DefibGame.CYCLE-1);
-        int zw=w*(DefibGame.WINDOW_MAX-DefibGame.WINDOW_MIN)/(DefibGame.CYCLE-1);
-        g.fill(zx,y+2,zx+zw,y+h-2,flashed?0xFF3DA96E:WINDOW);
-        g.outline(zx,y+1,zw,h-2,flashed?GREEN:0xFF5FBF85);
-        int mx=phase<0?x+2:x+(w-1)*phase/(DefibGame.CYCLE-1);
-        g.fill(mx-1,y-3,mx+1,y+h+3,phase<0?0xFF5E7368:TEXT);
-    }
-    private void pips(GuiGraphicsExtractor g,int cx,int y) {
-        for(int i=0;i<3;i++) {
-            int px=cx-21+i*16;
-            boolean on=locks>i;
-            g.fill(px,y,px+10,y+10,on?GREEN:0xFF233129);
-            g.outline(px,y,10,10,on?0xFF9DFFBE:0xFF42554B);
-        }
-    }
-    private void padUi(GuiGraphicsExtractor g) {
-        int desired=DefibGame.port(layout,pads);
-        center(g,Component.translatable(KEY+"pad",String.valueOf((char)('A'+pads)),SYMBOLS[desired]),40,TEXT);
-        for(int i=0;i<4;i++) {
-            boolean placed=i/2<pads&&i==DefibGame.port(layout,i/2);
-            boolean target=i/2==pads;
-            int symbolColor=placed?GREEN:(target?AMBER:0xFF7E8F86);
-            int cellFill=placed?0xFF153A28:0xFF1A2420;
-            int cellOutline=placed?0xFF7FE4A7:(target?0xFFE0A763:0xFF33443C);
-            int lx=cellX(i), ly=cellY(i);
-            g.fill(lx,ly,lx+CELL_W,ly+CELL_H,cellFill);
-            g.outline(lx,ly,CELL_W,CELL_H,cellOutline);
-            if(target&&feedback<=0) {
-                int pulse=(150+(int)(70*Math.sin(ticks/6.0)))&0xFF;
-                g.fill(lx+3,ly+2,lx+CELL_W-3,ly+4,(pulse<<24)|0xFFE0A763);
-            }
-            g.centeredText(font,SYMBOLS[i],lx+CELL_W/2,ly+(CELL_H-8)/2,symbolColor);
-            g.centeredText(font,String.valueOf(i+1),lx+CELL_W-12,ly+(CELL_H-8)/2,placed?GREEN:DIM);
-        }
-        center(g,Component.translatable(KEY+(feedback>0?"miss_pad":"keys")),142,feedback>0?RED:0xFFB8CBBF);
-    }
-    private void scanUi(GuiGraphicsExtractor g) {
-        monitorTitle(g,"AED",bpmText(),PHOSPHOR);
-        ecg(g,ECG_X,ECG_Y,ECG_W,ECG_H);
-        int p=progress();
-        int bx=FRAME_X+16, bw=FRAME_W-32;
-        g.fill(bx,FRAME_Y+62,bx+bw,FRAME_Y+72,TRACK);
-        g.fill(bx,FRAME_Y+62,bx+bw*p/100,FRAME_Y+72,AMBER);
-        g.outline(bx,FRAME_Y+62,bw,10,SCREEN_EDGE);
-        center(g,Component.translatable(KEY+"scan"),FRAME_Y+82,TEXT);
-        center(g,Component.translatable(KEY+"automatic_fire"),FRAME_Y+108,MUTED);
-    }
-    private void manualUi(GuiGraphicsExtractor g) {
-        monitorTitle(g,"RHYTHM LOCK",bpmText(),bpmColor());
-        ecg(g,ECG_X,ECG_Y,ECG_W,ECG_H);
-        int phase=phase();
-        boolean inWindow=windowOpen(phase);
-        String status; int statusColor;
-        if(feedback>0){status=Component.translatable(KEY+"miss_beat").getString();statusColor=RED;}
-        else if(phase<0){status=Component.translatable(KEY+"calibrating").getString();statusColor=MUTED;}
-        else if(inWindow){status=Component.translatable(KEY+"now").getString();statusColor=GREEN;}
-        else{status=Component.translatable(KEY+"wait").getString();statusColor=MUTED;}
-        center(g,Component.literal(status),90,statusColor);
-        pips(g,WIDTH/2,102);
-        strip(g,STRIP_X,STRIP_Y,STRIP_W,STRIP_H,phase,lockFlash>0);
-        button(g,WIDTH/2-75,140,150,24,Component.translatable(KEY+"lock").getString(),inWindow?GREEN:MUTED);
-    }
-    private String bpmText() {
-        BodySnapshot body=ClientMedicalState.snapshot();
-        int bpm=(int)Math.round(body.bpm());
-        if(bpm<=0)return "--";
-        return String.format("%d|%d/%d",bpm,MedicalPhysiology.systolic(body),MedicalPhysiology.diastolic(body));
-    }
-    private int bpmColor() {
-        return ClientMedicalState.snapshot().bpm()>185?AMBER:PHOSPHOR;
-    }
-    private void finishedUi(GuiGraphicsExtractor g) {
-        boolean done=result==DefibNetwork.DONE;
-        g.fill(0,0,WIDTH,HEIGHT,0xFF0B1411);
-        g.outline(0,0,WIDTH,HEIGHT,EDGE);
-        g.item(new ItemStack(automatic?MedicalItems.AED:MedicalItems.MANUAL_DEFIBRILLATOR),WIDTH/2-8,54);
-        center(g,Component.translatable(KEY+(done?"done":"abort")),80,done?GREEN:RED);
-        button(g,WIDTH/2-75,112,150,24,Component.translatable(KEY+"close").getString(),TEXT);
+    private void guide(GuiGraphicsExtractor g) {
+        String key=KEY+(automatic?"cu_aed_guide":"cu_manual_guide");
+        g.pose().pushMatrix();g.pose().translate(128,18);g.pose().scale(.65f,.65f);
+        var lines=font.split(Component.translatable(key),350);
+        for(int i=0;i<lines.size();i++)g.text(font,lines.get(i),-font.width(lines.get(i))/2,i*10,0xFFFFFFFF,false);
+        g.pose().popMatrix();
     }
     @Override public void extractRenderState(GuiGraphicsExtractor g,int mouseX,int mouseY,float partialTick) {
         extractTransparentBackground(g);
-        if(minecraft==null||minecraft.level==null)return;
-        g.pose().pushMatrix();g.pose().translate(x(),y());
-        frame(g);
-        if(finished())finishedUi(g);
-        else {
-            header(g);
-            monitor(g);
-            if(automatic&&pads<2)padUi(g);
-            else if(automatic)scanUi(g);
-            else manualUi(g);
+        if(!aborted)cursor.hide(minecraft.getWindow().handle());else cursor.restore();
+        g.pose().pushMatrix();g.pose().translate(ox,oy);g.pose().scale(scale,scale);
+        sprite(g,"base_minigamescreen",0,0,1048,1048,256,256,0xFFFFFFFF);
+        guide(g);
+        if(automatic)drawAed(g);else drawManual(g);
+        sprite(g,automatic?"device_aed":"device_manual_defibrillator",-381,-155,40,automatic?40:29,automatic?12:14,automatic?12:10,0xFFFFFFFF);
+        text(g,getTitle().getString()+" ("+Math.round(state.battery()*100)+"%)",-257,369,20,400,0xFFFFFFFF);
+        if(aborted)text(g,Component.translatable(KEY+"abort").getString(),0,-330,36,1000,0xFFFFA0A0);
+        text(g,Component.translatable(KEY+"cu_exit").getString(),0,-493,24,850,0xFFFFFFFF);
+        if(!aborted) {
+            double hx=hand.visualX(partialTick,held==2),hy=hand.visualY(partialTick,held==2);
+            boolean grasp=automatic?stage().ordinal()<=1:hx<=-60;
+            int index=grasp?(pressed?2:idleVariant):(pressed?5:3+idleVariant);
+            int gb=Math.round(255*(1-ClientMedicalState.snapshot().pain()));
+            int color=0xD2FF0000|(gb<<8)|gb;
+            g.pose().pushMatrix();g.pose().translate((float)(128+hx*.25),(float)(128-hy*.25));
+            g.pose().rotate(hand.rotation());if(state.leftHand())g.pose().scale(-1,1);
+            // Original RectTransform pivot (0.25420797, 0.86340046), size 768x1890.
+            g.blit(RenderPipelines.GUI_TEXTURED,Identifier.fromNamespaceAndPath("decaying_aftermath","textures/gui/defib/hand_"+index+".png"),
+                    -49,-65,0f,0f,192,473,256,630,256,630,color);
+            g.pose().popMatrix();
         }
         g.pose().popMatrix();
-        if(flash>0&&finished()) {
-            int alpha=Math.min(220,flash*14);
-            g.fill(0,0,width,height,(alpha<<24)|0xFFFFFF);
-        }
     }
-    private static Identifier id(String path) {return Identifier.fromNamespaceAndPath(DecayingAftermath.MOD_ID,path);}
+    private void drawAed(GuiGraphicsExtractor g) {
+        sprite(g,"aed_container_line",0,0,774,768,129,128,0xFFFFFFFF);
+        sprite(g,"aed_container_line_1",-209.8f,155.2f,414,60,69,1,0xAAFFFFFF);
+        sprite(g,"aed_container_line_2",209.9f,-141.8f,414,60,69,1,0xAAFFFFFF);
+        sprite(g,"aed_pad1",pad0X,pad0Y,267,342,89,114,0xFFFFFFFF);
+        sprite(g,"aed_pad2",pad1X,pad1Y,267,276,89,92,0xFFFFFFFF);
+        sprite(g,"aed_shock",0,-421,141,141,47,47,0xFFFFFFFF);
+        String label=Component.translatable(KEY+"cu_aed_state"+stage().ordinal()).getString();
+        if(stage()==DefibGame.Stage.ANALYZING||stage()==DefibGame.Stage.CHARGING)label+=".".repeat(1+(staleTicks/3)%3);
+        text(g,label,0,-289,36,1000,0xFFFFFFFF);
+    }
+    private void drawManual(GuiGraphicsExtractor g) {
+        sprite(g,"manual_screen",0,33,768,660,256,220,0xFFFFFFFF);
+        g.pose().pushMatrix();g.pose().translate(128-225*.25f,128+174*.25f);
+        g.pose().rotate((float)Math.toRadians(-DefibGame.angleForCharge(dialCharge)));
+        g.blit(RenderPipelines.GUI_TEXTURED,Identifier.fromNamespaceAndPath("decaying_aftermath","textures/gui/defib/manual_dial.png"),
+                -19,-19,0f,0f,38,38,50,50,50,50,0xFFFFFFFF);g.pose().popMatrix();
+        sprite(g,"manual_charge",8,-174,111,111,37,37,0xFFFFFFFF);
+        sprite(g,"manual_shock",234.3f,-174,111,111,37,37,0xFFFFFFFF);
+        g.enableScissor(181,71,181+Math.round(10*state.battery()),78);
+        sprite(g,"manual_screen_battery",232.5f,214.5f,39,27,13,9,0xFFFFFFFF);g.disableScissor();
+        if(stage()==DefibGame.Stage.CHARGING)sprite(g,"manual_screen_charging",151.5f,204,99,24,33,8,0xFFFFFFFF);
+        text(g,Integer.toString(state.shocks()),-220.586f,214.6f,33.333f,50.916f,0xFFFFFFFF);
+        text(g,Integer.toString(Math.round(state.currentCharge())),-76.4f,214.6f,33.333f,50.916f,0xFFFFFFFF,4);
+        text(g,Integer.toString(Math.round(dialCharge)),8.5f,214.6f,33.333f,50.916f,0xFFFFFFFF,1);
+        text(g,Integer.toString(Math.round(state.bpm())),183.8f,127.5f,66.667f,50.916f,0xFFFFFFFF);
+        text(g,state.estimateLow()+"-"+state.estimateHigh(),-157.5f,19,33.333f,162.736f,0xFFFFFFFF,1);
+        text(g,Integer.toString(Math.round(dialCharge)),-157.5f,-40.3f,33.333f,162.736f,0xFFFFFFFF,1);
+        text(g,"n/a",119.4f,30.5f,33.333f,162.736f,0xFFFFFFFF,1); // No fabricated CU blood-pressure field in Minecraft.
+        text(g,Math.round(state.oxygen()*100)+"%",119.4f,-33.3f,33.333f,162.736f,0xFFFFFFFF,1);
+        g.pose().pushMatrix();g.pose().translate(61.25f,80.75f);g.pose().scale(.75f,.75f);
+        for(int row=0;row<41;row++)for(int column=0;column<122;column++) {
+            int alpha=ecg.alpha(column,row);if(alpha>12)g.fill(column,row,column+1,row+1,(alpha<<24)|0x0045ADFF);
+        }
+        g.pose().popMatrix();
+    }
 }
