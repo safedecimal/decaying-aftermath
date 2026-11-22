@@ -2,6 +2,7 @@ package io.github.safedecimal.decayingaftermath.client;
 
 import io.github.safedecimal.decayingaftermath.medical.BodyModel;
 import io.github.safedecimal.decayingaftermath.medical.BodySnapshot.Mode;
+import io.github.safedecimal.decayingaftermath.medical.BodySnapshot;
 
 /** CU's brainDying/dead split, adapted to Minecraft's server-owned rescue countdown. */
 public final class MedicalDeathMusicState {
@@ -16,6 +17,12 @@ public final class MedicalDeathMusicState {
 
     /** State-only compatibility entry point for callers without a countdown snapshot. */
     public Actions advance(Mode mode) { return advance(mode, mode == Mode.DYING ? 0 : 1); }
+    public Actions advance(BodySnapshot body) {
+        // CU brainDying is absent perfusion and unconsciousness, not only a mode countdown.
+        if(body.cardiacArrest())return advance(Mode.DYING,0);
+        if(body.mode()!=Mode.DYING&&body.mode()!=Mode.DEAD)playedDying=false;
+        return advance(body.mode(),body.consciousnessProgress());
+    }
 
     public Actions advance(Mode mode, float progress) {
         boolean terminal = preDeathWindow(mode, progress), dead = mode == Mode.DEAD;

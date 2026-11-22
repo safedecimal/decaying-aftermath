@@ -16,7 +16,10 @@ public final class MedicalSituationSoundState {
         float pain = body.pain() > .6f ? Math.clamp((body.pain() - .6f) / .25f * .8f + .2f, 0, 1) : 0;
         float exhausted = body.energy() < .5f ? Math.clamp(1 - body.energy() * 2, 0, 1) : 0;
         float tired = body.energy() < .25f ? Math.clamp(1 - body.energy() * 4, 0, 1) : 0;
-        float dying = body.mode() == BodySnapshot.Mode.DYING ? 1 : 0;
+        boolean deteriorating=body.mode()!=BodySnapshot.Mode.LAST_STANDING
+                &&(body.cardiacArrest()||body.oxygen()<.65f||body.blood()<.4f
+                ||body.brainHealth()<.3f||Math.max(body.survival().thermalStress(),body.survival().nausea())>.75f);
+        float dying = deteriorating?1:0;
         return new Volumes(pain, exhausted, tired, dying);
     }
 }

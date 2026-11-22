@@ -12,7 +12,7 @@ public final class CuMedicalMonitor {
     private static String percent(float n) { return Math.round(n * 100) + "%"; }
     public static String value(BodySnapshot b, String field, int bpm) {
         return switch (field) {
-            case "BrainText" -> Integer.toString(Math.round(b.part(BodyPart.HEAD).integrity() * 100));
+            case "BrainText" -> Integer.toString(Math.round(b.brainHealth() * 100));
             case "ConscText" -> percent(b.consciousness());
             case "ImmuneText" -> percent(MedicalPhysiology.immunity(b));
             case "BloodGroupText" -> b.bloodGroup() == null ? "" : b.bloodGroup().label();
@@ -38,7 +38,7 @@ public final class CuMedicalMonitor {
     public static float amount(BodySnapshot b, String field) {
         var s = b.survival();
         return Math.clamp(switch (field) {
-            case "BrainBar" -> b.part(BodyPart.HEAD).integrity();
+            case "BrainBar" -> b.brainHealth();
             case "BloodFill" -> b.blood();
             case "TempFill" -> (s.temperature() - 28) * .08f; // Exact native WoundView formula.
             case "WaterFill" -> s.hydration();
@@ -75,7 +75,7 @@ public final class CuMedicalMonitor {
     }
     public static boolean critical(BodySnapshot b, String field) {
         return switch (field) {
-            case "BrainText" -> b.part(BodyPart.HEAD).integrity() < .5f;
+            case "BrainText" -> b.brainHealth() < .5f;
             case "BleedText" -> externalBleeding(b) > .0001f;
             case "ConscText" -> b.consciousness() < .4f;
             case "PainText" -> b.pain() > .75f;
@@ -97,7 +97,7 @@ public final class CuMedicalMonitor {
     }
     public static String label(String field) {
         return switch (field) {
-            case "BrainText", "BrainBar" -> "Состояние головы";
+            case "BrainText", "BrainBar" -> "Функциональное состояние мозга";
             case "ConscText" -> "Сознание";
             case "ImmuneText" -> "Иммунитет";
             case "BloodGroupText" -> "Группа крови";

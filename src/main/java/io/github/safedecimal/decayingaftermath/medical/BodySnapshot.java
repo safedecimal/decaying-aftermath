@@ -5,7 +5,12 @@ import java.util.Objects;
 /** Game-only quantities are normalized except BPM and the cumulative 0..3 drug burden. */
 public record BodySnapshot(float condition, float blood, float oxygen, float pain, float drug,
         float bpm, Mode mode, float consciousnessProgress, float energy, float consciousness,
-        PartSnapshot[] parts, SurvivalSnapshot survival, BloodGroup bloodGroup, int cardiacTicks) {
+        PartSnapshot[] parts, SurvivalSnapshot survival, BloodGroup bloodGroup, int cardiacTicks,float brainHealth) {
+    public BodySnapshot(float condition,float blood,float oxygen,float pain,float drug,float bpm,Mode mode,
+            float progress,float energy,float consciousness,PartSnapshot[] parts,SurvivalSnapshot survival,
+            BloodGroup group,int cardiacTicks) {
+        this(condition,blood,oxygen,pain,drug,bpm,mode,progress,energy,consciousness,parts,survival,group,cardiacTicks,mode==Mode.DEAD?0:1);
+    }
     public BodySnapshot(float condition, float blood, float oxygen, float pain, float drug,
             float bpm, Mode mode, float consciousnessProgress, float energy, float consciousness,
             PartSnapshot[] parts, SurvivalSnapshot survival, BloodGroup group) {
@@ -15,7 +20,11 @@ public record BodySnapshot(float condition, float blood, float oxygen, float pai
     public boolean racingHeart() { return CardiacRhythm.unstable(cardiacTicks); }
     public BodySnapshot withCardiacTicks(int ticks) {
         return new BodySnapshot(condition,blood,oxygen,pain,drug,bpm,mode,consciousnessProgress,
-                energy,consciousness,parts,survival,bloodGroup,ticks);
+                energy,consciousness,parts,survival,bloodGroup,ticks,brainHealth);
+    }
+    public BodySnapshot withBrainHealth(float value) {
+        return new BodySnapshot(condition,blood,oxygen,pain,drug,bpm,mode,consciousnessProgress,
+                energy,consciousness,parts,survival,bloodGroup,cardiacTicks,value);
     }
     // Append modes: saved pre-0.3.9 ordinal 3 must continue to mean DEAD.
     public enum Mode { CONSCIOUS, UNCONSCIOUS, LAST_STANDING, DEAD, DYING }
@@ -30,7 +39,7 @@ public record BodySnapshot(float condition, float blood, float oxygen, float pai
 
     public BodySnapshot withBloodGroup(BloodGroup group) {
         return new BodySnapshot(condition,blood,oxygen,pain,drug,bpm,mode,consciousnessProgress,
-                energy,consciousness,parts,survival,Objects.requireNonNull(group),cardiacTicks);
+                energy,consciousness,parts,survival,Objects.requireNonNull(group),cardiacTicks,brainHealth);
     }
 
     public BodySnapshot(float condition, float blood, float oxygen, float pain, float drug,
@@ -54,6 +63,7 @@ public record BodySnapshot(float condition, float blood, float oxygen, float pai
         bpm = cardiacTicks < 0 ? 0 : finiteClamp(bpm, 0, 220);
         consciousnessProgress = unit(consciousnessProgress);
         energy = unit(energy); consciousness = unit(consciousness);
+        brainHealth=mode==Mode.DEAD?0:unit(brainHealth);
         Objects.requireNonNull(mode, "mode");
         Objects.requireNonNull(survival, "survival");
         Objects.requireNonNull(parts, "parts");

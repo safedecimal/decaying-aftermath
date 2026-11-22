@@ -110,6 +110,22 @@ class MedicalUiRenderingTest {
             }
         }
     }
+    @Test void firstDyingFrameAndWholeCountdownDrawNativeVisibleCircleAtEveryGuiScale() throws Exception {
+        for(int height:new int[]{180,240,420,1080})for(float progress:new float[]{1,.5f,.05f,0}) {
+            int width=height*16/9;var g=Graphics.create(width,height);var box=ConsciousnessLayout.at(width,height);
+            var b=new BodySnapshot(.2f,.3f,.4f,0,0,72,BodySnapshot.Mode.DYING,progress,1,.2f,
+                    new io.github.safedecimal.decayingaftermath.medical.BodyModel().snapshot().parts());
+            double alpha=MedicalPresentationPolicy.sleepCircleAlpha(b,false);assertEquals(1,alpha);
+            MedicalClient.extractRecoveryRing(g,box,b,alpha);
+            assertFalse(g.blits.isEmpty());var track=g.blits.getFirst();
+            assertEquals(149,track.sourceWidth());assertEquals(149,track.sourceHeight());
+            assertTrue((track.color()>>>24)>=89);assertTrue(track.width()>0&&track.height()>0);
+            for(var blit:g.blits) {
+                assertTrue(blit.x()>=0&&blit.y()>=0);
+                assertTrue(blit.x()+blit.width()<=width&&blit.y()+blit.height()<=height);
+            }
+        }
+    }
 
     @Test void nativeScissorAppliesCanvasTransformOnlyOnce() throws Exception {
         var graphics = Graphics.create(640, 420);

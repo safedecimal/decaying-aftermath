@@ -52,4 +52,20 @@ public final class MedicalPresentationPolicy {
         // Dying is a recoverable Minecraft treatment window, not CU's forced unconscious fast-forward.
         return treatmentOpen&&body.mode()==BodySnapshot.Mode.DYING?Math.min(.35,alpha):alpha;
     }
+    /** Recovery HUD is state-owned: neither fade time nor progress may hide the sleep circle. */
+    public static double sleepCircleAlpha(BodySnapshot body,boolean lastStandIntro) {
+        if(body==null||lastStandIntro||body.mode()==BodySnapshot.Mode.DEAD
+                ||body.mode()==BodySnapshot.Mode.LAST_STANDING)return 0;
+        return body.mode()==BodySnapshot.Mode.UNCONSCIOUS||body.mode()==BodySnapshot.Mode.DYING
+                ||body.cardiacArrest()?1:0;
+    }
+    /** The first blackout packet must not leave a visible world while waiting for client fades. */
+    public static double sleepBlackout(BodySnapshot body,double fadedBlack,double relief) {
+        double black=Double.isFinite(fadedBlack)?Math.clamp(fadedBlack,0,1):0;
+        if(body!=null&&body.mode()==BodySnapshot.Mode.UNCONSCIOUS) {
+            black=Math.max(.965,black);
+            if(Double.isFinite(relief))black-=Math.clamp(relief,0,.13);
+        }
+        return Math.max(0,black);
+    }
 }

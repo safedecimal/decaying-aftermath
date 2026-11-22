@@ -8,6 +8,7 @@ import net.minecraft.util.RandomSource;
 
 /** Owner-controlled AudioSource equivalent: one actual loop, mutable volume/pitch, explicit cleanup. */
 public final class MedicalLoopSound extends AbstractTickableSoundInstance {
+    private double inactiveSeconds;
     private MedicalLoopSound(String name, float volume, float pitch) {
         super(SoundEvent.createVariableRangeEvent(MedicalClient.id(name)), SoundSource.MASTER, RandomSource.create());
         looping = true; relative = true; attenuation = Attenuation.NONE; delay = 0;
@@ -25,6 +26,9 @@ public final class MedicalLoopSound extends AbstractTickableSoundInstance {
     public void fadeTo(float target, double seconds) {
         float amount = (float) Math.max(0, seconds * .5);
         set(volume + Math.copySign(Math.min(Math.abs(target - volume), amount), target - volume), pitch);
+        var manager=Minecraft.getInstance().getSoundManager();
+        inactiveSeconds=volume>.001f&&!isStopped()&&!manager.isActive(this)?inactiveSeconds+Math.min(.25,Math.max(0,seconds)):0;
+        if(inactiveSeconds>=2) {manager.play(this);inactiveSeconds=0;}
     }
     public float volume() { return volume; }
     public void close() { stop(); Minecraft.getInstance().getSoundManager().stop(this); }

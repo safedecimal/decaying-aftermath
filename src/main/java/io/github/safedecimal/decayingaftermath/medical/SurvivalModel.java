@@ -40,6 +40,14 @@ public final class SurvivalModel {
         return Math.min(1,bloodVolume()/.5f)*Math.min(1,redCells/.5f)*lungFunction;
     }
     public void tick(BodyEnvironment e,float lostBlood,float sepsis) {
+        tick(e,lostBlood,sepsis,1);
+    }
+    public void tick(BodyEnvironment e,float lostBlood,float sepsis,float perfusion) {
+        tick(e,lostBlood,sepsis,perfusion,false);
+    }
+    public void tick(BodyEnvironment e,float lostBlood,float sepsis,float perfusion,boolean preserveLastStanding) {
+        Objects.requireNonNull(e);
+        if(!Float.isFinite(lostBlood)||lostBlood<0||!Float.isFinite(sepsis)||!Float.isFinite(perfusion))return;
         float volume=bloodVolume();
         float oldHydration=hydration;
         if (volume>0 && lostBlood>0) {
@@ -75,11 +83,18 @@ public final class SurvivalModel {
             float fever=sepsis*.00018f;
             temperature=Math.clamp(temperature+transfer+thermoregulation+fever+(e.sprinting()?.00004f:0),25,45);
         }
-        // Plasma replenishes faster than erythrocytes, only when nutrition/water actually support it.
-        if (lostBlood<=.000001f && hydration>.3f && nutrition>.25f && sepsis<.25f) {
-            float newPlasma=Math.min(1-plasma,.000008f*hydration);
-            plasma+=newPlasma; hydration=unit(hydration-newPlasma*.15f);
-            redCells=unit(redCells+.0000015f*nutrition);
+        if(preserveLastStanding) {
+            // Preserve the old per-tick reserves throughout the unchanged Last Standing intro.
+            if(lostBlood<=.000001f&&hydration>.3f&&nutrition>.25f&&sepsis<.25f) {
+                float newPlasma=Math.min(1-plasma,.000008f*hydration);
+                plasma+=newPlasma;hydration=unit(hydration-newPlasma*.15f);
+                redCells=unit(redCells+.0000015f*nutrition);
+            }
+        } else {
+            var production=RecoveryPhysiology.production(plasma,redCells,hydration,nutrition,sepsis,perfusion);
+            plasma=unit(plasma+production.plasma());redCells=unit(redCells+production.cells());
+            hydration=unit(hydration-production.plasma()*.15f);
+            nutrition=unit(nutrition-production.cells()*.02f);
         }
         float excess=Math.max(0,stimulant-1)+Math.max(0,antibiotic-1.5f)+Math.max(0,coagulant-1);
         toxin=Math.clamp(toxin+excess*.00004f-.00001f*Math.min(1,hydration*2),0,3);
@@ -110,6 +125,8 @@ public final class SurvivalModel {
     public void restoreLastStandingBlood(float blood) { plasma=redCells=unit(blood); }
     public boolean canTreat(TreatmentKind kind) { Objects.requireNonNull(kind);return true; }
     public void treat(TreatmentKind kind,float amount) {
+        Objects.requireNonNull(kind);
+        if(!Float.isFinite(amount)||amount<=0)return;
         amount=unit(amount);
         switch(kind) {
             case ANTIBIOTICS -> antibiotic=Math.clamp(antibiotic+amount*.9f,0,3);

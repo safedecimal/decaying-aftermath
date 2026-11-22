@@ -44,6 +44,7 @@ public final class BodyModel {
     private boolean chestDrain;
     private SurvivalModel survival = new SurvivalModel();
     private float blood = 1, oxygen = 1, energy = 1, drug, bpm = 72;
+    private float brainHealth=1;
     private Mode mode = Mode.CONSCIOUS;
     private int lastStandingTicks, wakeTicks, stableTicks, cardiacTicks;
     private int lastStandingBoostTicks, dyingTicks = -1;
@@ -64,6 +65,7 @@ public final class BodyModel {
         Arrays.fill(coldInjuries,false);
         lungCollapse=0; chestDrain=false; survival=new SurvivalModel();
         blood = oxygen = energy = 1; drug = 0; bpm = 72; mode = Mode.CONSCIOUS;
+        brainHealth=1;
         lastStandingTicks = wakeTicks = stableTicks = cardiacTicks = 0; lastStandingSpent = false;
         lastStandingBoostTicks = 0; dyingTicks = -1; faintRecovered = false;
     }
@@ -80,6 +82,10 @@ public final class BodyModel {
         amount = Math.min(amount, 1000);
         int i = part.ordinal();
         integrity[i] = unit(integrity[i] - amount * kind.tissue);
+        // Scalp cuts are not brain injury; catastrophic/Last Standing entry keeps its mechanism.
+        if(part==BodyPart.HEAD&&integrity[i]>.22f
+                &&(kind==DamageKind.BLUNT||kind==DamageKind.FALL_IMPACT||kind==DamageKind.EXPLOSION||kind==DamageKind.PUNCTURE))
+            brainHealth=unit(brainHealth-amount*.006f);
         localPain[i] = unit(localPain[i] + amount * kind.pain);
         bleeding[i] = unit(bleeding[i] + amount * kind.surfaceBleed);
         if (kind.opensSkin) { openWounds[i]=true; infectionAgeTicks[i]=0; }
@@ -238,6 +244,10 @@ public final class BodyModel {
             totalBleeding+=internalBleeding[i];
             boolean perfused=cardiacTicks>=0 && !tourniquet[i] && oxygen>.5f && blood>.3f && survival.nutrition()>.2f
                     && survival.oxygenDelivery(1-lungCollapse)>.6f && infection[i]<.6f;
+            if(mode!=Mode.LAST_STANDING&&mode!=Mode.DYING)
+                integrity[i]=unit(integrity[i]+RecoveryPhysiology.tissueRepair(integrity[i],BodyPart.values()[i].isVital(),
+                        perfused,!openWounds[i]||bandaged[i]||disinfectionTicks[i]>0,bleeding[i],internalBleeding[i],
+                        infection[i],foreignBodies[i],survival.nutrition()));
             boolean nativeSkinCare = skinHealAmount[i] > 0;
             if (nativeSkinCare) {
                 float used = Math.min(skinHealAmount[i], .00025f);
@@ -275,7 +285,8 @@ public final class BodyModel {
             // A dry applied dressing remains actual care, not hunger/vanilla HP regen.
             receivingCare |= bandaged[i] && bleeding[i] <= .001f;
         }
-        survival.tick(environment,totalBleeding*MedicalPhysiology.BLOOD_LOSS_PER_TICK_PER_SEVERITY,sepsis());
+        survival.tick(environment,totalBleeding*MedicalPhysiology.BLOOD_LOSS_PER_TICK_PER_SEVERITY,sepsis(),
+                cardiacTicks<0?0:Math.clamp(blood/.5f,0,1),mode==Mode.LAST_STANDING);
         blood=survival.bloodVolume();
         if(chestDrain) lungCollapse=Math.max(0,lungCollapse-.0006f);
         drug = Math.max(0, drug - .0002f);
@@ -293,6 +304,11 @@ public final class BodyModel {
         energy = unit(energy + recovery - (exertion ? sprinting ? .0012f : .00035f : 0)*load
                 - Math.max(0,activeDrug-.3f)*.00012f - sepsis()*.00018f - survival.systemicStress()*.00018f);
         if(survival.nutrition()<.08f) energy=unit(energy-.0001f);
+        if(mode!=Mode.LAST_STANDING&&mode!=Mode.DYING) {
+            float delivery=cardiacTicks<0?0:oxygen*survival.oxygenDelivery(1-lungCollapse)*Math.clamp(blood/.5f,0,1);
+            brainHealth=BrainPhysiology.advance(brainHealth,delivery,survival.nutrition(),survival.hydration(),
+                    survival.systemicStress(),!moving||environment.sleeping());
+        }
         if(survival.thermalStress()>.8f) integrity[BodyPart.TORSO.ordinal()]=unit(integrity[BodyPart.TORSO.ordinal()]-.000025f);
         if(survival.nutrition()<.02f||survival.hydration()<.04f||survival.systemicStress()>.85f)
             integrity[BodyPart.TORSO.ordinal()]=unit(integrity[BodyPart.TORSO.ordinal()]-.000025f);
@@ -447,7 +463,7 @@ public final class BodyModel {
                 : mode == Mode.LAST_STANDING ? (float) lastStandingTicks / LAST_STANDING_TICKS
                 : mode == Mode.DYING ? (float) Math.max(0, dyingTicks) / DYING_TICKS : 1;
         return new BodySnapshot(unit(condition), blood, oxygen, effectivePain(), drug, bpm, mode,
-                progress, energy, consciousness(), parts,survival.snapshot(totalInternalBleeding(),1-lungCollapse),null,cardiacTicks);
+                progress, energy, consciousness(), parts,survival.snapshot(totalInternalBleeding(),1-lungCollapse),null,cardiacTicks,brainHealth);
     }
 
     /** Snapshot-only restore is conservative; use SavedState to preserve all treatment timers. */
@@ -556,6 +572,7 @@ public final class BodyModel {
 
     private void loadSnapshot(BodySnapshot state) {
         blood = state.blood(); oxygen = state.oxygen(); energy = state.energy(); drug = state.drug(); bpm = state.bpm(); mode = state.mode();
+        brainHealth=state.brainHealth();
         cardiacTicks = state.cardiacTicks();
         if (cardiacTicks < 0) mode = Mode.UNCONSCIOUS;
         survival=new SurvivalModel(state.survival()); lungCollapse=1-state.survival().lungFunction();
@@ -659,7 +676,8 @@ public final class BodyModel {
     private float consciousness() {
         if (mode == Mode.DEAD || cardiacTicks < 0) return 0;
         float reserves = Math.min(Math.min(unit(oxygen / .8f), unit(blood / .6f)), unit(vitalIntegrity() / .35f));
-        return unit(reserves * (1 - effectivePain() * .35f)
+        float neural=mode==Mode.LAST_STANDING||mode==Mode.DYING?1:brainHealth;
+        return unit(neural * reserves * (1 - effectivePain() * .35f)
                 * (1 - Math.min(1, survival.effectiveOpiate(drug)) * .45f) * (1 - sepsis() * .4f)
                 * Math.max(.1f,survival.oxygenDelivery(1-lungCollapse))*(1-survival.systemicStress()*.45f));
     }

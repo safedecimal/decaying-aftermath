@@ -110,6 +110,7 @@
   "decaying_aftermath.defib.arrest": "Остановка сердца • осталось %s с",
   "decaying_aftermath.defib.done": "Ритм восстановлен",
   "decaying_aftermath.defib.harm": "Опасный разряд: ритм ухудшился",
+  "decaying_aftermath.stat.brain": "МОЗГ %s%%",
   "decaying_aftermath.defib.abort": "Процедура прервана",
   "decaying_aftermath.defib.close": "Закрыть",
   "decaying_aftermath.defib.racing": "Нестабильный ритм • %s уд/мин",

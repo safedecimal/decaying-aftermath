@@ -8,6 +8,7 @@ import net.minecraft.util.RandomSource;
 
 /** Exclusive owned CU music cues; respects Minecraft's music slider, unlike procedural UI sounds. */
 public final class MedicalMusicSound extends AbstractTickableSoundInstance {
+    private double inactiveSeconds;
     private MedicalMusicSound(String name,boolean loop) {
         super(SoundEvent.createVariableRangeEvent(MedicalClient.id(name)),SoundSource.MUSIC,RandomSource.create());
         looping=loop;relative=true;attenuation=Attenuation.NONE;delay=0;
@@ -21,6 +22,11 @@ public final class MedicalMusicSound extends AbstractTickableSoundInstance {
         volume+=Math.copySign(Math.min(Math.abs(target-volume),amount),target-volume);
     }
     public void close() {stop();Minecraft.getInstance().getSoundManager().stop(this);}
+    public void ensurePlaying(double seconds) {
+        var manager=Minecraft.getInstance().getSoundManager();
+        inactiveSeconds=!isStopped()&&!manager.isActive(this)?inactiveSeconds+Math.min(.25,Math.max(0,seconds)):0;
+        if(inactiveSeconds>=2) {manager.play(this);inactiveSeconds=0;}
+    }
     @Override public void tick() { }
     @Override public boolean canStartSilent() {return true;}
 }

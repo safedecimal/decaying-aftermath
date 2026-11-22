@@ -89,7 +89,7 @@ public final class MedicalClient {
         }
         // LastStandSequence and blackout fades use unscaled time, even while the game is paused.
         TIMELINE.advance(body, seconds);
-        updateDeathMusic(body.mode(),body.consciousnessProgress(),seconds);
+        updateDeathMusic(body,seconds);
         if(body.mode()==BodySnapshot.Mode.DYING||body.mode()==BodySnapshot.Mode.DEAD)
             closeCriticalLoops();
         if (TIMELINE.lastStandActive() && TIMELINE.droneDue() && !playedDrone) {
@@ -170,8 +170,8 @@ public final class MedicalClient {
         if (dyingLoop != null) dyingLoop.close();
         painLoop = exhaustedLoop = tiredLoop = dyingLoop = null;
     }
-    private static void updateDeathMusic(BodySnapshot.Mode mode,float progress,double seconds) {
-        var action=DEATH_MUSIC.advance(mode,progress);
+    private static void updateDeathMusic(BodySnapshot body,double seconds) {
+        var action=DEATH_MUSIC.advance(body);
         if(action.stopDying()&&dyingMusic!=null) {dyingMusic.close();dyingMusic=null;}
         if(action.stopDead()&&deadMusic!=null) {deadMusic.close();deadMusic=null;}
         // DrawYourLastBreath1 is a one-shot CU clip, not a loop. It is armed only
@@ -181,7 +181,7 @@ public final class MedicalClient {
             if(dyingMusic!=null) {dyingMusic.close();dyingMusic=null;}
             deadMusic=MedicalMusicSound.start("death_music",false);
         }
-        if(dyingMusic!=null)dyingMusic.fadeTo(.8f,seconds);
+        if(dyingMusic!=null) {dyingMusic.fadeTo(.8f,seconds);dyingMusic.ensurePlaying(seconds);}
     }
     private static void clearPresentation() {
         stop("heartbeat");stop("heartbeat_heavy");stop("heartbeat_monitor");activeBeat=null;
@@ -250,14 +250,14 @@ public final class MedicalClient {
             graphics.centeredText(client.font,Component.translatable("decaying_aftermath.defib.racing",
                     Math.round(body.bpm())).getString(),graphics.guiWidth()/2,graphics.guiHeight()-68,0xFFFFAE72);
         }
-        if (TIMELINE.black() > 0 || TIMELINE.vignette() > 0) {
-            double relief = body.mode() == BodySnapshot.Mode.UNCONSCIOUS ? blackoutRelief : 0;
-            double black = MedicalPresentationPolicy.blackOverlay(body, TIMELINE.black() - relief, isMedicalPanelOpen(client));
+        double sleepBlack=MedicalPresentationPolicy.sleepBlackout(body,TIMELINE.black(),blackoutRelief);
+        if (sleepBlack > 0 || TIMELINE.vignette() > 0) {
+            double black = MedicalPresentationPolicy.blackOverlay(body,sleepBlack,isMedicalPanelOpen(client));
             graphics.fill(0, 0, graphics.guiWidth(), graphics.guiHeight(), color(black, 0));
             blit(graphics, "consciousness_vignette", 0, 0, graphics.guiWidth(), graphics.guiHeight(),
                     256, 256, color(TIMELINE.vignette(), 0xFFFFFF));
         }
-        double alpha = body.mode() == BodySnapshot.Mode.UNCONSCIOUS ? Math.max(.35, TIMELINE.circleAlpha()) : TIMELINE.circleAlpha();
+        double alpha=MedicalPresentationPolicy.sleepCircleAlpha(body,TIMELINE.lastStandActive());
         if (alpha > 0) {
             var box = ConsciousnessLayout.at(graphics.guiWidth(), graphics.guiHeight());
             extractRecoveryRing(graphics, box, body, alpha);
@@ -265,7 +265,7 @@ public final class MedicalClient {
                     Component.translatable("decaying_aftermath.defib.arrest",(-body.cardiacTicks()+19)/20).getString(),
                     graphics.guiWidth()/2,Math.max(3,box.y()-13),0xFFF19486);
             // Blackout feedback belongs to the world HUD, not to an inventory screen.
-            if (body.mode() == BodySnapshot.Mode.UNCONSCIOUS) {
+            if (alpha>0) {
                 for (int column = 0; column < CONSCIOUSNESS_ECG.width(); column++) {
                     for (int row = 0; row < CONSCIOUSNESS_ECG.height(); row++) {
                         int pixelAlpha = CONSCIOUSNESS_ECG.alpha(column, row);
