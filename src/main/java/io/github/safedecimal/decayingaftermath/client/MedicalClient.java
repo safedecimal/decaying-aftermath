@@ -249,7 +249,7 @@ public final class MedicalClient {
         if (client.player == null || !ClientMedicalState.received()) return;
         BodySnapshot body = ClientMedicalState.snapshot();
         extractPain(graphics);
-        if(body.racingHeart() && client.gui.screen()==null && body.mode()==BodySnapshot.Mode.CONSCIOUS) {
+        if(body.racingHeart() && !UniHealthHud.enabled(client) && client.gui.screen()==null && body.mode()==BodySnapshot.Mode.CONSCIOUS) {
             graphics.centeredText(client.font,Component.translatable("decaying_aftermath.defib.racing",
                     Math.round(body.bpm())).getString(),graphics.guiWidth()/2,graphics.guiHeight()-68,0xFFFFAE72);
         }

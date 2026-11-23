@@ -2,9 +2,9 @@
   "providers": [
     {
       "type": "ttf",
-      "file": "decaying_aftermath:rajdhani_light.ttf",
+      "file": "decaying_aftermath:vcr_osd_mono.ttf",
       "size": 9,
-      "oversample": 8,
+      "oversample": 4,
       "shift": [
         0,
         0

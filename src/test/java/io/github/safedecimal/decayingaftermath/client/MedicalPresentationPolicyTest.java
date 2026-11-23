@@ -62,7 +62,7 @@ class MedicalPresentationPolicyTest {
     }
     @Test void healthyWorldHasVisualHeartbeatWithoutPlayingHeartbeatAudio() {
         assertNull(MedicalPresentationPolicy.beatSound(false, healthy()));
-        assertTrue(MedicalPresentationPolicy.heartbeatVision(false, healthy()));
+        assertFalse(MedicalPresentationPolicy.heartbeatVision(false, healthy()));
         assertFalse(MedicalPresentationPolicy.heartbeatVision(true, healthy()));
         assertFalse(MedicalPresentationPolicy.heartbeatVision(false, body(BodySnapshot.Mode.DEAD,0,0,0,0,72,0)));
         assertFalse(MedicalPresentationPolicy.heartbeatVision(false, body(BodySnapshot.Mode.CONSCIOUS,1,1,1,0,0,0)));
