@@ -27,8 +27,7 @@
     "AftermathMouseMixin",
     "AftermathGuiMixin",
     "AftermathVisionMixin",
-    "AftermathRedactionMixin",
-    "UniHealthHudMixin"
+    "AftermathRedactionMixin"
   ],
   "injectors": {
     "defaultRequire": 1

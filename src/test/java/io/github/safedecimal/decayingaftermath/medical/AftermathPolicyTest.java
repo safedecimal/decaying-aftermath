@@ -80,8 +80,8 @@ class AftermathPolicyTest {
         Path assets=Path.of("src/main/resources/assets/decaying_aftermath");
         var json=JsonParser.parseString(Files.readString(assets.resolve("font/aftermath_thin.json"))).getAsJsonObject();
         String file=json.getAsJsonArray("providers").get(0).getAsJsonObject().get("file").getAsString();
-        assertTrue(file.matches("[a-z0-9_.-]+:[a-z0-9_./-]+"));
-        assertTrue(Files.size(assets.resolve("font").resolve(file.substring(file.indexOf(':')+1)))>10000);
+        assertEquals("decaying_aftermath:vcr_osd_mono.ttf",file);
+        assertEquals(75864,Files.size(assets.resolve("font/vcr_osd_mono.ttf")));
     }
     @Test void cameraAndEveryDeathBranchAreBoundIntoNativeMixinsAndServerAuthority() throws Exception {
         String client=Files.readString(Path.of("src/main/resources/decaying-aftermath.client.mixins.json"));
