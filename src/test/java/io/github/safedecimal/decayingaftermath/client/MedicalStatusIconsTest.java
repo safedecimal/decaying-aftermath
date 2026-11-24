@@ -1,7 +1,16 @@
 package io.github.safedecimal.decayingaftermath.client;
 
+import com.google.gson.JsonParser;
+import io.github.safedecimal.decayingaftermath.medical.BleedProfile;
 import io.github.safedecimal.decayingaftermath.medical.BodySnapshot;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.BitSet;
+import java.util.HashSet;
+import java.util.List;
+import javax.imageio.ImageIO;
 import org.junit.jupiter.api.Test;
+import static io.github.safedecimal.decayingaftermath.client.MedicalStatusIcons.BleedType.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class MedicalStatusIconsTest {
@@ -74,10 +83,62 @@ class MedicalStatusIconsTest {
         var covered=new BodySnapshot.PartSnapshot(1,.1f,0,false,true,false,false,0,false,false,.006f);
         assertEquals("bleeding_covered_heavy",MedicalStatusIcons.bleeding(covered).name());
     }
+    @Test void mixedWoundsShowEachTypeAboveTheSameStrictDisplayThreshold() {
+        float min=MedicalStatusIcons.MIN_VISIBLE_BLEED;
+        var exact=state(0,false).withExternalBleeding(new BleedProfile(min,0,0));
+        assertNull(MedicalStatusIcons.bleeding(exact));
+        assertTrue(MedicalStatusIcons.bleedingTypes(exact).isEmpty());
+        var mixed=exact.withExternalBleeding(new BleedProfile(Math.nextUp(min),min,.01f));
+        assertEquals(List.of(CAPILLARY,ARTERIAL),MedicalStatusIcons.bleedingTypes(mixed));
+        assertEquals("bleeding_light",MedicalStatusIcons.bleeding(mixed).name());
+    }
+    @Test void severityAndTintIgnoreVesselTypeAndEffectiveBloodLoss() {
+        var capillary=state(0,true).withExternalBleeding(new BleedProfile(.21f,0,0));
+        var arterial=state(0,true).withExternalBleeding(new BleedProfile(0,0,.21f));
+        assertEquals(List.of(CAPILLARY),MedicalStatusIcons.bleedingTypes(capillary));
+        assertEquals(List.of(ARTERIAL),MedicalStatusIcons.bleedingTypes(arterial));
+        assertEquals("bleeding_covered_arterial",MedicalStatusIcons.bleeding(capillary).name());
+        assertEquals(MedicalStatusIcons.bleeding(capillary),MedicalStatusIcons.bleeding(arterial));
+        assertEquals(MedicalStatusIcons.bleedingColor(capillary),MedicalStatusIcons.bleedingColor(arterial));
+    }
+    @Test void typedAssetsAreDistinctTransparentMonochromeMasksWithLocalizedNames() throws Exception {
+        var masks=new HashSet<BitSet>();
+        try(var en=resource("lang/en_us.json");var ru=resource("lang/ru_ru.json")) {
+            var english=JsonParser.parseReader(new InputStreamReader(en,StandardCharsets.UTF_8)).getAsJsonObject();
+            var russian=JsonParser.parseReader(new InputStreamReader(ru,StandardCharsets.UTF_8)).getAsJsonObject();
+            assertEquals("Bleeding",english.get("decaying_aftermath.status.bleed_type.heading").getAsString());
+            assertEquals("Кровотечение",russian.get("decaying_aftermath.status.bleed_type.heading").getAsString());
+            for(var type:MedicalStatusIcons.BleedType.values()) {
+                assertTrue(english.get(type.translationKey).getAsString().matches("[A-Za-z]+"));
+                assertTrue(russian.get(type.translationKey).getAsString().matches("[А-Яа-яЁё]+"));
+                assertFalse(type.icon.name().startsWith("bleeding_"));
+                try(var png=resource("textures/gui/status/"+type.icon.name()+".png")) {
+                    var image=ImageIO.read(png);
+                    assertEquals(type.icon.width(),image.getWidth());assertEquals(type.icon.height(),image.getHeight());
+                    var mask=new BitSet();
+                    for(int y=0;y<image.getHeight();y++)for(int x=0;x<image.getWidth();x++) {
+                        int pixel=image.getRGB(x,y);
+                        if(pixel>>>24==0)continue;
+                        assertEquals(0xFFFFFFFF,pixel);
+                        mask.set(y*image.getWidth()+x);
+                    }
+                    assertTrue(mask.cardinality()>0&&mask.cardinality()<image.getWidth()*image.getHeight());
+                    assertTrue(masks.add(mask),"Each type needs its own silhouette");
+                }
+            }
+        }
+    }
+    private java.io.InputStream resource(String path) {
+        var resource=getClass().getResourceAsStream("/assets/decaying_aftermath/"+path);
+        assertNotNull(resource,path);
+        return resource;
+    }
     @Test void fourStatusIconsFitAllRealWideAndSlimBodyParts() {
+        var mixed=infected(.5f,true).withExternalBleeding(new BleedProfile(.02f,.03f,.12f));
         for(boolean slim:new boolean[]{false,true})for(var part:io.github.safedecimal.decayingaftermath.medical.BodyPart.values()) {
-            var box=MinecraftBodyLayout.box(part,slim);var placements=MedicalStatusIcons.placements(infected(.5f,true),box);
-            assertEquals(4,placements.size());
+            var box=MinecraftBodyLayout.box(part,slim);var placements=MedicalStatusIcons.placements(mixed,box);
+            assertEquals(List.of("bleeding_heavy","fracture","infection_decreasing","disinfected"),
+                    placements.stream().map(p->p.icon().name()).toList());
             for(var p:placements) {
                 float ratio=p.size()/(float)Math.max(p.icon().width(),p.icon().height());
                 int w=Math.max(1,Math.round(p.icon().width()*ratio)),h=Math.max(1,Math.round(p.icon().height()*ratio));

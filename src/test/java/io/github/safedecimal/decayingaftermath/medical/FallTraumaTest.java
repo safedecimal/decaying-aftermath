@@ -53,7 +53,8 @@ class FallTraumaTest {
     }
     @Test void currentFlowRatesSeparateOutsideAndInsideAndMatchTheLossPerTick() {
         var b=new BodyModel();b.fall(40);var before=b.snapshot();
-        float external=CuMedicalMonitor.externalBleeding(before),internal=before.survival().internalBleeding();
+        float external=0,internal=before.survival().internalBleeding();
+        for(var part:before.parts())external+=part.externalBleeding().flow();
         float total=Math.min(before.survival().bloodVolume(),(external+internal)*.00065f)*1200*75*.07f*1000;
         assertEquals(total,CuMedicalMonitor.bleedFlowMlPerMinute(before,false)+CuMedicalMonitor.bleedFlowMlPerMinute(before,true),1);
         assertEquals(2,CuMedicalMonitor.bleedingDetails(before).size());

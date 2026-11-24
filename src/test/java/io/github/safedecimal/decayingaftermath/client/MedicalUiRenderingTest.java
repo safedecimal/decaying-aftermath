@@ -1,10 +1,15 @@
 package io.github.safedecimal.decayingaftermath.client;
 
 import com.mojang.renderpearl.api.pipeline.RenderPipeline;
+import io.github.safedecimal.decayingaftermath.medical.BleedProfile;
+import io.github.safedecimal.decayingaftermath.medical.BodyPart;
 import io.github.safedecimal.decayingaftermath.medical.BodySnapshot;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.renderer.state.gui.ColoredRectangleRenderState;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.FormattedText;
 import net.minecraft.resources.Identifier;
 import org.joml.Matrix3x2f;
 import org.joml.Matrix3x2fStack;
@@ -24,10 +29,12 @@ class MedicalUiRenderingTest {
     private record Blit(int width, int height, int sourceWidth, int sourceHeight,
                         int textureWidth, int textureHeight, float u, float v,
                         Identifier id,int x,int y,int color,Matrix3x2f transform,ScreenRectangle clip) {}
+    private record Text(Component label,int x,int y,Matrix3x2f transform) {}
 
     private static class Graphics extends GuiGraphicsExtractor {
         List<ColoredRectangleRenderState> fills;
         List<Blit> blits;
+        List<Text> labels;
 
         private Graphics() { super(null, null, 0, 0); } // Never invoked by this TEST-ONLY fixture.
 
@@ -42,6 +49,7 @@ class MedicalUiRenderingTest {
             set(graphics, "scissorStack", constructor.newInstance(new ScreenRectangle(0, 0, width, height)));
             graphics.fills = new ArrayList<>();
             graphics.blits = new ArrayList<>();
+            graphics.labels = new ArrayList<>();
             return graphics;
         }
 
@@ -63,6 +71,10 @@ class MedicalUiRenderingTest {
             // Shorter native overloads forward here with a destination-sized source region.
             blits.add(new Blit(width, height, sourceWidth, sourceHeight, textureWidth, textureHeight, u, v,
                     id,x,y,color,new Matrix3x2f(pose()),scissorStack.peek()));
+        }
+
+        @Override public void text(Font font,Component label,int x,int y,int color,boolean shadow) {
+            labels.add(new Text(label,x,y,new Matrix3x2f(pose())));
         }
 
         long visible(int color) {
@@ -233,6 +245,54 @@ class MedicalUiRenderingTest {
                 MinecraftBodyLayout.box(io.github.safedecimal.decayingaftermath.medical.BodyPart.LEFT_LEG,false));
         assertTrue(limb.fills.stream().anyMatch(f->f.col1()==0xFF210909&&f.bounds()!=null));
         assertTrue(limb.blits.stream().filter(b->b.id().toString().contains("/bleeding_")).allMatch(b->((b.color()>>>16)&255)>=192));
+    }
+
+    @Test void selectedPartDrawsMixedTypeIconsAndTheirHoverLabelsWithoutSeverityTint() throws Exception {
+        var mixed=new BodySnapshot.PartSnapshot(1,0,0,false,true,false,false)
+                .withExternalBleeding(new BleedProfile(.02f,.03f,.12f));
+        var graphics=Graphics.create(260,250);
+        Font longLabels=new Font(null) {
+            @Override public int width(FormattedText label) { return 120; }
+        };
+        MedicalInventoryScreen.extractBleedingDetails(graphics,longLabels,mixed);
+        var box=MedicalInventoryLayout.BLEED_DETAILS;
+        var types=MedicalStatusIcons.BleedType.values();
+        assertEquals(types.length,graphics.blits.size());
+        assertEquals(types.length+1,graphics.labels.size());
+        assertEquals(Component.translatable("decaying_aftermath.status.bleed_type.heading"),graphics.labels.getFirst().label());
+        var tooltip=MedicalInventoryScreen.bodyTooltip(BodyPart.LEFT_ARM,mixed);
+        assertEquals(types.length+1,tooltip.size());
+        for(int i=0;i<types.length;i++) {
+            var blit=graphics.blits.get(i);
+            assertEquals("textures/gui/status/"+types[i].icon.name()+".png",blit.id().getPath());
+            assertEquals(16,blit.sourceWidth());assertEquals(16,blit.sourceHeight());
+            assertEquals(8,blit.width());assertEquals(8,blit.height());
+            assertEquals(0xFFFFFFFF,blit.color());
+            assertTrue(box.contains(blit.x(),blit.y())&&box.contains(blit.x()+blit.width()-1,blit.y()+blit.height()-1));
+            var label=graphics.labels.get(i+1);
+            assertEquals(Component.translatable(types[i].translationKey),label.label());
+            assertEquals(label.label(),tooltip.get(i+1));
+        }
+        for(var label:graphics.labels) {
+            var pose=label.transform();
+            assertTrue(box.contains(pose.m20()+label.x(),pose.m21()+label.y()));
+            assertTrue(pose.m20()+pose.m00()*longLabels.width(label.label())<=box.x()+box.width());
+        }
+    }
+
+    @Test void internalOnlyBleedingDrawsNoSurfaceSeverityOrType() throws Exception {
+        var concealed=new BodySnapshot.PartSnapshot(1,0,0,false,false,false,false,0,false,false,
+                0,0,.3f,false,false,1);
+        var graphics=Graphics.create(260,250);
+        var box=MinecraftBodyLayout.box(BodyPart.LEFT_ARM,false);
+        MedicalStatusIcons.body(graphics,concealed,box);
+        MedicalInventoryScreen.extractBleedingDetails(graphics,null,concealed);
+        assertTrue(graphics.blits.isEmpty());
+        assertTrue(graphics.fills.isEmpty());
+        assertTrue(graphics.labels.isEmpty());
+        var healthy=new BodySnapshot.PartSnapshot(1,0,0,false,false,false,false);
+        assertEquals(MedicalInventoryScreen.bodyTooltip(BodyPart.LEFT_ARM,healthy),
+                MedicalInventoryScreen.bodyTooltip(BodyPart.LEFT_ARM,concealed));
     }
 
     @Test void disinfectionBadgeBlitsWithoutInfectionAndDisappearsOnExpiry() throws Exception {

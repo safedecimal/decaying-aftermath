@@ -64,7 +64,7 @@ class BodyVitalsTest {
     @Test void severeBleedingNeedsMoreThanOneTwelveTurnRoll() {
         BodyModel body = new BodyModel(); body.damage(LEFT_ARM,60);
         int turns=0;
-        while (turns<40 && body.snapshot().part(LEFT_ARM).bleeding()>.001f) {
+        while (turns<40 && body.snapshot().part(LEFT_ARM).bleeding()>0) {
             body.treat(LEFT_ARM,BANDAGE,1); ticks(body,60); turns++;
             if (turns==12) assertTrue(body.snapshot().part(LEFT_ARM).bleeding()>.1f);
         }

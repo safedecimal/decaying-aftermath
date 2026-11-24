@@ -67,9 +67,15 @@ public final class UniHealthHud {
         icon(g,icon,x,27,13,color);text(g,value,x+16,30,color,1);
     }
     public static List<Badge> medicalBadges(BodySnapshot b) {
-        List<Badge> out=new ArrayList<>();boolean fracture=false,infection=false,bleed=false;
-        for(var p:b.parts()) {fracture|=p.fractured();infection|=p.infection()>.25;bleed|=p.bleeding()>0||p.internalBleeding()>0;}
-        if(bleed)out.add(new Badge("blood","BLEED",RED,0,-1));
+        List<Badge> out=new ArrayList<>();boolean fracture=false,infection=false,external=false,internal=false;
+        for(var p:b.parts()) {
+            fracture|=p.fractured();infection|=p.infection()>.25;
+            external|=MedicalStatusIcons.hasExternalBleeding(p);
+            internal|=p.internalBleeding()>MedicalStatusIcons.MIN_VISIBLE_BLEED;
+        }
+        // One alert regardless of the number of wounds. A concealed bleed is not a surface drop.
+        if(external)out.add(new Badge("blood","BLEED",RED,0,-1));
+        else if(internal)out.add(new Badge("warning","BLEED",RED,0,-1));
         if(fracture)out.add(new Badge("warning","FRACTURE",RED,0,-1));
         if(infection)out.add(new Badge("effect","INFECTION",0xFFC986D6,0,-1));
         if(b.pain()>.35)out.add(new Badge("warning","PAIN",AMBER,0,-1));

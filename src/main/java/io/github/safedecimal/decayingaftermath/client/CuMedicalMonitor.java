@@ -59,9 +59,12 @@ public final class CuMedicalMonitor {
     }
     /** Match the model's bounded loss per tick, expressed as current flow per game minute. */
     public static int bleedFlowMlPerMinute(BodySnapshot b,boolean internal) {
-        float outside=externalBleeding(b),inside=b.survival().internalBleeding(),total=outside+inside;
+        if(b.mode()==BodySnapshot.Mode.DEAD)return 0;
+        float outside=0;
+        for(var part:b.parts())outside+=part.externalBleeding().flow();
+        float inside=b.survival().internalBleeding(),total=outside+inside;
         if(total<=0)return 0;
-        float removed=Math.min(b.survival().bloodVolume(),total*.00065f);
+        float removed=Math.min(b.survival().bloodVolume(),MedicalPhysiology.bloodLossPerTick(total));
         return Math.round(removed*1200*b.survival().bodyMassKg()*.07f*1000*(internal?inside:outside)/total);
     }
     public static List<String> bleedingDetails(BodySnapshot b) {

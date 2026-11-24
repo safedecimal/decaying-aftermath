@@ -25,9 +25,11 @@ public final class MedicalPhysiology {
         return Math.clamp(Math.max((infectionSum-1)/3,Math.max(0,(maxInfection-.75f)/.25f)*.6f),0,1);
     }
     // BodyModel debits this fraction once per server tick; convert to percentage points/second.
-    static final float BLOOD_LOSS_PER_TICK_PER_SEVERITY = .00065f;
-    public static float bloodLossPointsPerSecond(float totalBleeding) {
-        return totalBleeding * BLOOD_LOSS_PER_TICK_PER_SEVERITY * 20 * 100;
+    public static float bloodLossPerTick(float effectiveBleedFlow) {
+        return effectiveBleedFlow * .00065f;
+    }
+    public static float bloodLossPointsPerSecond(float effectiveBleedFlow) {
+        return bloodLossPerTick(effectiveBleedFlow) * 20 * 100;
     }
     private static float perfusion(BodySnapshot b) {
         if(b.cardiacArrest())return 0;

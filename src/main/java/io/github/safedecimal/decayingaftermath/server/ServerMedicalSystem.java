@@ -262,17 +262,7 @@ public final class ServerMedicalSystem {
         final boolean[] saved = {false};
         bridge(() -> saved[0] = owner(player).decayingAftermath$tryTotem(source));
         if (!saved[0]) return false;
-        BodySnapshot old = get(player).snapshot(); PartSnapshot[] parts = old.parts();
-        for (BodyPart part : BodyPart.values()) {
-            PartSnapshot p = parts[part.ordinal()];
-            parts[part.ordinal()] = new PartSnapshot(part.isVital() ? Math.max(.35f, p.integrity()) : p.integrity(),
-                    p.bleeding() * .25f, p.pain() * .5f, p.fractured(), p.bandaged(), p.splinted(), p.tourniquet(),
-                    p.infection(), p.disinfected(), p.anesthetized());
-        }
-        owner(player).decayingAftermath$setBody(BodyModel.restore(new BodySnapshot(.25f,
-                Math.max(.5f, old.blood()), Math.max(.6f, old.oxygen()), old.pain() * .5f,
-                Math.min(.4f, old.drug()), 85, Mode.UNCONSCIOUS, 0,
-                Math.max(.5f, old.energy()), .4f, parts)));
+        owner(player).decayingAftermath$setBody(get(player).reviveWithTotem());
         return true;
     }
 
@@ -302,7 +292,7 @@ public final class ServerMedicalSystem {
         ServerAftermathSystem.save(player,output);
         BodyModel.SavedState saved = get(player).saveState(); BodySnapshot body = saved.snapshot();
         ValueOutput node = output.child(SAVE_KEY);
-        node.putInt("version", 3); node.putFloat("blood", body.blood()); node.putFloat("oxygen", body.oxygen());
+        node.putInt("version", SurvivalPersistence.SAVE_VERSION); node.putFloat("blood", body.blood()); node.putFloat("oxygen", body.oxygen());
         node.putFloat("energy", body.energy()); node.putFloat("consciousness", body.consciousness());
         node.putFloat("brain_health",body.brainHealth());
         node.putFloat("drug", body.drug()); node.putFloat("bpm", body.bpm()); node.putInt("mode", body.mode().ordinal());
@@ -314,16 +304,6 @@ public final class ServerMedicalSystem {
         node.putInt("last_standing_boost", saved.lastStandingBoostTicks()); node.putInt("dying_ticks", saved.dyingTicks());
         node.putIntArray("disinfection_time", saved.disinfectionTicks());
         node.putIntArray("anesthetic_time", saved.anestheticTicks()); node.putIntArray("infection_age", saved.infectionAgeTicks());
-        float[] skinCare = saved.skinHealAmount(), bleedCare = saved.bandageSlowAmount(), rawPain = saved.rawLocalPain();
-        for (BodyPart part : BodyPart.values()) {
-            PartSnapshot p = body.part(part); ValueOutput limb = node.child("part" + part.ordinal());
-            limb.putFloat("integrity", p.integrity()); limb.putFloat("bleeding", p.bleeding()); limb.putFloat("pain", p.pain());
-            limb.putBoolean("fractured", p.fractured()); limb.putBoolean("bandaged", p.bandaged());
-            limb.putBoolean("splinted", p.splinted()); limb.putBoolean("tourniquet", p.tourniquet());
-            limb.putFloat("infection", p.infection());
-            limb.putFloat("skin_care", skinCare[part.ordinal()]); limb.putFloat("bleed_care", bleedCare[part.ordinal()]);
-            limb.putFloat("raw_pain", rawPain[part.ordinal()]);
-        }
         SurvivalPersistence.save(node,saved);
     }
     public static void load(ServerPlayer player, ValueInput input) {

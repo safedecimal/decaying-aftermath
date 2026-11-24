@@ -48,7 +48,7 @@ class SurvivalModelTest {
     }
     @Test void fittedTourniquetDoesNotCreateBleedingAfterItsWoundClotted() {
         BodyModel b=new BodyModel();b.damage(LEFT_LEG,8);b.treat(LEFT_LEG,TOURNIQUET,1);ticks(b,9000);
-        assertEquals(0,b.saveState().wounds().suppressedBleeding()[LEFT_LEG.ordinal()]);
+        assertEquals(0,b.saveState().wounds().suppressedFlows()[LEFT_LEG.ordinal()].total());
         assertTrue(b.removeTourniquet(LEFT_LEG));assertEquals(0,b.snapshot().part(LEFT_LEG).bleeding());
         assertFalse(b.removeTourniquet(LEFT_LEG));
     }

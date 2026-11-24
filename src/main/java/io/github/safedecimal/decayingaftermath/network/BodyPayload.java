@@ -7,7 +7,7 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
 
 public record BodyPayload(BodySnapshot snapshot) implements CustomPacketPayload {
-    public static final Type<BodyPayload> TYPE = new Type<>(Identifier.fromNamespaceAndPath("decaying_aftermath", "body_v8"));
+    public static final Type<BodyPayload> TYPE = new Type<>(Identifier.fromNamespaceAndPath("decaying_aftermath", "body_v9"));
     public static final StreamCodec<RegistryFriendlyByteBuf, BodyPayload> CODEC = CustomPacketPayload.codec(BodyPayload::write, BodyPayload::read);
     @Override public Type<BodyPayload> type() { return TYPE; }
     private void write(RegistryFriendlyByteBuf b) {
@@ -16,7 +16,10 @@ public record BodyPayload(BodySnapshot snapshot) implements CustomPacketPayload 
         b.writeVarInt(snapshot.mode().ordinal()); b.writeFloat(snapshot.consciousnessProgress());
         b.writeFloat(snapshot.energy()); b.writeFloat(snapshot.consciousness());
         for (var p : snapshot.parts()) {
-            b.writeFloat(p.integrity()); b.writeFloat(p.bleeding()); b.writeFloat(p.pain());
+            b.writeFloat(p.integrity());
+            var flow=p.externalBleeding();
+            b.writeFloat(flow.capillary()); b.writeFloat(flow.venous()); b.writeFloat(flow.arterial());
+            b.writeFloat(p.pain());
             b.writeBoolean(p.fractured()); b.writeBoolean(p.bandaged()); b.writeBoolean(p.splinted()); b.writeBoolean(p.tourniquet());
             b.writeFloat(p.infection()); b.writeBoolean(p.disinfected()); b.writeBoolean(p.anesthetized());
             b.writeFloat(p.bandageCare());
@@ -38,7 +41,14 @@ public record BodyPayload(BodySnapshot snapshot) implements CustomPacketPayload 
         if (mode<0 || mode>=BodySnapshot.Mode.values().length) throw new IllegalArgumentException("Unknown body mode");
         float progress=b.readFloat(), energy=b.readFloat(), consciousness=b.readFloat();
         var parts=new BodySnapshot.PartSnapshot[BodyPart.values().length];
-        for (int i=0;i<parts.length;i++) parts[i]=new BodySnapshot.PartSnapshot(b.readFloat(),b.readFloat(),b.readFloat(),b.readBoolean(),b.readBoolean(),b.readBoolean(),b.readBoolean(),b.readFloat(),b.readBoolean(),b.readBoolean(),b.readFloat(),b.readFloat(),b.readFloat(),b.readBoolean(),b.readBoolean(),b.readFloat(),b.readBoolean(),b.readVarInt(),b.readFloat());
+        for (int i=0;i<parts.length;i++) {
+            float integrity=b.readFloat();
+            var flow=new BleedProfile(b.readFloat(),b.readFloat(),b.readFloat());
+            parts[i]=new BodySnapshot.PartSnapshot(integrity,flow,b.readFloat(),b.readBoolean(),b.readBoolean(),
+                    b.readBoolean(),b.readBoolean(),b.readFloat(),b.readBoolean(),b.readBoolean(),b.readFloat(),
+                    b.readFloat(),b.readFloat(),b.readBoolean(),b.readBoolean(),b.readFloat(),b.readBoolean(),
+                    b.readVarInt(),b.readFloat());
+        }
         var s=new SurvivalSnapshot(b.readFloat(),b.readFloat(),b.readFloat(),b.readFloat(),b.readFloat(),b.readFloat(),b.readFloat(),
                 b.readFloat(),b.readFloat(),b.readFloat(),b.readFloat(),b.readFloat(),b.readFloat(),b.readFloat(),b.readFloat(),
                 b.readFloat(),b.readFloat(),b.readFloat());

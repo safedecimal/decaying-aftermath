@@ -115,6 +115,9 @@ class MedicalMonitorRevisionTest {
     @Test void nativePacketRoundTripIncludesAllNewPersistentFieldsAndConsumesExactBytes() {
         var base=body(state(.6f,.4f,.8f,.3f,82.6f,1.75f,2.25f));
         var treated=BodyModel.restore(base);treated.treat(BodyPart.LEFT_ARM,TreatmentKind.ANTISEPTIC,.75f);
+        treated.damage(RIGHT_ARM,2,DamageKind.CUT);
+        treated.damage(RIGHT_ARM,5,DamageKind.CUT);
+        treated.damage(RIGHT_ARM,15,DamageKind.PUNCTURE);
         base=treated.snapshot();
         var buffer=new RegistryFriendlyByteBuf(Unpooled.buffer(),RegistryAccess.EMPTY);
         try {
@@ -127,7 +130,7 @@ class MedicalMonitorRevisionTest {
                 assertEquals(b.survival(),decoded.survival());assertArrayEquals(b.parts(),decoded.parts());
                 assertEquals(buffer.writerIndex(),buffer.readerIndex());
             }
-            assertTrue(BodyPayload.TYPE.id().toString().endsWith("body_v8"));
+            assertTrue(BodyPayload.TYPE.id().toString().endsWith("body_v9"));
         } finally { buffer.release(); }
     }
     private ValueInput input(Map<String,Object> data) {
@@ -152,6 +155,41 @@ class MedicalMonitorRevisionTest {
         assertEquals(82.6f,loaded.bodyMassKg());assertEquals(1.75f,loaded.radiationGy());assertEquals(2.25f,loaded.bloodLostLiters());
         var legacy=SurvivalPersistence.load(input(Map.of("version",3)),new BodyModel().saveState()).survivalState().snapshot();
         assertEquals(75,legacy.bodyMassKg());assertEquals(0,legacy.radiationGy());assertEquals(0,legacy.bloodLostLiters());
+    }
+    @Test void typedSaveKeepsBasePartDataAndRoundTripsActiveAndSuppressedProfiles() {
+        var model=new BodyModel();
+        for(var part:new BodyPart[]{LEFT_ARM,RIGHT_ARM}) {
+            model.damage(part,2,DamageKind.CUT);
+            model.damage(part,5,DamageKind.CUT);
+            model.damage(part,15,DamageKind.PUNCTURE);
+        }
+        model.treat(RIGHT_ARM,TOURNIQUET,1);
+        var saved=model.saveState();
+        var data=new HashMap<String,Object>();data.put("version",4);
+        SurvivalPersistence.save(output(data),saved);
+        var left=input(data).childOrEmpty("part"+LEFT_ARM.ordinal());
+        assertEquals(saved.snapshot().part(LEFT_ARM).integrity(),left.getFloatOr("integrity",1));
+        assertEquals(saved.snapshot().part(LEFT_ARM).bleeding(),left.getFloatOr("bleeding",0));
+        var oldParts=saved.snapshot().parts();
+        oldParts[LEFT_ARM.ordinal()]=oldParts[LEFT_ARM.ordinal()].withExternalBleeding(BleedProfile.NONE);
+        var legacy=new BodyModel.SavedState(saved.snapshot().withParts(oldParts),saved.careTicks(),
+                saved.regenerationTicks(),saved.tourniquetTicks(),false,0);
+        var restored=BodyModel.restoreState(SurvivalPersistence.load(input(data),legacy));
+        assertEquals(saved.snapshot().part(LEFT_ARM).externalBleeding(),restored.snapshot().part(LEFT_ARM).externalBleeding());
+        assertEquals(BleedProfile.NONE,restored.snapshot().part(RIGHT_ARM).externalBleeding());
+        assertTrue(restored.removeTourniquet(RIGHT_ARM));
+        assertEquals(saved.wounds().suppressedFlows()[RIGHT_ARM.ordinal()],restored.snapshot().part(RIGHT_ARM).externalBleeding());
+    }
+    @Test void versionThreeUntypedFlowAndTourniquetResidualKeepLegacyRates() {
+        var old=new BodyModel().snapshot();var parts=old.parts();
+        parts[LEFT_ARM.ordinal()]=new BodySnapshot.PartSnapshot(.6f,.2f,.1f,false,false,false,false);
+        parts[RIGHT_ARM.ordinal()]=new BodySnapshot.PartSnapshot(.6f,0,.1f,false,false,false,true);
+        var legacy=new BodyModel.SavedState(old.withParts(parts),new int[6],new int[6],new int[6],false,0);
+        var data=Map.<String,Object>of("version",3,"part"+RIGHT_ARM.ordinal(),Map.of("tourniquet_residual",.35f));
+        var restored=BodyModel.restoreState(SurvivalPersistence.load(input(data),legacy));
+        assertEquals(new BleedProfile(0,.2f,0),restored.snapshot().part(LEFT_ARM).externalBleeding());
+        assertTrue(restored.removeTourniquet(RIGHT_ARM));
+        assertEquals(new BleedProfile(0,.35f,0),restored.snapshot().part(RIGHT_ARM).externalBleeding());
     }
     @Test void nativeSaveLoadPreservesWakeHysteresisAndOldSavesDefaultToArmed() {
         var model=new BodyModel();var saved=model.saveState();

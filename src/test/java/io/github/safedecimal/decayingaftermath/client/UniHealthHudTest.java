@@ -39,6 +39,23 @@ class UniHealthHudTest {
         assertTrue(UniHealthHud.medicalBadges(injured).stream().anyMatch(b->b.label().equals("FRACTURE")));
         assertTrue(UniHealthHud.medicalBadges(injured).stream().anyMatch(b->b.label().equals("HYPOXIA")));
     }
+    @Test void mixedExternalAndInternalBleedingOccupyOnlyOneMedallion() {
+        var body=new BodyModel().snapshot();
+        var parts=body.parts();
+        parts[0]=parts[0].withExternalBleeding(new BleedProfile(.02f,.03f,.12f));
+        parts[1]=new BodySnapshot.PartSnapshot(1,0,0,false,false,false,false,0,false,false,
+                0,0,.2f,false,false,1);
+        var withBoth=new BodySnapshot(1,1,1,0,0,72,BodySnapshot.Mode.CONSCIOUS,1,parts);
+        var badges=UniHealthHud.medicalBadges(withBoth);
+        assertEquals(1,badges.size());
+        assertEquals("blood",badges.getFirst().icon());
+
+        parts[0]=body.part(BodyPart.HEAD).withExternalBleeding(new BleedProfile(.0001f,0,0));
+        var internalOnly=new BodySnapshot(1,1,1,0,0,72,BodySnapshot.Mode.CONSCIOUS,1,parts);
+        badges=UniHealthHud.medicalBadges(internalOnly);
+        assertEquals(1,badges.size());
+        assertEquals("warning",badges.getFirst().icon());
+    }
     @Test void originalUniHealthFrameIsSourceAndSketchIsNeverAnAsset() throws Exception {
         var json=JsonParser.parseString(Files.readString(Path.of("src/main/resources/assets/decaying_aftermath/uni_health_hud_provenance.json"))).getAsJsonObject();
         assertTrue(json.get("background_source").getAsString().contains("computerback"));

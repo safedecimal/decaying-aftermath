@@ -22,6 +22,10 @@ public record BodySnapshot(float condition, float blood, float oxygen, float pai
         return new BodySnapshot(condition,blood,oxygen,pain,drug,bpm,mode,consciousnessProgress,
                 energy,consciousness,parts,survival,bloodGroup,ticks,brainHealth);
     }
+    public BodySnapshot withParts(PartSnapshot[] values) {
+        return new BodySnapshot(condition,blood,oxygen,pain,drug,bpm,mode,consciousnessProgress,
+                energy,consciousness,values,survival,bloodGroup,cardiacTicks,brainHealth);
+    }
     public BodySnapshot withBrainHealth(float value) {
         return new BodySnapshot(condition,blood,oxygen,pain,drug,bpm,mode,consciousnessProgress,
                 energy,consciousness,parts,survival,bloodGroup,cardiacTicks,value);
@@ -75,11 +79,25 @@ public record BodySnapshot(float condition, float blood, float oxygen, float pai
     @Override public PartSnapshot[] parts() { return parts.clone(); }
     public PartSnapshot part(BodyPart part) { return parts[Objects.requireNonNull(part).ordinal()]; }
 
-    public record PartSnapshot(float integrity, float bleeding, float pain, boolean fractured,
+    public record PartSnapshot(float integrity, BleedProfile externalBleeding, float pain, boolean fractured,
             boolean bandaged, boolean splinted, boolean tourniquet, float infection,
             boolean disinfected, boolean anesthetized, float bandageCare, float burn,
             float internalBleeding, boolean openWound, boolean foreignBody, float boneRecovery,boolean coldInjury,
             int disinfectionTicks,float infectionDelta) {
+        public PartSnapshot(float integrity,float bleeding,float pain,boolean fractured,boolean bandaged,boolean splinted,
+                boolean tourniquet,float infection,boolean disinfected,boolean anesthetized,float bandageCare,float burn,
+                float internalBleeding,boolean openWound,boolean foreignBody,float boneRecovery,boolean coldInjury,
+                int disinfectionTicks,float infectionDelta) {
+            this(integrity,BleedProfile.legacy(bleeding),pain,fractured,bandaged,splinted,tourniquet,infection,disinfected,
+                    anesthetized,bandageCare,burn,internalBleeding,openWound,foreignBody,boneRecovery,coldInjury,
+                    disinfectionTicks,infectionDelta);
+        }
+        public float bleeding() { return externalBleeding.total(); }
+        public PartSnapshot withExternalBleeding(BleedProfile flow) {
+            return new PartSnapshot(integrity,flow,pain,fractured,bandaged,splinted,tourniquet,infection,disinfected,
+                    anesthetized,bandageCare,burn,internalBleeding,openWound,foreignBody,boneRecovery,coldInjury,
+                    disinfectionTicks,infectionDelta);
+        }
         public PartSnapshot(float integrity,float bleeding,float pain,boolean fractured,boolean bandaged,boolean splinted,
                 boolean tourniquet,float infection,boolean disinfected,boolean anesthetized,float bandageCare,float burn,
                 float internalBleeding,boolean openWound,boolean foreignBody,float boneRecovery,boolean coldInjury) {
@@ -110,7 +128,8 @@ public record BodySnapshot(float condition, float blood, float oxygen, float pai
                     disinfected, anesthetized, bandaged ? 1 : 0);
         }
         public PartSnapshot {
-            integrity = unit(integrity); bleeding = unit(bleeding); pain = unit(pain); infection = unit(infection);
+            integrity = unit(integrity); pain = unit(pain); infection = unit(infection);
+            Objects.requireNonNull(externalBleeding, "externalBleeding");
             bandageCare = finiteClamp(bandageCare, 0, 10);
             burn=unit(burn); internalBleeding=unit(internalBleeding); boneRecovery=unit(boneRecovery);
             disinfectionTicks=Math.max(0,disinfectionTicks);

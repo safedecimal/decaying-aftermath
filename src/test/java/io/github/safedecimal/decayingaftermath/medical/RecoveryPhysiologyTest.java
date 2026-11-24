@@ -96,7 +96,7 @@ class RecoveryPhysiologyTest {
         try {BodyPayload.CODEC.encode(b,new BodyPayload(expected));var read=BodyPayload.CODEC.decode(b).snapshot();
             assertEquals(.6f,read.brainHealth());assertEquals(b.writerIndex(),b.readerIndex());}
         finally {b.release();}
-        assertTrue(BodyPayload.TYPE.id().getPath().equals("body_v8"));
+        assertTrue(BodyPayload.TYPE.id().getPath().equals("body_v9"));
     }
     @Test void monitorShowsBrainReserveSeparatelyFromConsciousness() {
         var b=new BodyModel().snapshot().withBrainHealth(.6f);
@@ -112,11 +112,20 @@ class RecoveryPhysiologyTest {
         assertEquals(1,s.blood());assertEquals(1,s.oxygen());assertEquals(1,s.energy());assertEquals(1,s.brainHealth());
         assertEquals(240,m.saveState().lastStandingTicks());assertEquals(6000,m.saveState().lastStandingBoostTicks());
     }
-    @Test void bloodRecoveryChangesDoNotSpillIntoTheExistingLastStandingIntro() {
-        var m=new BodyModel();m.damage(BodyPart.HEAD,34);tick(m,240);var s=m.snapshot();
+    @Test void legacyFlowKeepsLastStandingBaselineAndArterialWoundsStillLoseBloodFaster() {
+        var head=BodyPart.HEAD;
+        var arterial=new BodyModel();arterial.damage(head,34);
+        var initial=arterial.saveState();var parts=initial.snapshot().parts();
+        parts[head.ordinal()]=parts[head.ordinal()].withExternalBleeding(BleedProfile.legacy(parts[head.ordinal()].bleeding()));
+        var legacy=BodyModel.restoreState(new BodyModel.SavedState(initial.snapshot().withParts(parts),initial.careTicks(),
+                initial.regenerationTicks(),initial.tourniquetTicks(),initial.lastStandingSpent(),initial.stableTicks()));
+        tick(legacy,240);tick(arterial,240);var s=legacy.snapshot();
         assertEquals(.99705017f,s.blood());assertEquals(113.81707f,s.bpm());
         assertEquals(.99904156f,s.survival().hydration());assertEquals(.99928474f,s.survival().nutrition());
-        assertEquals(.75f,s.part(BodyPart.HEAD).integrity());assertEquals(5760,m.saveState().lastStandingBoostTicks());
+        assertEquals(.75f,s.part(head).integrity());assertEquals(.75f,arterial.snapshot().part(head).integrity());
+        assertEquals(5760,legacy.saveState().lastStandingBoostTicks());
+        assertEquals(5760,arterial.saveState().lastStandingBoostTicks());
+        assertTrue(arterial.snapshot().blood()<s.blood());
     }
     @Test void originalMusicAssetsNowReachHypoxiaAndHemorrhageNotOnlyDyingMode() {
         var base=new BodyModel().snapshot();

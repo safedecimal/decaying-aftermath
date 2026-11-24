@@ -12,6 +12,21 @@ import java.util.List;
 public final class MedicalStatusIcons {
     public record Icon(String name, int width, int height) {}
     public record Placement(Icon icon,int x,int y,int size,int color) { }
+
+    enum BleedType {
+        CAPILLARY("capillary"), VENOUS("venous"), ARTERIAL("arterial");
+
+        final Icon icon;
+        final String translationKey;
+
+        BleedType(String name) {
+            icon = new Icon("wound_type_"+name,16,16);
+            translationKey = "decaying_aftermath.status.bleed_type."+name;
+        }
+    }
+
+    static final float MIN_VISIBLE_BLEED = .0001f;
+    // "arterial" is the legacy asset name for the highest severity, not a vessel type.
     private static final String[] LEVELS = {"light", "medium", "heavy", "arterial"};
     private static final int[] WIDTHS = {13,15,23,25}, HEIGHTS = {17,22,32,40};
     // WoundView level1/1596, serialized bleedGradient (Blend; seven color/two alpha keys).
@@ -22,10 +37,25 @@ public final class MedicalStatusIcons {
             {1,1,1},{1,1,0},{.7358490228652954f,.5219544768333435f,0},
             {.5377358198165894f,.1018349751830101f,0},{.20754718780517578f,.025904959067702293f,0}};
     private MedicalStatusIcons() {}
+
+    static boolean hasExternalBleeding(BodySnapshot.PartSnapshot part) {
+        return part.externalBleeding().total() > MIN_VISIBLE_BLEED;
+    }
+
+    static List<BleedType> bleedingTypes(BodySnapshot.PartSnapshot part) {
+        var profile = part.externalBleeding();
+        List<BleedType> types=new ArrayList<>(3);
+        if(profile.capillary()>MIN_VISIBLE_BLEED)types.add(BleedType.CAPILLARY);
+        if(profile.venous()>MIN_VISIBLE_BLEED)types.add(BleedType.VENOUS);
+        if(profile.arterial()>MIN_VISIBLE_BLEED)types.add(BleedType.ARTERIAL);
+        return List.copyOf(types);
+    }
+
     public static Icon bleeding(BodySnapshot.PartSnapshot part) {
-        if (part.bleeding() <= .0001f) return null;
+        if (!hasExternalBleeding(part)) return null;
         // The source's normalized thresholds are 3.75/100, 8/100 and 20/100.
-        int level = part.bleeding()>.20f?3:part.bleeding()>.08f?2:part.bleeding()>.0375f?1:0;
+        float severity = part.bleeding();
+        int level = severity>.20f?3:severity>.08f?2:severity>.0375f?1:0;
         return new Icon("bleeding_"+(part.bandageCare()>.005f?"covered_":"")+LEVELS[level], WIDTHS[level], HEIGHTS[level]);
     }
     public static Icon infection(BodySnapshot.PartSnapshot part) {

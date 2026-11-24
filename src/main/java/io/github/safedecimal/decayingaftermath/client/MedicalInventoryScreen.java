@@ -2,6 +2,9 @@ package io.github.safedecimal.decayingaftermath.client;
 
 import io.github.safedecimal.decayingaftermath.client.mixin.SlotPositionAccessor;
 import io.github.safedecimal.decayingaftermath.medical.*;
+import java.util.ArrayList;
+import java.util.List;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.recipebook.CraftingRecipeBookComponent;
@@ -79,13 +82,15 @@ public final class MedicalInventoryScreen extends AbstractContainerScreen<Invent
         super.extractRenderState(graphics,(int)virtualX(mouseX),(int)virtualY(mouseY),partialTick);
         Slot grabSource=grabSourceAt(mouseX,mouseY,body);
         if(grabSource!=null) extractGrabMarker(graphics,grabSource);
-        for(var button:DeviceRemovalControls.buttons(body.part(selected))) {
+        var selectedPart=body.part(selected);
+        extractBleedingDetails(graphics,font,selectedPart);
+        for(var button:DeviceRemovalControls.buttons(selectedPart)) {
             boolean hover=button.contains(virtualX(mouseX),virtualY(mouseY));
             graphics.fill(button.x(),button.y(),button.x()+button.width(),button.y()+button.height(),hover?0xFF44654E:0xFF283A2E);
             graphics.text(font,Component.translatable(button.translationKey()),button.x()+3,button.y()+1,0xFFB8F5C6,false);
         }
         graphics.pose().popMatrix();
-        extractBodyTooltip(graphics,mouseX,mouseY);
+        extractBodyTooltip(graphics,body,mouseX,mouseY);
         if(pendingSlot>=0) {
             graphics.item(dragged,mouseX-8,mouseY-8);
             MedicalSupplyOverlay.extract(graphics,dragged,mouseX-8,mouseY-8);
@@ -154,23 +159,50 @@ public final class MedicalInventoryScreen extends AbstractContainerScreen<Invent
         graphics.text(font,Component.translatable("container.crafting").getString(),215,19,0xFFFFFFFF,false);
         graphics.text(font,Component.translatable("decaying_aftermath.inventory.selected",Component.translatable("container.inventory"),pretty(selected)).getString(),30,153,0xFFFFFFFF,false);
     }
-    private void extractBodyTooltip(GuiGraphicsExtractor graphics,int mouseX,int mouseY) {
+    static void extractBleedingDetails(GuiGraphicsExtractor graphics,Font font,BodySnapshot.PartSnapshot part) {
+        if(!MedicalStatusIcons.hasExternalBleeding(part)) return;
+        var types=MedicalStatusIcons.bleedingTypes(part);
+        var box=MedicalInventoryLayout.BLEED_DETAILS;
+        int x=box.x(),y=box.y(),right=x+box.width();
+        int line=MedicalInventoryLayout.BLEED_DETAIL_LINE_HEIGHT;
+        graphics.fill(x,y,right,y+line*(1+types.size()),0xDD210909);
+        bleedDetailText(graphics,font,"decaying_aftermath.status.bleed_type.heading",x+3,y,right-3,0xFFF7D1D1);
+        for(var type:types) {
+            y+=line;
+            MedicalStatusIcons.draw(graphics,type.icon,x+6,y+4,8,0xFFFFFFFF);
+            bleedDetailText(graphics,font,type.translationKey,x+13,y,right-3,0xFFFFFFFF);
+        }
+    }
+    private static void bleedDetailText(GuiGraphicsExtractor graphics,Font font,String key,int x,int y,int right,int color) {
+        Component label=Component.translatable(key);
+        // A long translation must not extend into the body hitboxes.
+        float scale=Math.min(1f,(right-x)/(float)Math.max(1,font.width(label)));
+        graphics.pose().pushMatrix();graphics.pose().translate(x,y);graphics.pose().scale(scale,scale);
+        graphics.text(font,label,0,0,color,false);
+        graphics.pose().popMatrix();
+    }
+    private void extractBodyTooltip(GuiGraphicsExtractor graphics,BodySnapshot body,int mouseX,int mouseY) {
         BodyPart hover=partAt(virtualX(mouseX),virtualY(mouseY));
         if(hover!=null) {
-            BodySnapshot.PartSnapshot part=ClientMedicalState.snapshot().part(hover);
-            Component text=Component.translatable("decaying_aftermath.body_status",pretty(hover),
-                    (part.fractured()?Component.translatable("decaying_aftermath.status.fractured").getString():"")
-                    +(part.bleeding()>0?Component.translatable("decaying_aftermath.status.bleeding").getString():"")
-                    +(part.infection()>=.25f?Component.translatable("decaying_aftermath.status.infection").getString():"")
-                    +(part.disinfected()?Component.translatable("decaying_aftermath.status.disinfected").getString():"")
-                    +(part.anesthetized()?Component.translatable("decaying_aftermath.status.anesthetized").getString():"")
-                    +(part.burn()>.01f?Component.translatable("decaying_aftermath.status.burn").getString():"")
-                    +(part.coldInjury()?Component.translatable("decaying_aftermath.status.cold_injury").getString():"")
-                    +(part.foreignBody()?Component.translatable("decaying_aftermath.status.foreign_body").getString():"")
-                    +(part.tourniquet()?Component.translatable("decaying_aftermath.status.remove_tourniquet").getString():"")
-                    +(part.splinted()?Component.translatable("decaying_aftermath.status.remove_splint").getString():""));
-            graphics.setTooltipForNextFrame(font,text,mouseX,mouseY);
+            var lines=bodyTooltip(hover,body.part(hover)).stream().map(Component::getVisualOrderText).toList();
+            graphics.setTooltipForNextFrame(font,lines,mouseX,mouseY);
         }
+    }
+    static List<Component> bodyTooltip(BodyPart hover,BodySnapshot.PartSnapshot part) {
+        var lines=new ArrayList<Component>();
+        lines.add(Component.translatable("decaying_aftermath.body_status",pretty(hover),
+                (part.fractured()?Component.translatable("decaying_aftermath.status.fractured").getString():"")
+                +(MedicalStatusIcons.hasExternalBleeding(part)?Component.translatable("decaying_aftermath.status.bleeding").getString():"")
+                +(part.infection()>=.25f?Component.translatable("decaying_aftermath.status.infection").getString():"")
+                +(part.disinfected()?Component.translatable("decaying_aftermath.status.disinfected").getString():"")
+                +(part.anesthetized()?Component.translatable("decaying_aftermath.status.anesthetized").getString():"")
+                +(part.burn()>.01f?Component.translatable("decaying_aftermath.status.burn").getString():"")
+                +(part.coldInjury()?Component.translatable("decaying_aftermath.status.cold_injury").getString():"")
+                +(part.foreignBody()?Component.translatable("decaying_aftermath.status.foreign_body").getString():"")
+                +(part.tourniquet()?Component.translatable("decaying_aftermath.status.remove_tourniquet").getString():"")
+                +(part.splinted()?Component.translatable("decaying_aftermath.status.remove_splint").getString():"")));
+        for(var type:MedicalStatusIcons.bleedingTypes(part)) lines.add(Component.translatable(type.translationKey));
+        return List.copyOf(lines);
     }
     @Override protected void extractTooltip(GuiGraphicsExtractor graphics,int mouseX,int mouseY) {
         // Deferred vanilla tooltips require screen coordinates, not the transformed canvas pointer.
