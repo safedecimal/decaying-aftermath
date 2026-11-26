@@ -4,7 +4,6 @@ import io.github.safedecimal.decayingaftermath.client.mixin.SlotPositionAccessor
 import io.github.safedecimal.decayingaftermath.medical.*;
 import java.util.ArrayList;
 import java.util.List;
-import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.recipebook.CraftingRecipeBookComponent;
@@ -83,7 +82,6 @@ public final class MedicalInventoryScreen extends AbstractContainerScreen<Invent
         Slot grabSource=grabSourceAt(mouseX,mouseY,body);
         if(grabSource!=null) extractGrabMarker(graphics,grabSource);
         var selectedPart=body.part(selected);
-        extractBleedingDetails(graphics,font,selectedPart);
         for(var button:DeviceRemovalControls.buttons(selectedPart)) {
             boolean hover=button.contains(virtualX(mouseX),virtualY(mouseY));
             graphics.fill(button.x(),button.y(),button.x()+button.width(),button.y()+button.height(),hover?0xFF44654E:0xFF283A2E);
@@ -158,28 +156,6 @@ public final class MedicalInventoryScreen extends AbstractContainerScreen<Invent
     @Override protected void extractLabels(GuiGraphicsExtractor graphics,int mouseX,int mouseY) {
         graphics.text(font,Component.translatable("container.crafting").getString(),215,19,0xFFFFFFFF,false);
         graphics.text(font,Component.translatable("decaying_aftermath.inventory.selected",Component.translatable("container.inventory"),pretty(selected)).getString(),30,153,0xFFFFFFFF,false);
-    }
-    static void extractBleedingDetails(GuiGraphicsExtractor graphics,Font font,BodySnapshot.PartSnapshot part) {
-        if(!MedicalStatusIcons.hasExternalBleeding(part)) return;
-        var types=MedicalStatusIcons.bleedingTypes(part);
-        var box=MedicalInventoryLayout.BLEED_DETAILS;
-        int x=box.x(),y=box.y(),right=x+box.width();
-        int line=MedicalInventoryLayout.BLEED_DETAIL_LINE_HEIGHT;
-        graphics.fill(x,y,right,y+line*(1+types.size()),0xDD210909);
-        bleedDetailText(graphics,font,"decaying_aftermath.status.bleed_type.heading",x+3,y,right-3,0xFFF7D1D1);
-        for(var type:types) {
-            y+=line;
-            MedicalStatusIcons.draw(graphics,type.icon,x+6,y+4,8,0xFFFFFFFF);
-            bleedDetailText(graphics,font,type.translationKey,x+13,y,right-3,0xFFFFFFFF);
-        }
-    }
-    private static void bleedDetailText(GuiGraphicsExtractor graphics,Font font,String key,int x,int y,int right,int color) {
-        Component label=Component.translatable(key);
-        // A long translation must not extend into the body hitboxes.
-        float scale=Math.min(1f,(right-x)/(float)Math.max(1,font.width(label)));
-        graphics.pose().pushMatrix();graphics.pose().translate(x,y);graphics.pose().scale(scale,scale);
-        graphics.text(font,label,0,0,color,false);
-        graphics.pose().popMatrix();
     }
     private void extractBodyTooltip(GuiGraphicsExtractor graphics,BodySnapshot body,int mouseX,int mouseY) {
         BodyPart hover=partAt(virtualX(mouseX),virtualY(mouseY));

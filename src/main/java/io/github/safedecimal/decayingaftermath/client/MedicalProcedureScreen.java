@@ -286,7 +286,8 @@ public final class MedicalProcedureScreen extends Screen {
             graphics.pose().pushMatrix();graphics.pose().translate(128,128);graphics.pose().rotate((float)radians);
             MedicalClient.blit(graphics,"bandage_pointer",-101,-101,202,202,300,300,0xFFFFFFFF);graphics.pose().popMatrix();
             if(!holding)drawBandageRoll(graphics,toolX,toolY,visualAngle);
-            MedicalStatusIcons.draw(graphics,MedicalStatusIcons.bleeding(ClientMedicalState.snapshot().part(part)),128,128,32,MedicalStatusIcons.bleedingColor(ClientMedicalState.snapshot().part(part)));
+            var woundPart=ClientMedicalState.snapshot().part(part);
+            MedicalStatusIcons.drawBleeding(graphics,woundPart,128,128,32,MedicalStatusIcons.bleedingColor(woundPart));
         } else if(kind.injection()) {
             MedicalClient.blit(graphics,"syringe_ground",-22,(int)Math.round(SYRINGE_ENTRY_Y),300,44,200,29,0xFFFFFFFF);
             CuMedicalHand.line(graphics,122,(int)SYRINGE_ENTRY_Y,134,(int)SYRINGE_ENTRY_Y);

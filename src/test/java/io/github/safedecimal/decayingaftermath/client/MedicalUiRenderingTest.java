@@ -247,37 +247,43 @@ class MedicalUiRenderingTest {
         assertTrue(limb.blits.stream().filter(b->b.id().toString().contains("/bleeding_")).allMatch(b->((b.color()>>>16)&255)>=192));
     }
 
-    @Test void selectedPartDrawsMixedTypeIconsAndTheirHoverLabelsWithoutSeverityTint() throws Exception {
+    @Test void bleedingDropletDrawsMixedTypeIconsInsideDropletWithoutExtraBackground() throws Exception {
         var mixed=new BodySnapshot.PartSnapshot(1,0,0,false,true,false,false)
                 .withExternalBleeding(new BleedProfile(.02f,.03f,.12f));
-        var graphics=Graphics.create(260,250);
-        Font longLabels=new Font(null) {
-            @Override public int width(FormattedText label) { return 120; }
-        };
-        MedicalInventoryScreen.extractBleedingDetails(graphics,longLabels,mixed);
-        var box=MedicalInventoryLayout.BLEED_DETAILS;
+        var box=MinecraftBodyLayout.box(BodyPart.LEFT_ARM,false);
+        var bodyGraphics=Graphics.create(260,250);
+        MedicalStatusIcons.body(bodyGraphics,mixed,box);
+        assertEquals(1,bodyGraphics.fills.size(),"Only the droplet backdrop box is drawn; type icons have no background");
         var types=MedicalStatusIcons.BleedType.values();
-        assertEquals(types.length,graphics.blits.size());
-        assertEquals(types.length+1,graphics.labels.size());
-        assertEquals(Component.translatable("decaying_aftermath.status.bleed_type.heading"),graphics.labels.getFirst().label());
-        var tooltip=MedicalInventoryScreen.bodyTooltip(BodyPart.LEFT_ARM,mixed);
-        assertEquals(types.length+1,tooltip.size());
+        var bodyDroplet=bodyGraphics.blits.stream().filter(b->b.id().getPath().contains("/bleeding_")).findFirst().orElseThrow();
+        var bodyTypeBlits=bodyGraphics.blits.stream().filter(b->b.id().getPath().contains("/wound_type_")).toList();
+        assertEquals(types.length,bodyTypeBlits.size());
         for(int i=0;i<types.length;i++) {
-            var blit=graphics.blits.get(i);
+            var blit=bodyTypeBlits.get(i);
             assertEquals("textures/gui/status/"+types[i].icon.name()+".png",blit.id().getPath());
             assertEquals(16,blit.sourceWidth());assertEquals(16,blit.sourceHeight());
-            assertEquals(8,blit.width());assertEquals(8,blit.height());
             assertEquals(0xFFFFFFFF,blit.color());
-            assertTrue(box.contains(blit.x(),blit.y())&&box.contains(blit.x()+blit.width()-1,blit.y()+blit.height()-1));
-            var label=graphics.labels.get(i+1);
-            assertEquals(Component.translatable(types[i].translationKey),label.label());
-            assertEquals(label.label(),tooltip.get(i+1));
+            assertTrue(blit.x()>=bodyDroplet.x()&&blit.x()+blit.width()<=bodyDroplet.x()+bodyDroplet.width());
+            assertTrue(blit.y()>=bodyDroplet.y()&&blit.y()+blit.height()<=bodyDroplet.y()+bodyDroplet.height());
         }
-        for(var label:graphics.labels) {
-            var pose=label.transform();
-            assertTrue(box.contains(pose.m20()+label.x(),pose.m21()+label.y()));
-            assertTrue(pose.m20()+pose.m00()*longLabels.width(label.label())<=box.x()+box.width());
+
+        var procGraphics=Graphics.create(256,256);
+        MedicalStatusIcons.drawBleeding(procGraphics,mixed,128,128,32,MedicalStatusIcons.bleedingColor(mixed));
+        assertTrue(procGraphics.fills.isEmpty());
+        var procDroplet=procGraphics.blits.getFirst();
+        assertTrue(procDroplet.id().getPath().contains("/bleeding_"));
+        assertEquals(1+types.length,procGraphics.blits.size());
+        for(int i=0;i<types.length;i++) {
+            var blit=procGraphics.blits.get(i+1);
+            assertEquals("textures/gui/status/"+types[i].icon.name()+".png",blit.id().getPath());
+            assertEquals(0xFFFFFFFF,blit.color());
+            assertTrue(blit.x()>=procDroplet.x()&&blit.x()+blit.width()<=procDroplet.x()+procDroplet.width());
+            assertTrue(blit.y()>=procDroplet.y()&&blit.y()+blit.height()<=procDroplet.y()+procDroplet.height());
         }
+
+        var tooltip=MedicalInventoryScreen.bodyTooltip(BodyPart.LEFT_ARM,mixed);
+        assertEquals(types.length+1,tooltip.size());
+        for(int i=0;i<types.length;i++) assertEquals(Component.translatable(types[i].translationKey),tooltip.get(i+1));
     }
 
     @Test void internalOnlyBleedingDrawsNoSurfaceSeverityOrType() throws Exception {
@@ -286,7 +292,6 @@ class MedicalUiRenderingTest {
         var graphics=Graphics.create(260,250);
         var box=MinecraftBodyLayout.box(BodyPart.LEFT_ARM,false);
         MedicalStatusIcons.body(graphics,concealed,box);
-        MedicalInventoryScreen.extractBleedingDetails(graphics,null,concealed);
         assertTrue(graphics.blits.isEmpty());
         assertTrue(graphics.fills.isEmpty());
         assertTrue(graphics.labels.isEmpty());

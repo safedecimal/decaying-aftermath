@@ -128,9 +128,29 @@ public final class MedicalStatusIcons {
                 float ratio=p.size()/(float)Math.max(p.icon().width(),p.icon().height());
                 int w=Math.max(1,Math.round(p.icon().width()*ratio)),h=Math.max(1,Math.round(p.icon().height()*ratio));
                 graphics.fill(p.x()-w/2-1,p.y()-h/2-1,p.x()-w/2+w+1,p.y()-h/2+h+1,0xFF210909);
-                color=visibleBleedingColor(color);
+                drawBleeding(graphics,part,p.x(),p.y(),p.size(),visibleBleedingColor(color));
+            } else {
+                draw(graphics,p.icon(),p.x(),p.y(),p.size(),color);
             }
-            draw(graphics,p.icon(),p.x(),p.y(),p.size(),color);
+        }
+    }
+    public static void drawBleeding(GuiGraphicsExtractor graphics, BodySnapshot.PartSnapshot part, int cx, int cy, int size, int color) {
+        Icon droplet=bleeding(part);
+        if(droplet==null) return;
+        draw(graphics,droplet,cx,cy,size,color);
+        var types=bleedingTypes(part);
+        int count=types.size();
+        if(count==0) return;
+        float ratio=size/(float)Math.max(droplet.width(),droplet.height());
+        int w=Math.max(1,Math.round(droplet.width()*ratio)),h=Math.max(1,Math.round(droplet.height()*ratio));
+        int gap=(w>=14&&count>1)?1:0;
+        int badgeSize=count==1?Math.max(3,Math.round(w*.55f)):Math.max(2,(w-2-gap*(count-1))/count);
+        int totalW=count*badgeSize+(count-1)*gap;
+        int left=cx-totalW/2;
+        int typeCy=cy+Math.round(h*.15f);
+        for(int i=0;i<count;i++) {
+            int typeCx=left+i*(badgeSize+gap)+badgeSize/2;
+            draw(graphics,types.get(i).icon,typeCx,typeCy,badgeSize,0xFFFFFFFF);
         }
     }
     public static int visibleBleedingColor(int nativeColor) {

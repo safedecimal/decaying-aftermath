@@ -30,20 +30,6 @@ class MedicalInventoryLayoutTest {
         for(int i=9;i<36;i++) assertEquals(new MedicalInventoryLayout.Position(30+(i-9)%9*18,164+(i-9)/9*18),MedicalInventoryLayout.slot(i));
         for(int i=36;i<45;i++) assertEquals(new MedicalInventoryLayout.Position(MedicalInventoryLayout.HOTBAR_X+3+(i-36)*20,MedicalInventoryLayout.HOTBAR_Y+3),MedicalInventoryLayout.slot(i));
     }
-    @Test void fullBleedingDetailsStayClearOfBodyAndInventorySlots() {
-        var details=MedicalInventoryLayout.BLEED_DETAILS;
-        assertTrue(details.x()>=0&&details.y()>=0);
-        assertTrue(details.x()+details.width()<=MedicalInventoryLayout.WIDTH);
-        assertTrue(details.y()+details.height()<=MedicalInventoryLayout.HEIGHT);
-        for(boolean slim:new boolean[]{false,true}) for(BodyPart part:BodyPart.values()) {
-            var b=MinecraftBodyLayout.box(part,slim);
-            assertFalse(overlap(details.x(),details.y(),details.width(),details.height(),b.x(),b.y(),b.width(),b.height()),part.name());
-        }
-        for(int i=0;i<46;i++) {
-            var slot=MedicalInventoryLayout.slot(i);
-            assertFalse(overlap(details.x(),details.y(),details.width(),details.height(),slot.x()-1,slot.y()-1,18,18),"slot "+i);
-        }
-    }
     private static boolean overlap(int x,int y,int w,int h,int bx,int by,int bw,int bh) {
         return x<bx+bw&&x+w>bx&&y<by+bh&&y+h>by;
     }

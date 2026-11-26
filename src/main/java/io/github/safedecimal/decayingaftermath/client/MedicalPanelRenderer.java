@@ -85,7 +85,7 @@ public final class MedicalPanelRenderer {
             if (clipped) graphics.disableScissor();
         }
         var external=CuMedicalMonitor.externalBleedSource(body);
-        if(external!=null)MedicalStatusIcons.draw(graphics,MedicalStatusIcons.bleeding(external),18,65,8,0xFFFF5555);
+        if(external!=null)MedicalStatusIcons.drawBleeding(graphics,external,18,65,8,0xFFFF5555);
         double seconds = System.nanoTime() / 1_000_000_000.0;
         for (var readout : CuMedicalGeometry.READOUTS) {
             String value = CuMedicalMonitor.value(body, readout.field(), bpm);
