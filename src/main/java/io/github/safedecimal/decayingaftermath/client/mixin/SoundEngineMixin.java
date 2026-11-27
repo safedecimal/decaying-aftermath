@@ -1,5 +1,6 @@
 package io.github.safedecimal.decayingaftermath.client.mixin;
 
+import io.github.safedecimal.decayingaftermath.client.ClientMedicalState;
 import io.github.safedecimal.decayingaftermath.client.UnconsciousPresentationPolicy;
 import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.client.sounds.SoundEngine;
@@ -18,7 +19,15 @@ public abstract class SoundEngineMixin {
     @Inject(method = "play", at = @At("HEAD"), cancellable = true)
     private void decayingAftermath$refuseWorldWhileFainted(SoundInstance instance,
             CallbackInfoReturnable<SoundEngine.PlayResult> cir) {
-        if (!UnconsciousPresentationPolicy.keepsPlaybackNow(instance))
+        if (!UnconsciousPresentationPolicy.keepsPlaybackNow(instance)) {
             cir.setReturnValue(SoundEngine.PlayResult.NOT_STARTED);
+            return;
+        }
+        if (instance != null) {
+            String path = instance.getIdentifier().getPath();
+            if ("ambient.cave".equals(path)) {
+                ClientMedicalState.reportCaveSound();
+            }
+        }
     }
 }

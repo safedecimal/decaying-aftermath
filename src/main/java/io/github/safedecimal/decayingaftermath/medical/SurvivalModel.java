@@ -2,13 +2,14 @@ package io.github.safedecimal.decayingaftermath.medical;
 
 import java.util.Objects;
 
-/** Deterministic 20 Hz adaptation of CU metabolism, fluid balance and liquid pharmacology. */
+/** Deterministic 20 Hz adaptation of CU metabolism, fluid balance, liquid pharmacology, and mental health. */
 public final class SurvivalModel {
     private float hydration=1,nutrition=1,temperature=37,fatigue,toxin,plasma=1,redCells=1;
     private float antibiotic,stimulant,antagonist,coagulant,encumbrance,pendingFood,pendingWater;
     private float gutInfection,pendingGerms;
     private double bodyMassKg=SurvivalSnapshot.DEFAULT_BODY_MASS_KG, radiationGy, bloodLostLiters;
     private int incubationTicks;
+    private MentalHealthModel mental=new MentalHealthModel();
 
     public SurvivalModel() { }
     public SurvivalModel(SurvivalSnapshot s) {
@@ -18,10 +19,15 @@ public final class SurvivalModel {
         stimulant=s.stimulant(); antagonist=s.antagonist(); coagulant=s.coagulant(); encumbrance=s.encumbrance();
         gutInfection=s.gutInfection();
         bodyMassKg=s.bodyMassKg(); radiationGy=s.radiationGy(); bloodLostLiters=s.bloodLostLiters();
+        mental=new MentalHealthModel(s.moodReserve(),s.antidepressant(),s.anxiolytic(),
+                s.therapyProgress(),0,0,0,0,s.depression(),s.moodFactors());
     }
     public SurvivalSnapshot snapshot(float internalBleeding,float lungFunction) {
         return new SurvivalSnapshot(hydration,nutrition,temperature,fatigue,toxin,plasma,redCells,
-                antibiotic,stimulant,antagonist,coagulant,internalBleeding,lungFunction,encumbrance,gutInfection,(float)bodyMassKg,(float)radiationGy,(float)bloodLostLiters);
+                antibiotic,stimulant,antagonist,coagulant,internalBleeding,lungFunction,encumbrance,gutInfection,
+                (float)bodyMassKg,(float)radiationGy,(float)bloodLostLiters,
+                mental.moodReserve(),mental.depression(),mental.antidepressant(),mental.anxiolytic(),
+                mental.therapyProgress(),mental.activeFactors());
     }
     public float bloodVolume() { return plasma*.55f+redCells*.45f; }
     public float effectiveOpiate(float burden) { return burden/(1+antagonist*4); }
@@ -32,6 +38,7 @@ public final class SurvivalModel {
     public float nutrition() { return nutrition; }
     public float fatigue() { return fatigue; }
     public float temperature(){return temperature;}
+    public MentalHealthModel mental() { return mental; }
     public float thermalStress() { return Math.clamp((Math.abs(temperature-37)-1)/4,0,1); }
     public float systemicStress() {
         return Math.max(Math.min(1,(float)radiationGy*.1f),Math.max(gutInfection*.6f,Math.max(thermalStress(),Math.max(Math.clamp((.2f-hydration)*5,0,1),Math.min(1,toxin*.45f)))));
@@ -46,6 +53,10 @@ public final class SurvivalModel {
         tick(e,lostBlood,sepsis,perfusion,false);
     }
     public void tick(BodyEnvironment e,float lostBlood,float sepsis,float perfusion,boolean preserveLastStanding) {
+        tick(e,lostBlood,sepsis,perfusion,preserveLastStanding,0,1,0);
+    }
+    public void tick(BodyEnvironment e,float lostBlood,float sepsis,float perfusion,boolean preserveLastStanding,
+            float pain,float brainHealth,float opiateBurden) {
         Objects.requireNonNull(e);
         if(!Float.isFinite(lostBlood)||lostBlood<0||!Float.isFinite(sepsis)||!Float.isFinite(perfusion))return;
         float volume=bloodVolume();
@@ -66,7 +77,9 @@ public final class SurvivalModel {
             float exertion=e.moving() ? e.sprinting()?2.5f:1 : 0;
             hydration=unit(hydration-.000004f*(1+exertion+Math.max(0,temperature-37)*.8f+sepsis+gutInfection*2));
             nutrition=unit(nutrition-.000003f*(1+exertion*.6f+thermalStress()));
-            fatigue=unit(fatigue+(e.sleeping()?-.0012f:e.moving()?.000020f:.000010f));
+            float depressionFatigue=mental.depression()==DepressionType.SEASONAL?.000012f:mental.depression()==DepressionType.PERSISTENT?.000008f:0;
+            float anxiolyticFatigue=mental.anxiolyticAction()*.000025f;
+            fatigue=unit(fatigue+(e.sleeping()?-.0012f:e.moving()?.000020f:.000010f)+depressionFatigue+anxiolyticFatigue);
             if(nutrition<.2f)bodyMassKg-=(.2-nutrition)*.00005*(1+exertion*.6);
         }
         if(incubationTicks>0) incubationTicks--;
@@ -96,11 +109,14 @@ public final class SurvivalModel {
             hydration=unit(hydration-production.plasma()*.15f);
             nutrition=unit(nutrition-production.cells()*.02f);
         }
-        float excess=Math.max(0,stimulant-1)+Math.max(0,antibiotic-1.5f)+Math.max(0,coagulant-1);
+        float excess=Math.max(0,stimulant-1)+Math.max(0,antibiotic-1.5f)+Math.max(0,coagulant-1)
+                +Math.max(0,mental.antidepressant()-1.5f)+Math.max(0,mental.anxiolytic()-1.4f);
         toxin=Math.clamp(toxin+excess*.00004f-.00001f*Math.min(1,hydration*2),0,3);
         antibiotic=Math.max(0,antibiotic-.00006f); stimulant=Math.max(0,stimulant-.00012f);
         antagonist=Math.max(0,antagonist-.00020f); coagulant=Math.max(0,coagulant-.00008f);
         bodyMassKg=Math.clamp(bodyMassKg+(hydration-oldHydration)*2,35,250);
+        mental.tick(e,pain,toxin,Math.clamp(Math.max(gutInfection,Math.max(toxin,(float)radiationGy*.1f)),0,1),
+                brainHealth,fatigue,temperature,Math.max(opiateBurden,stimulant),e.mentalHealthEnabled());
     }
     public void feed(float food,float water) {
         if (!Float.isFinite(food)||!Float.isFinite(water)||food<0||water<0) return;
@@ -117,9 +133,14 @@ public final class SurvivalModel {
         }
         poison(chemicals);
     }
-    public void caffeinate(float amount) { if(Float.isFinite(amount)&&amount>0)stimulant=Math.clamp(stimulant+amount*.25f,0,3); }
+    public void caffeinate(float amount) {
+        if(Float.isFinite(amount)&&amount>0) {
+            stimulant=Math.clamp(stimulant+amount*.25f,0,3);
+            mental.onFoodConsumed(amount*.04f,0,0);
+        }
+    }
     public void starvation(float amount) { if (Float.isFinite(amount)&&amount>0) nutrition=unit(nutrition-amount*.02f); }
-    public void wakeFromNight() { fatigue=Math.max(0,fatigue-.65f); }
+    public void wakeFromNight() { fatigue=Math.max(0,fatigue-.65f); mental.onNightSleep(); }
     public void cool(float amount) { if(temperature>37.2f)temperature=Math.max(37.2f,temperature-.04f*Math.clamp(amount,0,1)); }
     /** Sole explicit exception: existing supernatural Last Standing reserves remain unchanged. */
     public void restoreLastStandingBlood(float blood) { plasma=redCells=unit(blood); }
@@ -135,10 +156,16 @@ public final class SurvivalModel {
             case COAGULANT -> coagulant=Math.clamp(coagulant+amount*.8f,0,3);
             case BLOOD_BAG -> { plasma=unit(plasma+amount*.3f); redCells=unit(redCells+amount*.3f); }
             case SALINE -> plasma=unit(plasma+amount*.5f);
+            case ANTIDEPRESSANT, ANXIOLYTIC -> mental.treat(kind,amount);
+            case HERBAL_TEA -> { pendingWater=Math.min(1,pendingWater+amount*.35f); mental.treat(kind,amount); }
             default -> { }
         }
     }
-    public record SavedState(SurvivalSnapshot snapshot,float pendingFood,float pendingWater,float pendingGerms,int incubationTicks) {
+    public record SavedState(SurvivalSnapshot snapshot,float pendingFood,float pendingWater,float pendingGerms,int incubationTicks,
+            float lightDeficit,float situationalStress,float chronicBurden,float psychosisLoad) {
+        public SavedState(SurvivalSnapshot snapshot,float pendingFood,float pendingWater,float pendingGerms,int incubationTicks) {
+            this(snapshot,pendingFood,pendingWater,pendingGerms,incubationTicks,0,0,0,0);
+        }
         public SavedState(SurvivalSnapshot snapshot,float pendingFood,float pendingWater){this(snapshot,pendingFood,pendingWater,0,0);}
         public SavedState {
             Objects.requireNonNull(snapshot);
@@ -146,14 +173,22 @@ public final class SurvivalModel {
             pendingFood=unit(pendingFood); pendingWater=unit(pendingWater);
             if(!Float.isFinite(pendingGerms))throw new IllegalArgumentException("Invalid pathogen reserve");
             pendingGerms=unit(pendingGerms); incubationTicks=Math.clamp(incubationTicks,0,12000);
+            lightDeficit=unit(lightDeficit); situationalStress=unit(situationalStress);
+            chronicBurden=unit(chronicBurden); psychosisLoad=unit(psychosisLoad);
         }
     }
     public SavedState save(float internalBleeding,float lungFunction) {
-        return new SavedState(snapshot(internalBleeding,lungFunction),pendingFood,pendingWater,pendingGerms,incubationTicks);
+        return new SavedState(snapshot(internalBleeding,lungFunction),pendingFood,pendingWater,pendingGerms,incubationTicks,
+                mental.lightDeficit(),mental.situationalStress(),mental.chronicBurden(),mental.psychosisLoad());
     }
     public static SurvivalModel restore(SavedState state) {
         SurvivalModel s=new SurvivalModel(state.snapshot()); s.pendingFood=state.pendingFood(); s.pendingWater=state.pendingWater();
-        s.pendingGerms=state.pendingGerms();s.incubationTicks=state.incubationTicks();return s;
+        s.pendingGerms=state.pendingGerms();s.incubationTicks=state.incubationTicks();
+        var snap=state.snapshot();
+        s.mental=new MentalHealthModel(snap.moodReserve(),snap.antidepressant(),snap.anxiolytic(),
+                snap.therapyProgress(),state.lightDeficit(),state.situationalStress(),state.chronicBurden(),
+                state.psychosisLoad(),snap.depression(),snap.moodFactors());
+        return s;
     }
     private static float unit(float value) { return Math.clamp(value,0,1); }
 }

@@ -27,6 +27,19 @@ class MedicalMonitorRevisionTest {
     private SurvivalSnapshot state(float water,float food,float toxin,float gut,float mass,float radiation,float loss) {
         return new SurvivalSnapshot(water,food,37,0,toxin,1,1,0,0,0,0,0,1,0,gut,mass,radiation,loss);
     }
+    @Test void monitorMoodSpriteAndTooltipReflectDepressionStateAndActiveFactors() {
+        var healthy=new BodyModel().snapshot();
+        assertEquals("mood_happy",CuMedicalMonitor.moodSpriteName(healthy));
+        var s=new SurvivalSnapshot(1,1,37,0,0,1,1,0,0,0,0,0,1,0,0,75,0,0,
+                -.65f,DepressionType.PSYCHOTIC,.5f,0,.4f,MoodFactors.EERIE_MUSIC|MoodFactors.DARKNESS|MoodFactors.THERAPY);
+        var depressed=body(s);
+        assertEquals("mood_severe",CuMedicalMonitor.moodSpriteName(depressed));
+        assertTrue(CuMedicalMonitor.critical(depressed,"HappinessText"));
+        var details=CuMedicalMonitor.moodDetails(depressed);
+        assertTrue(details.stream().anyMatch(line->line.contains("Психотическая депрессия")));
+        assertTrue(details.stream().anyMatch(line->line.contains("жуткая пластинка")));
+        assertTrue(details.stream().anyMatch(line->line.contains("антидепрессант")));
+    }
     @Test void requestedReadoutsAreNumericNotDashesAndHealthyPressureIs120Over80() {
         var b=new BodyModel().snapshot();
         for(var readout:CuMedicalGeometry.READOUTS)assertFalse(CuMedicalMonitor.value(b,readout.field(),72).contains("--"),readout.field());
@@ -130,7 +143,7 @@ class MedicalMonitorRevisionTest {
                 assertEquals(b.survival(),decoded.survival());assertArrayEquals(b.parts(),decoded.parts());
                 assertEquals(buffer.writerIndex(),buffer.readerIndex());
             }
-            assertTrue(BodyPayload.TYPE.id().toString().endsWith("body_v9"));
+            assertTrue(BodyPayload.TYPE.id().toString().endsWith("body_v10"));
         } finally { buffer.release(); }
     }
     private ValueInput input(Map<String,Object> data) {

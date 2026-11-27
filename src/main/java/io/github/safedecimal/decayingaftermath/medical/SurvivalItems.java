@@ -21,6 +21,12 @@ public final class SurvivalItems {
     public static final Item ANTIBIOTICS=oral("antibiotics",TreatmentKind.ANTIBIOTICS);
     public static final Item PAINKILLERS=oral("painkillers",TreatmentKind.PAINKILLERS);
     public static final Item COAGULANT=oral("coagulant",TreatmentKind.COAGULANT);
+    public static final Item ANTIDEPRESSANTS=oral("antidepressants",TreatmentKind.ANTIDEPRESSANT);
+    public static final Item ANXIOLYTIC=oral("anxiolytic",TreatmentKind.ANXIOLYTIC);
+    public static final Item HERBAL_TEA=register("herbal_tea",new SurvivalConsumableItem(properties("herbal_tea").stacksTo(16)
+            .component(DataComponents.CONSUMABLE,Consumable.builder().consumeSeconds(1.6f)
+                    .animation(ItemUseAnimation.DRINK).sound(SoundEvents.GENERIC_DRINK).hasConsumeParticles(false).build()),
+            TreatmentKind.HERBAL_TEA,.35f,0,0,true,"decaying_aftermath.hint.herbal_tea"));
     public static final Item NALOXONE=plain("naloxone",16);
     public static final Item COMBAT_PEN=plain("combatpen",1);
     public static final Item BLOOD_BAG=plain("blood_bag",1);
@@ -36,8 +42,9 @@ public final class SurvivalItems {
     public static final Item BACKPACK=register("backpack",new MedicalSupplyItem(properties("backpack").stacksTo(1)
             .component(DataComponents.EQUIPPABLE,Equippable.builder(EquipmentSlot.CHEST)
                     .setEquipSound(SoundEvents.ARMOR_EQUIP_LEATHER).setDamageOnHurt(false).build()),"backpack"));
-    public static final List<Item> ALL=List.of(ANTIBIOTICS,PAINKILLERS,COAGULANT,NALOXONE,COMBAT_PEN,BLOOD_BAG,
-            SALINE,ICE_PACK,CHEST_DRAIN,TWEEZERS,WATER_BOTTLE,DIRTY_WATER_BOTTLE,COFFEE,PEMMICAN,BACKPACK);
+    public static final List<Item> ALL=List.of(ANTIBIOTICS,PAINKILLERS,COAGULANT,ANTIDEPRESSANTS,ANXIOLYTIC,HERBAL_TEA,
+            NALOXONE,COMBAT_PEN,BLOOD_BAG,SALINE,ICE_PACK,CHEST_DRAIN,TWEEZERS,WATER_BOTTLE,DIRTY_WATER_BOTTLE,
+            COFFEE,PEMMICAN,BACKPACK);
     private static boolean registered;
     private SurvivalItems(){ }
     public static void register() {

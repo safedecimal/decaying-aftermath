@@ -138,5 +138,22 @@
   "decaying_aftermath.afterlife.thought.4": "Why did I feel so alone, even with other people?",
   "decaying_aftermath.afterlife.thought.5": "Is this all that will be left of me?",
   "decaying_aftermath.afterlife.thought.6": "I did not know how to ask for help.",
-  "decaying_aftermath.afterlife.thought.7": "What if tomorrow could have been different?"
+  "decaying_aftermath.afterlife.thought.7": "What if tomorrow could have been different?",
+  "item.decaying_aftermath.antidepressants": "Antidepressants (SSRI Course)",
+  "item.decaying_aftermath.anxiolytic": "Anxiolytic Sedative",
+  "item.decaying_aftermath.herbal_tea": "Herbal Tea",
+  "decaying_aftermath.hint.antidepressants": "RMB: take. Gradually treats melancholic, psychotic, and persistent depression; excess is toxic.",
+  "decaying_aftermath.hint.anxiolytic": "RMB: take. Rapidly relieves acute panic and psychotic features; causes drowsiness.",
+  "decaying_aftermath.hint.herbal_tea": "RMB: drink. Hydrates, calms, and gently lifts mood.",
+  "decaying_aftermath.depression.none": "Normal",
+  "decaying_aftermath.depression.situational": "Situational Depression",
+  "decaying_aftermath.depression.seasonal": "Seasonal Depression",
+  "decaying_aftermath.depression.melancholic": "Melancholic Depression",
+  "decaying_aftermath.depression.psychotic": "Psychotic Depression",
+  "decaying_aftermath.depression.persistent": "Persistent Dysthymia",
+  "decaying_aftermath.thought.depression.situational": "Everything feels overwhelming... I need somewhere safe.",
+  "decaying_aftermath.thought.depression.seasonal": "Too dark for too long... I miss the daylight.",
+  "decaying_aftermath.thought.depression.melancholic": "Nothing brings relief anymore... everything feels hollow.",
+  "decaying_aftermath.thought.depression.psychotic": "Shadows and whispers won't stop... I need to calm down.",
+  "decaying_aftermath.thought.depression.persistent": "This grey weight has lingered for far too long."
 }

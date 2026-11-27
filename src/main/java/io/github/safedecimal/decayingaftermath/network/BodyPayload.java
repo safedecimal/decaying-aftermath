@@ -7,7 +7,7 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
 
 public record BodyPayload(BodySnapshot snapshot) implements CustomPacketPayload {
-    public static final Type<BodyPayload> TYPE = new Type<>(Identifier.fromNamespaceAndPath("decaying_aftermath", "body_v9"));
+    public static final Type<BodyPayload> TYPE = new Type<>(Identifier.fromNamespaceAndPath("decaying_aftermath", "body_v10"));
     public static final StreamCodec<RegistryFriendlyByteBuf, BodyPayload> CODEC = CustomPacketPayload.codec(BodyPayload::write, BodyPayload::read);
     @Override public Type<BodyPayload> type() { return TYPE; }
     private void write(RegistryFriendlyByteBuf b) {
@@ -33,6 +33,8 @@ public record BodyPayload(BodySnapshot snapshot) implements CustomPacketPayload 
         b.writeFloat(s.stimulant());b.writeFloat(s.antagonist());b.writeFloat(s.coagulant());b.writeFloat(s.internalBleeding());
         b.writeFloat(s.lungFunction());b.writeFloat(s.encumbrance());b.writeFloat(s.gutInfection());
         b.writeFloat(s.bodyMassKg());b.writeFloat(s.radiationGy());b.writeFloat(s.bloodLostLiters());
+        b.writeFloat(s.moodReserve());b.writeEnum(s.depression());b.writeFloat(s.antidepressant());
+        b.writeFloat(s.anxiolytic());b.writeFloat(s.therapyProgress());b.writeVarInt(s.moodFactors());
         b.writeEnum(snapshot.bloodGroup()); b.writeInt(snapshot.cardiacTicks());b.writeFloat(snapshot.brainHealth());
     }
     private static BodyPayload read(RegistryFriendlyByteBuf b) {
@@ -51,7 +53,8 @@ public record BodyPayload(BodySnapshot snapshot) implements CustomPacketPayload 
         }
         var s=new SurvivalSnapshot(b.readFloat(),b.readFloat(),b.readFloat(),b.readFloat(),b.readFloat(),b.readFloat(),b.readFloat(),
                 b.readFloat(),b.readFloat(),b.readFloat(),b.readFloat(),b.readFloat(),b.readFloat(),b.readFloat(),b.readFloat(),
-                b.readFloat(),b.readFloat(),b.readFloat());
+                b.readFloat(),b.readFloat(),b.readFloat(),
+                b.readFloat(),b.readEnum(DepressionType.class),b.readFloat(),b.readFloat(),b.readFloat(),b.readVarInt());
         var group=b.readEnum(BloodGroup.class);
         return new BodyPayload(new BodySnapshot(condition,blood,oxygen,pain,drug,bpm,BodySnapshot.Mode.values()[mode],progress,energy,consciousness,parts,s,group,b.readInt(),b.readFloat()));
     }

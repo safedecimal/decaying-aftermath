@@ -1,8 +1,11 @@
 package io.github.safedecimal.decayingaftermath.client;
 
 import io.github.safedecimal.decayingaftermath.medical.BodyPart;
+import io.github.safedecimal.decayingaftermath.medical.DepressionType;
 import io.github.safedecimal.decayingaftermath.medical.MedicalPhysiology;
+import io.github.safedecimal.decayingaftermath.medical.MoodFactors;
 import io.github.safedecimal.decayingaftermath.medical.BodySnapshot;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -71,6 +74,61 @@ public final class CuMedicalMonitor {
         return List.of("Наружное: "+bleedFlowMlPerMinute(b,false)+" мл/мин",
                 "Внутреннее: "+bleedFlowMlPerMinute(b,true)+" мл/мин");
     }
+    public static String moodSpriteName(BodySnapshot b) {
+        var dep = b.survival().depression();
+        if (dep == DepressionType.PSYCHOTIC || dep == DepressionType.MELANCHOLIC) return "mood_severe";
+        if (dep.active()) return "mood_sad";
+        float mood = MedicalPhysiology.mood(b);
+        if (mood >= 0.35f) return "mood_happy";
+        if (mood <= -0.15f) return "mood_sad";
+        return "neutral";
+    }
+    public static List<String> moodDetails(BodySnapshot b) {
+        var s = b.survival();
+        var dep = s.depression();
+        var lines = new ArrayList<String>();
+        String diag = switch (dep) {
+            case NONE -> MedicalPhysiology.mood(b) < -0.1f ? "Состояние: Подавленность" : "Состояние: Норма";
+            case SITUATIONAL -> "Диагноз: Ситуативная депрессия";
+            case SEASONAL -> "Диагноз: Сезонная депрессия (САР)";
+            case MELANCHOLIC -> "Диагноз: Меланхолическая депрессия";
+            case PSYCHOTIC -> "Диагноз: Психотическая депрессия";
+            case PERSISTENT -> "Диагноз: Хроническая дистимия";
+        };
+        lines.add(diag);
+        String advice = switch (dep) {
+            case NONE -> null;
+            case SITUATIONAL -> "Лечение: безопасность, еда, сон, седатив";
+            case SEASONAL -> "Лечение: дневной свет на поверхности, сон";
+            case MELANCHOLIC -> "Лечение: курс антидепрессантов, сон";
+            case PSYCHOTIC -> "Лечение: антидепрессант + седатив, свет";
+            case PERSISTENT -> "Лечение: режим сна, еда, музыка, антидепрессант";
+        };
+        if (advice != null) lines.add(advice);
+        int f = s.moodFactors();
+        var neg = new ArrayList<String>();
+        if ((f & MoodFactors.EERIE_MUSIC) != 0) neg.add("жуткая пластинка");
+        if ((f & MoodFactors.DARKNESS) != 0) neg.add("темнота");
+        if ((f & MoodFactors.CAVE) != 0) neg.add("пещера/эмбиент");
+        if ((f & MoodFactors.HOSTILES) != 0) neg.add("враги рядом");
+        if ((f & MoodFactors.BAD_FOOD) != 0) neg.add("плохая еда");
+        if ((f & MoodFactors.SLEEP_DEPRIVED) != 0) neg.add("недосып");
+        if ((f & MoodFactors.COLD_OR_RAIN) != 0) neg.add("холод/дождь");
+        if ((f & MoodFactors.PAIN_OR_ILLNESS) != 0) neg.add("боль/болезнь");
+        if ((f & MoodFactors.WITHDRAWAL) != 0) neg.add("отмена");
+        if (!neg.isEmpty()) lines.add("Давит: " + String.join(", ", neg));
+        var pos = new ArrayList<String>();
+        if ((f & MoodFactors.DAYLIGHT) != 0) pos.add("дневной свет");
+        if ((f & MoodFactors.GOOD_MUSIC) != 0) pos.add("хорошая музыка");
+        if ((f & MoodFactors.GOOD_FOOD) != 0) pos.add("вкусная еда");
+        if ((f & MoodFactors.SLEEPING) != 0) pos.add("сон");
+        if ((f & MoodFactors.COZY_WARMTH) != 0) pos.add("костёр/тепло");
+        if ((f & MoodFactors.NATURE) != 0) pos.add("природа");
+        if ((f & MoodFactors.THERAPY) != 0) pos.add("антидепрессант (" + Math.round(s.therapyProgress() * 100) + "%)");
+        if ((f & MoodFactors.SEDATIVE) != 0) pos.add("успокоительное");
+        if (!pos.isEmpty()) lines.add("Поддерживает: " + String.join(", ", pos));
+        return List.copyOf(lines);
+    }
     public static BodySnapshot.PartSnapshot externalBleedSource(BodySnapshot b) {
         BodySnapshot.PartSnapshot highest=null;
         for(var part:b.parts())if(part.bleeding()>0&&(highest==null||part.bleeding()>highest.bleeding()))highest=part;
@@ -95,6 +153,7 @@ public final class CuMedicalMonitor {
             case "BPMText" -> MedicalPhysiology.systolic(b) < 90 || MedicalPhysiology.systolic(b) > 180;
             case "OpiateText" -> b.drug() >= 2.4f;
             case "OpiateText (1)" -> b.survival().toxin() > .9f;
+            case "HappinessText" -> b.survival().depression().severe() || MedicalPhysiology.mood(b) < -.5f;
             default -> false;
         };
     }
@@ -164,6 +223,7 @@ public final class CuMedicalMonitor {
             new Hit("FoodText",new CuMedicalGeometry.Rect(7,85,11,12)),
             new Hit("SicknessText",new CuMedicalGeometry.Rect(14,96,12,11)),
             new Hit("WeightText",new CuMedicalGeometry.Rect(14,107,13,9)),
+            new Hit("Mood",new CuMedicalGeometry.Rect(116,93,11,11)),
             new Hit("EnergyText",new CuMedicalGeometry.Rect(119,106,12,9)),
             new Hit("HemothoraxFill",new CuMedicalGeometry.Rect(16,120,5,20)),
             new Hit("LungFill1",new CuMedicalGeometry.Rect(7,120,10,20)),

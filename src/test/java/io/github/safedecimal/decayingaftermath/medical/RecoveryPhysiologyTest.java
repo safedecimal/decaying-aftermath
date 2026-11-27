@@ -96,7 +96,7 @@ class RecoveryPhysiologyTest {
         try {BodyPayload.CODEC.encode(b,new BodyPayload(expected));var read=BodyPayload.CODEC.decode(b).snapshot();
             assertEquals(.6f,read.brainHealth());assertEquals(b.writerIndex(),b.readerIndex());}
         finally {b.release();}
-        assertTrue(BodyPayload.TYPE.id().getPath().equals("body_v9"));
+        assertTrue(BodyPayload.TYPE.id().getPath().equals("body_v10"));
     }
     @Test void monitorShowsBrainReserveSeparatelyFromConsciousness() {
         var b=new BodyModel().snapshot().withBrainHealth(.6f);

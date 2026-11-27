@@ -1,5 +1,6 @@
 package io.github.safedecimal.decayingaftermath.mixin;
 
+import io.github.safedecimal.decayingaftermath.medical.FoodMoodPolicy;
 import io.github.safedecimal.decayingaftermath.server.ServerMedicalSystem;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
@@ -12,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/** Eating remains vanilla. It supplies metabolism, not vanilla HP or instantaneous tissue repair. */
+/** Eating remains vanilla. It supplies metabolism and mood response, not vanilla HP or instantaneous tissue repair. */
 @Mixin(FoodProperties.class)
 public abstract class SurvivalFoodMixin {
     @Inject(method="onConsume",at=@At("TAIL"))
@@ -20,7 +21,12 @@ public abstract class SurvivalFoodMixin {
             Consumable consumable,CallbackInfo ci) {
         if(entity instanceof ServerPlayer player && ServerMedicalSystem.canAct(player)) {
             int nutrition=((FoodProperties)(Object)this).nutrition();
-            ServerMedicalSystem.get(player).consume(Math.max(0,nutrition)*.05f,0);
+            var body = ServerMedicalSystem.get(player);
+            body.consume(Math.max(0,nutrition)*.05f,0);
+            var impact = FoodMoodPolicy.forStack(stack, nutrition);
+            if (impact.moodDelta() != 0 || impact.stressDelta() > 0 || impact.psychosisDelta() > 0) {
+                body.consumeMood(impact.moodDelta(), impact.stressDelta(), impact.psychosisDelta());
+            }
         }
     }
 }

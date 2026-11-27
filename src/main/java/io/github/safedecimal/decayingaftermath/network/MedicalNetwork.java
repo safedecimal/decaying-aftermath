@@ -20,22 +20,34 @@ import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 public final class MedicalNetwork {
     public static final String FILL_KEY="decaying_aftermath_fill";
     private static final Map<UUID,Session> SESSIONS=new HashMap<>();
+    private static final Map<UUID,Long> LAST_CAVE_SOUND=new HashMap<>();
     private MedicalNetwork() {}
     public static void register() {
         PayloadTypeRegistry.clientboundPlay().register(BodyPayload.TYPE,BodyPayload.CODEC);
         PayloadTypeRegistry.clientboundPlay().register(ThoughtPayload.TYPE,ThoughtPayload.CODEC);
         PayloadTypeRegistry.serverboundPlay().register(MedicalActionPayload.TYPE,MedicalActionPayload.CODEC);
         PayloadTypeRegistry.serverboundPlay().register(StandUpPayload.TYPE, StandUpPayload.CODEC);
+        PayloadTypeRegistry.serverboundPlay().register(CaveSoundPayload.TYPE, CaveSoundPayload.CODEC);
         ServerPlayNetworking.registerGlobalReceiver(StandUpPayload.TYPE,
                 (p,c)->c.server().execute(()->ServerMedicalSystem.tryStandUp(c.player())));
+        ServerPlayNetworking.registerGlobalReceiver(CaveSoundPayload.TYPE,
+                (p,c)->c.server().execute(()->handleCaveSound(c.player())));
         ServerPlayNetworking.registerGlobalReceiver(MedicalActionPayload.TYPE,(p,c)->c.server().execute(()->handle(c.player(),p)));
-        ServerPlayConnectionEvents.DISCONNECT.register((h,s)->SESSIONS.remove(h.getPlayer().getUUID()));
+        ServerPlayConnectionEvents.DISCONNECT.register((h,s)->{SESSIONS.remove(h.getPlayer().getUUID());LAST_CAVE_SOUND.remove(h.getPlayer().getUUID());});
         ServerPlayerEvents.COPY_FROM.register((oldPlayer,newPlayer,alive)->SESSIONS.remove(oldPlayer.getUUID()));
         ServerTickEvents.END_SERVER_TICK.register(server -> {
             for (ServerPlayer player : server.getPlayerList().getPlayers())
                 if (player.tickCount % 20 == 0) compactSupplies(player);
         });
         ServerMedicalSystem.setSyncHandler(MedicalNetwork::sync);
+    }
+    private static void handleCaveSound(ServerPlayer player) {
+        if(!ServerMedicalSystem.canAct(player)||player.isCreative()||player.isSpectator()) return;
+        long now=player.level().getGameTime();
+        Long last=LAST_CAVE_SOUND.get(player.getUUID());
+        if(last!=null&&now-last<160) return; // Rate-limit to at most once per 8 seconds
+        LAST_CAVE_SOUND.put(player.getUUID(),now);
+        ServerMedicalSystem.get(player).onCaveSound();
     }
     public static void sync(ServerPlayer player,BodySnapshot snapshot) {
         if(ServerPlayNetworking.canSend(player,BodyPayload.TYPE))

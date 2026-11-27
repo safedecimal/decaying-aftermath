@@ -110,6 +110,7 @@ public final class BodyModel {
             fractured[i] = true; boneHealing[i]=0;
         }
         faintRecovered = false; // A new injury may cause a new faint, unlike an unchanged wound.
+        survival.mental().onTrauma(amount);
         evaluateAndAlign(false);
     }
 
@@ -289,7 +290,8 @@ public final class BodyModel {
             receivingCare |= bandaged[i] && externalSeverity <= .001f;
         }
         survival.tick(environment,MedicalPhysiology.bloodLossPerTick(totalBleedFlow),sepsis(),
-                cardiacTicks<0?0:Math.clamp(blood/.5f,0,1),mode==Mode.LAST_STANDING);
+                cardiacTicks<0?0:Math.clamp(blood/.5f,0,1),mode==Mode.LAST_STANDING,
+                effectivePain(),brainHealth,drug);
         blood=survival.bloodVolume();
         if(chestDrain) lungCollapse=Math.max(0,lungCollapse-.0006f);
         drug = Math.max(0, drug - .0002f);
@@ -351,6 +353,11 @@ public final class BodyModel {
     }
 
     public void consume(float nutrition,float hydration) { if(mode!=Mode.DEAD) survival.feed(nutrition,hydration); }
+    public void consumeMood(float moodDelta,float stressDelta,float psychosisDelta) {
+        if(mode!=Mode.DEAD) survival.mental().onFoodConsumed(moodDelta,stressDelta,psychosisDelta);
+    }
+    public void onCaveSound() { if(mode!=Mode.DEAD) survival.mental().onCaveSound(); }
+    public void onCompanionship() { if(mode!=Mode.DEAD) survival.mental().onCompanionshipOrPet(); }
     public void irradiate(float doseGy) { if(mode!=Mode.DEAD)survival.irradiate(doseGy); }
     public void poison(float amount) { if(mode!=Mode.DEAD) survival.poison(amount); }
     public void drinkContaminated(float pathogens,float chemicals){if(mode!=Mode.DEAD)survival.drinkContaminated(pathogens,chemicals);}

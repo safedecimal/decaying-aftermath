@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "decaying_aftermath:water_bottle",
+    "minecraft:sweet_berries",
+    "minecraft:dandelion"
+  ],
+  "result": {
+    "id": "decaying_aftermath:herbal_tea",
+    "count": 1
+  }
+}

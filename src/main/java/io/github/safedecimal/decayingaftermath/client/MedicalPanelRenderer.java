@@ -80,7 +80,8 @@ public final class MedicalPanelRenderer {
                 else graphics.enableScissor(r.x(), r.y()-1, r.x()+visible, r.y()+r.height()+1);
             }
             // Full native Sprite rectangle; the scissor only clips its fill, never stretches it.
-            graphics.blit(RenderPipelines.GUI_TEXTURED, id("textures/gui/medical/native/"+sprite.name()+".png"),
+            String spriteName = sprite.field().equals("Mood") ? CuMedicalMonitor.moodSpriteName(body) : sprite.name();
+            graphics.blit(RenderPipelines.GUI_TEXTURED, id("textures/gui/medical/native/"+spriteName+".png"),
                     r.x(), r.y(), 0f, 0f, r.width(), r.height(), r.width(), r.height());
             if (clipped) graphics.disableScissor();
         }
@@ -114,6 +115,8 @@ public final class MedicalPanelRenderer {
         lines.add(Component.literal(value).getVisualOrderText());
         if(field.equals("BleedText"))for(String flow:CuMedicalMonitor.bleedingDetails(body))
             lines.add(Component.literal(flow).getVisualOrderText());
+        if(field.equals("Mood")||field.equals("HappinessText"))for(String line:CuMedicalMonitor.moodDetails(body))
+            lines.add(Component.literal(line).getVisualOrderText());
         graphics.setTooltipForNextFrame(font, lines, mouseX, mouseY);
     }
 

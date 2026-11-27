@@ -163,7 +163,9 @@ class MedicalUiRenderingTest {
                 assertEquals(sprite.textureWidth(),sprite.sourceWidth());
                 assertEquals(sprite.textureHeight(),sprite.sourceHeight());
                 var geometry=CuMedicalGeometry.SPRITES.stream().filter(s->s.box().x()==sprite.x()
-                        &&s.box().y()==sprite.y()&&sprite.id().toString().endsWith("/"+s.name()+".png")).findFirst().orElseThrow();
+                        &&s.box().y()==sprite.y()
+                        &&(sprite.id().toString().endsWith("/"+s.name()+".png")
+                                ||(s.field().equals("Mood")&&sprite.id().toString().contains("/mood_")))).findFirst().orElseThrow();
                 if(CuMedicalMonitor.amount(body,geometry.field())<1) {
                     assertNotNull(sprite.clip(),geometry.field());
                     assertTrue(sprite.clip().width()>0&&sprite.clip().height()>0,geometry.field());

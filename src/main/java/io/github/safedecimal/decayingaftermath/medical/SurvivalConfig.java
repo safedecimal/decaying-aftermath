@@ -12,7 +12,7 @@ import java.util.Map;
 
 /** Server-side balancing switches. Never silently overwrites an invalid player config. */
 public final class SurvivalConfig {
-    public boolean metabolism=true,temperature=true,encumbrance=true;
+    public boolean metabolism=true,temperature=true,encumbrance=true,mentalHealth=true;
     public int deathAftermathSeconds=AftermathPolicy.DEFAULT_SECONDS;
     public float carryingCapacity=48,backpackCapacityBonus=24,blockMass=.25f,ordinaryItemMass=.05f;
     public Map<String,Float> itemMass=new HashMap<>();

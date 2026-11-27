@@ -241,7 +241,10 @@ public final class ServerMedicalSystem {
         transientPenalty(player, Attributes.ATTACK_SPEED, ARM_SPEED, Math.min(.7, arms));
         transientPenalty(player, Attributes.ATTACK_DAMAGE, ARM_DAMAGE, Math.min(.65, arms * .75));
         var s=snapshot.survival();
-        double survival=active?Math.min(.85,ItemMassPolicy.movementPenalty(s.encumbrance())+s.thermalStress()*.18+s.fatigue()*.10):0;
+        float depressionPenalty=s.depression()==io.github.safedecimal.decayingaftermath.medical.DepressionType.MELANCHOLIC?.12f
+                :s.depression()==io.github.safedecimal.decayingaftermath.medical.DepressionType.PSYCHOTIC?.08f
+                :s.depression()==io.github.safedecimal.decayingaftermath.medical.DepressionType.SITUATIONAL?.05f:0;
+        double survival=active?Math.min(.85,ItemMassPolicy.movementPenalty(s.encumbrance())+s.thermalStress()*.18+s.fatigue()*.10+depressionPenalty):0;
         transientPenalty(player,Attributes.MOVEMENT_SPEED,SURVIVAL_SPEED,survival);
     }
     private static double limbPenalty(PartSnapshot limb) {

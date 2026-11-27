@@ -1,10 +1,24 @@
 package io.github.safedecimal.decayingaftermath.medical;
 
+import java.util.Objects;
+
 /** Fictional game reserves/concentrations. No real medication doses or clinical measurements. */
 public record SurvivalSnapshot(float hydration, float nutrition, float temperature, float fatigue,
         float toxin, float plasma, float redCells, float antibiotic, float stimulant, float antagonist,
-        float coagulant, float internalBleeding, float lungFunction, float encumbrance,float gutInfection, float bodyMassKg, float radiationGy, float bloodLostLiters) {
+        float coagulant, float internalBleeding, float lungFunction, float encumbrance,float gutInfection,
+        float bodyMassKg, float radiationGy, float bloodLostLiters,
+        float moodReserve, DepressionType depression, float antidepressant, float anxiolytic,
+        float therapyProgress, int moodFactors) {
     public static final float DEFAULT_BODY_MASS_KG=75;
+    public SurvivalSnapshot(float hydration, float nutrition, float temperature, float fatigue,
+            float toxin, float plasma, float redCells, float antibiotic, float stimulant, float antagonist,
+            float coagulant, float internalBleeding, float lungFunction, float encumbrance, float gutInfection,
+            float bodyMassKg, float radiationGy, float bloodLostLiters) {
+        this(hydration, nutrition, temperature, fatigue, toxin, plasma, redCells, antibiotic, stimulant,
+                antagonist, coagulant, internalBleeding, lungFunction, encumbrance, gutInfection,
+                bodyMassKg, radiationGy, bloodLostLiters,
+                1f, DepressionType.NONE, 0f, 0f, 0f, 0);
+    }
     public SurvivalSnapshot(float hydration,float nutrition,float temperature,float fatigue,float toxin,
             float plasma,float redCells,float antibiotic,float stimulant,float antagonist,float coagulant,
             float internalBleeding,float lungFunction,float encumbrance,float gutInfection) {
@@ -28,6 +42,11 @@ public record SurvivalSnapshot(float hydration, float nutrition, float temperatu
         gutInfection=range(gutInfection,0,1);
         bodyMassKg=range(bodyMassKg,35,250); radiationGy=range(radiationGy,0,100);
         bloodLostLiters=range(bloodLostLiters,0,10000);
+        moodReserve=range(moodReserve,-1,1);
+        depression=Objects.requireNonNullElse(depression, DepressionType.NONE);
+        antidepressant=range(antidepressant,0,3);
+        anxiolytic=range(anxiolytic,0,3);
+        therapyProgress=range(therapyProgress,0,1);
     }
     public static SurvivalSnapshot legacy(float blood) {
         return new SurvivalSnapshot(1,1,37,0,0,blood,blood,0,0,0,0,0,1,0);

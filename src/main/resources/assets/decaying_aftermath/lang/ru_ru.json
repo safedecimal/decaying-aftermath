@@ -138,5 +138,22 @@
   "decaying_aftermath.afterlife.thought.4": "Почему даже рядом с людьми было так одиноко?",
   "decaying_aftermath.afterlife.thought.5": "Неужели это всё, что от меня останется?",
   "decaying_aftermath.afterlife.thought.6": "Я не знал, как попросить о помощи.",
-  "decaying_aftermath.afterlife.thought.7": "А вдруг завтра всё-таки было бы иначе?"
+  "decaying_aftermath.afterlife.thought.7": "А вдруг завтра всё-таки было бы иначе?",
+  "item.decaying_aftermath.antidepressants": "Антидепрессант (курс СИОЗС)",
+  "item.decaying_aftermath.anxiolytic": "Успокоительное (анксиолитик)",
+  "item.decaying_aftermath.herbal_tea": "Травяной чай",
+  "decaying_aftermath.hint.antidepressants": "ПКМ: принять. Постепенно лечит меланхолическую, психотическую и хроническую депрессию; избыток токсичен.",
+  "decaying_aftermath.hint.anxiolytic": "ПКМ: принять. Быстро снимает острую тревогу и психотические симптомы; вызывает сонливость.",
+  "decaying_aftermath.hint.herbal_tea": "ПКМ: выпить. Успокаивает, утоляет жажду и мягко поднимает настроение.",
+  "decaying_aftermath.depression.none": "Норма",
+  "decaying_aftermath.depression.situational": "Ситуативная депрессия",
+  "decaying_aftermath.depression.seasonal": "Сезонная депрессия",
+  "decaying_aftermath.depression.melancholic": "Меланхолическая депрессия",
+  "decaying_aftermath.depression.psychotic": "Психотическая депрессия",
+  "decaying_aftermath.depression.persistent": "Хроническая дистимия",
+  "decaying_aftermath.thought.depression.situational": "Тяжело собраться... нужно в безопасное место.",
+  "decaying_aftermath.thought.depression.seasonal": "Слишком темно и сыро... не хватает дневного света.",
+  "decaying_aftermath.thought.depression.melancholic": "Ничто больше не радует... всё кажется пустым.",
+  "decaying_aftermath.thought.depression.psychotic": "Мне чудятся тени и шёпот... надо срочно успокоиться.",
+  "decaying_aftermath.thought.depression.persistent": "Эта усталость и серость тянутся уже слишком долго."
 }

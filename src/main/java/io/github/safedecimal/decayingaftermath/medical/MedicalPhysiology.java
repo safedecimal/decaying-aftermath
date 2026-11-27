@@ -6,14 +6,19 @@ public final class MedicalPhysiology {
     public static float immunity(BodySnapshot b) {
         var s=b.survival();float infection=s.gutInfection();
         for(var p:b.parts())infection=Math.max(infection,p.infection());
-        return Math.clamp(1-infection*.45f-(1-s.nutrition())*.25f-s.fatigue()*.1f-s.toxin()*.1f-s.radiationGy()*.08f,0,1);
+        float depressionPenalty=s.depression()==DepressionType.PERSISTENT?.08f:s.depression().severe()?.06f:0;
+        return Math.clamp(1-infection*.45f-(1-s.nutrition())*.25f-s.fatigue()*.1f-s.toxin()*.1f-s.radiationGy()*.08f-depressionPenalty,0,1);
     }
     public static float mood(BodySnapshot b) {
         var s=b.survival();
-        // Signed mood: +100 .. -100 in the monitor. Low mood must not clamp to zero.
+        // Signed mood: +100 .. -100 in the monitor. Combines physical wellbeing with accumulated mental state.
         float wellbeing=1-b.pain()*.6f-(1-b.energy())*.15f-s.fatigue()*.15f
                 -(1-s.nutrition())*.1f-(1-s.hydration())*.1f-s.nausea()*.25f;
-        return Math.clamp(wellbeing*2-1,-1,1);
+        float physicalMood=Math.clamp(wellbeing*2-1,-1,1);
+        float combined=Math.min(physicalMood, physicalMood*.45f + s.moodReserve()*.55f);
+        if(s.depression().severe()) combined=Math.min(combined, -.35f);
+        else if(s.depression().active()) combined=Math.min(combined, -.15f);
+        return Math.clamp(combined,-1,1);
     }
     public static int respiratoryRate(BodySnapshot b) {
         if(b.mode()==BodySnapshot.Mode.DEAD)return 0;
