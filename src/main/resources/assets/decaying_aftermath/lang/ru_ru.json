@@ -155,5 +155,9 @@
   "decaying_aftermath.thought.depression.seasonal": "Слишком темно и сыро... не хватает дневного света.",
   "decaying_aftermath.thought.depression.melancholic": "Ничто больше не радует... всё кажется пустым.",
   "decaying_aftermath.thought.depression.psychotic": "Мне чудятся тени и шёпот... надо срочно успокоиться.",
-  "decaying_aftermath.thought.depression.persistent": "Эта усталость и серость тянутся уже слишком долго."
+  "decaying_aftermath.thought.depression.persistent": "Эта усталость и серость тянутся уже слишком долго.",
+  "decaying_aftermath.thought.ptsd.0": "Я всё ещё помню каждую свою смерть...",
+  "decaying_aftermath.thought.ptsd.1": "Перед глазами снова всплывает тот момент... сердце колотится.",
+  "decaying_aftermath.thought.ptsd.2": "Смерть не стёрла память. Этот ужас никуда не ушёл.",
+  "decaying_aftermath.thought.ptsd.3": "Тело новое, но разум помнит всю боль."
 }

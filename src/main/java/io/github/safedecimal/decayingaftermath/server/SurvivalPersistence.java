@@ -6,7 +6,7 @@ import net.minecraft.world.level.storage.ValueOutput;
 
 /** Body-part and survival save data, including migration of older untyped bleeding. */
 public final class SurvivalPersistence {
-    static final int SAVE_VERSION=5;
+    static final int SAVE_VERSION=6;
     private SurvivalPersistence(){ }
     public static void save(ValueOutput node,BodyModel.SavedState state) {
         node.putBoolean("faint_recovered",state.faintRecovered());
@@ -22,6 +22,9 @@ public final class SurvivalPersistence {
         out.putFloat("therapy_progress",v.therapyProgress());out.putInt("mood_factors",v.moodFactors());
         out.putFloat("light_deficit",s.lightDeficit());out.putFloat("situational_stress",s.situationalStress());
         out.putFloat("chronic_burden",s.chronicBurden());out.putFloat("psychosis_load",s.psychosisLoad());
+        out.putFloat("ptsd_load",v.ptsdLoad());out.putInt("remembered_deaths",v.rememberedDeaths());
+        out.putBoolean("ptsd_flashback",v.ptsdFlashback());
+        out.putInt("ptsd_flashback_ticks",s.ptsdFlashbackTicks());out.putInt("ptsd_flashback_cooldown",s.ptsdFlashbackCooldown());
         out.putFloat("pending_food",s.pendingFood());out.putFloat("pending_water",s.pendingWater());
         out.putFloat("pending_germs",s.pendingGerms());out.putInt("incubation",s.incubationTicks());
         var w=state.wounds();out.putFloat("lung_collapse",w.lungCollapse());out.putBoolean("chest_drain",w.chestDrain());
@@ -74,12 +77,17 @@ public final class SurvivalPersistence {
                 number(s,"radiation_gy",0,0,100),number(s,"blood_lost_liters",0,0,10000),
                 number(s,"mood_reserve",1,-1,1),DepressionType.values()[depIdx],
                 number(s,"antidepressant",0,0,3),number(s,"anxiolytic",0,0,3),
-                number(s,"therapy_progress",0,0,1),s.getIntOr("mood_factors",0));
+                number(s,"therapy_progress",0,0,1),s.getIntOr("mood_factors",0),
+                number(s,"ptsd_load",0,0,1),Math.clamp(s.getIntOr("remembered_deaths",0),0,1_000_000),
+                s.getBooleanOr("ptsd_flashback",false));
         WoundState wounds=new WoundState(burns,bleed,open,foreign,bone,cool,collapse,s.getBooleanOr("chest_drain",false),suppressed,cold);
+        int flashbackTicks=Math.clamp(s.getIntOr("ptsd_flashback_ticks",snapshot.ptsdFlashback()?120:0),0,12000);
+        int flashbackCooldown=Math.clamp(s.getIntOr("ptsd_flashback_cooldown",0),0,12000);
         var survival=new SurvivalModel.SavedState(snapshot,number(s,"pending_food",0,0,1),number(s,"pending_water",0,0,1),
                 number(s,"pending_germs",0,0,1),Math.clamp(s.getIntOr("incubation",0),0,12000),
                 number(s,"light_deficit",0,0,1),number(s,"situational_stress",0,0,1),
-                number(s,"chronic_burden",0,0,1),number(s,"psychosis_load",0,0,1));
+                number(s,"chronic_burden",0,0,1),number(s,"psychosis_load",0,0,1),
+                flashbackTicks,flashbackCooldown);
         return new BodyModel.SavedState(legacy.snapshot().withParts(parts),legacy.careTicks(),legacy.regenerationTicks(),legacy.tourniquetTicks(),
                 legacy.lastStandingSpent(),legacy.stableTicks(),legacy.lastStandingTicks(),legacy.lastStandingBoostTicks(),
                 legacy.dyingTicks(),legacy.disinfectionTicks(),legacy.anestheticTicks(),legacy.infectionAgeTicks(),

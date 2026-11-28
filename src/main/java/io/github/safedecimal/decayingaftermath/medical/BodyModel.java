@@ -332,6 +332,7 @@ public final class BodyModel {
             cardiacTicks = CardiacRhythm.advance(cardiacTicks, strain);
             if (cardiacTicks < 0) {
                 mode = Mode.UNCONSCIOUS; wakeTicks = stableTicks = 0; bpm = 0;
+                survival.mental().onNearDeath(0.20f);
                 return;
             }
         } else cardiacTicks = 0;
@@ -404,6 +405,7 @@ public final class BodyModel {
         if(!automatic)localPain[torso]=unit(localPain[torso]+.025f+effect.power()*.06f+effect.injury());
         if(result==DefibShockPolicy.Result.CONVERTED) {
             cardiacTicks=CardiacRhythm.RECOVERY;bpm=78;wakeTicks=stableTicks=0;
+            survival.mental().onNearDeath(0.08f);
         } else if(result==DefibShockPolicy.Result.ARREST) {
             cardiacTicks=-CardiacRhythm.RESCUE;
         } else if(result==DefibShockPolicy.Result.ARRHYTHMIA) {
@@ -489,7 +491,7 @@ public final class BodyModel {
         return model;
     }
 
-    /** Keep the Totem's existing reserve reset without erasing vessel types or tourniquet residuals. */
+    /** Keep the Totem's existing reserve reset without erasing vessel types, tourniquet residuals, or mental trauma. */
     public BodyModel reviveWithTotem() {
         BodySnapshot old = snapshot(); PartSnapshot[] parts = old.parts();
         for (BodyPart part : BodyPart.values()) {
@@ -501,9 +503,27 @@ public final class BodyModel {
         }
         BodyModel recovered = restore(new BodySnapshot(.25f, Math.max(.5f, old.blood()), Math.max(.6f, old.oxygen()),
                 old.pain() * .5f, Math.min(.4f, old.drug()), 85, Mode.UNCONSCIOUS, 0,
-                Math.max(.5f, old.energy()), .4f, parts));
+                Math.max(.5f, old.energy()), .4f, parts).withBrainHealth(old.brainHealth()));
+        recovered.survival = SurvivalModel.restore(survival.save(totalInternalBleeding(), 1 - lungCollapse));
+        recovered.survival.mental().onNearDeath(0.25f);
+        recovered.blood = Math.max(.5f, old.blood());
+        recovered.reconcileBlood();
         for(int i=0;i<PARTS;i++) recovered.suppressedBleeding[i]=suppressedBleeding[i].scale(.25f);
         return recovered;
+    }
+
+    /** Create a fresh physical body after death while remembering depression, PTSD, and death trauma. */
+    public BodyModel respawnAfterDeath() {
+        BodyModel fresh = new BodyModel();
+        fresh.survival.setMental(this.survival.mental().rememberOnDeath());
+        return fresh;
+    }
+
+    /** Create a fresh physical body preserving current mental memory without counting another death. */
+    public BodyModel withFreshBodyRememberingMental() {
+        BodyModel fresh = new BodyModel();
+        fresh.survival.setMental(this.survival.mental().copyMemory());
+        return fresh;
     }
 
     public SavedState saveState() {
@@ -663,6 +683,7 @@ public final class BodyModel {
             lastStandingSpent = true; lastStandingTicks = LAST_STANDING_TICKS;
             lastStandingBoostTicks = LAST_STANDING_BOOST_TICKS;
             restoreLastStandingReserves();
+            survival.mental().onNearDeath(0.16f);
             mode = Mode.LAST_STANDING; wakeTicks = stableTicks = 0;
             return;
         }

@@ -7,6 +7,8 @@ package io.github.safedecimal.decayingaftermath.medical;
  * sleep, warmth, therapy).
  */
 public final class MentalHealthModel {
+    public static final float PTSD_THRESHOLD = 0.35f;
+
     private float moodReserve = 1.0f; // +1 healthy baseline, -1 deep distress (maps with physical wellbeing)
     private float antidepressant;     // 0..3; therapeutic plateau builds gradually
     private float anxiolytic;         // 0..3; fast acute stress/psychosis dampener
@@ -20,6 +22,10 @@ public final class MentalHealthModel {
     private int caveSoundTicks;       // ticks remaining from recent cave ambience sound
     private float previousOpiateOrStim;
     private float withdrawalLoad;     // 0..1 withdrawal discomfort after high drug burden drops
+    private float ptsdLoad;           // 0..1 persistent post-traumatic stress from deaths and near-deaths
+    private int rememberedDeaths;     // total remembered deaths carried across death/revive
+    private int ptsdFlashbackTicks;   // active acute PTSD flashback/panic episode ticks
+    private int ptsdFlashbackCooldown;// cooldown ticks before another spontaneous flashback triggers
     private int activeFactors;
     private DepressionType depression = DepressionType.NONE;
 
@@ -28,6 +34,14 @@ public final class MentalHealthModel {
     public MentalHealthModel(float moodReserve, float antidepressant, float anxiolytic,
             float therapyProgress, float lightDeficit, float situationalStress,
             float chronicBurden, float psychosisLoad, DepressionType depression, int activeFactors) {
+        this(moodReserve, antidepressant, anxiolytic, therapyProgress, lightDeficit, situationalStress,
+                chronicBurden, psychosisLoad, depression, activeFactors, 0f, 0, 0, 0);
+    }
+
+    public MentalHealthModel(float moodReserve, float antidepressant, float anxiolytic,
+            float therapyProgress, float lightDeficit, float situationalStress,
+            float chronicBurden, float psychosisLoad, DepressionType depression, int activeFactors,
+            float ptsdLoad, int rememberedDeaths, int ptsdFlashbackTicks, int ptsdFlashbackCooldown) {
         this.moodReserve = clampSigned(moodReserve);
         this.antidepressant = clamp(antidepressant, 0, 3);
         this.anxiolytic = clamp(anxiolytic, 0, 3);
@@ -38,6 +52,10 @@ public final class MentalHealthModel {
         this.psychosisLoad = clamp(psychosisLoad, 0, 1);
         this.depression = depression == null ? DepressionType.NONE : depression;
         this.activeFactors = activeFactors;
+        this.ptsdLoad = clamp(ptsdLoad, 0, 1);
+        this.rememberedDeaths = Math.clamp(rememberedDeaths, 0, 1_000_000);
+        this.ptsdFlashbackTicks = Math.clamp(ptsdFlashbackTicks, 0, 12000);
+        this.ptsdFlashbackCooldown = Math.clamp(ptsdFlashbackCooldown, 0, 12000);
     }
 
     public float moodReserve() { return moodReserve; }
@@ -51,6 +69,12 @@ public final class MentalHealthModel {
     public DepressionType depression() { return depression; }
     public int activeFactors() { return activeFactors; }
     public float anxiolyticAction() { return Math.min(1, anxiolytic); }
+    public float ptsdLoad() { return ptsdLoad; }
+    public boolean ptsd() { return ptsdLoad >= PTSD_THRESHOLD; }
+    public int rememberedDeaths() { return rememberedDeaths; }
+    public int ptsdFlashbackTicks() { return ptsdFlashbackTicks; }
+    public int ptsdFlashbackCooldown() { return ptsdFlashbackCooldown; }
+    public boolean ptsdFlashback() { return ptsdFlashbackTicks > 0; }
 
     public void tick(BodyEnvironment env, float pain, float toxin, float nausea, float brainHealth,
             float fatigue, float temperature, float opiateOrStimBurden, boolean mentalEnabled) {
@@ -58,9 +82,12 @@ public final class MentalHealthModel {
             activeFactors = 0;
             depression = DepressionType.NONE;
             moodReserve = 1.0f;
+            ptsdFlashbackTicks = 0;
             return;
         }
         if (caveSoundTicks > 0) caveSoundTicks--;
+        if (ptsdFlashbackTicks > 0) ptsdFlashbackTicks--;
+        if (ptsdFlashbackCooldown > 0) ptsdFlashbackCooldown--;
         if (positiveFoodGrace > 0) positiveFoodGrace = Math.max(0, positiveFoodGrace - 0.0005f);
         if (negativeFoodGrace > 0) negativeFoodGrace = Math.max(0, negativeFoodGrace - 0.0005f);
 
@@ -136,6 +163,30 @@ public final class MentalHealthModel {
         if (negativeFoodGrace > 0.05f) factors |= MoodFactors.BAD_FOOD;
         if (positiveFoodGrace > 0.05f) factors |= MoodFactors.GOOD_FOOD;
 
+        // --- Death memory & PTSD ---
+        if (rememberedDeaths > 0) {
+            factors |= MoodFactors.DEATH_MEMORY;
+            delta -= 0.000010f * Math.min(5, rememberedDeaths);
+        }
+        if (ptsd()) {
+            factors |= MoodFactors.PTSD;
+            delta -= 0.000035f * ptsdLoad;
+            situationalStress = clamp(situationalStress + 0.000015f * ptsdLoad, 0, 1);
+            boolean trigger = env.hostileMobsNearby() > 0 || caveSoundTicks > 0
+                    || env.jukeboxMood() < -0.1f || pain > 0.45f || dark;
+            if (trigger && ptsdFlashbackTicks == 0 && ptsdFlashbackCooldown == 0 && anxiolytic < 0.25f) {
+                ptsdFlashbackTicks = 120;
+                ptsdFlashbackCooldown = 600;
+                situationalStress = clamp(situationalStress + 0.08f, 0, 1);
+                delta -= 0.05f;
+            }
+            if (ptsdFlashbackTicks > 0) {
+                delta -= 0.00018f;
+                situationalStress = clamp(situationalStress + 0.00015f, 0, 1);
+                psychosisLoad = clamp(psychosisLoad + 0.00008f, 0, 1);
+            }
+        }
+
         // --- Positive anchors & environment ---
         if (env.daylightSurface()) {
             factors |= MoodFactors.DAYLIGHT;
@@ -172,6 +223,7 @@ public final class MentalHealthModel {
             chronicBurden = Math.max(0, chronicBurden - 0.00012f * therapyProgress);
             psychosisLoad = Math.max(0, psychosisLoad - 0.00006f * therapyProgress);
             lightDeficit = Math.max(0, lightDeficit - 0.00004f * therapyProgress);
+            ptsdLoad = Math.max(0, ptsdLoad - 0.00008f * therapyProgress);
         } else {
             therapyProgress = Math.max(0, therapyProgress - 0.000025f);
         }
@@ -181,6 +233,8 @@ public final class MentalHealthModel {
             float potency = Math.min(1, anxiolytic);
             situationalStress = Math.max(0, situationalStress - 0.00035f * potency);
             psychosisLoad = Math.max(0, psychosisLoad - 0.00040f * potency);
+            ptsdLoad = Math.max(0, ptsdLoad - 0.00005f * potency);
+            if (ptsdFlashbackTicks > 0) ptsdFlashbackTicks = Math.max(0, ptsdFlashbackTicks - 2);
             delta += 0.00010f * potency;
         } else if (env.jukeboxMood() >= 0 && caveSoundTicks == 0 && toxin < 0.4f && brainHealth > 0.65f) {
             psychosisLoad = Math.max(0, psychosisLoad - 0.00003f);
@@ -189,6 +243,10 @@ public final class MentalHealthModel {
         // Gentle homeostatic drift toward neutral-positive when healthy & rested
         if ((factors & MoodFactors.NEGATIVE_MASK) == 0 && pain < 0.1f && nausea < 0.1f && fatigue < 0.4f) {
             delta += (0.45f - moodReserve) * 0.00004f * depression.naturalRecoveryFactor();
+        }
+        // Very slow PTSD decay only in safe daylight without acute stressors
+        if (ptsdLoad > 0 && env.daylightSurface() && env.hostileMobsNearby() == 0 && pain < 0.1f && !dark) {
+            ptsdLoad = Math.max(0, ptsdLoad - 0.000004f);
         }
 
         antidepressant = Math.max(0, antidepressant - 0.000025f);
@@ -231,12 +289,80 @@ public final class MentalHealthModel {
         float shock = Math.min(0.35f, amount * 0.025f);
         moodReserve = clampSigned(moodReserve - shock);
         situationalStress = clamp(situationalStress + shock * 1.4f, 0, 1);
+        if (amount >= 6f) {
+            ptsdLoad = clamp(ptsdLoad + Math.min(0.10f, (amount - 5f) * 0.008f), 0, 1);
+        }
+        if (ptsd() && amount >= 4f && anxiolytic < 0.25f) {
+            ptsdFlashbackTicks = Math.max(ptsdFlashbackTicks, 100);
+        }
+    }
+
+    public void onNearDeath(float severity) {
+        if (!Float.isFinite(severity) || severity <= 0) return;
+        float sev = clamp(severity, 0, 1);
+        ptsdLoad = clamp(ptsdLoad + sev, 0, 1);
+        situationalStress = clamp(situationalStress + sev * 0.9f, 0, 1);
+        moodReserve = clampSigned(moodReserve - sev * 0.5f);
+        if (ptsd()) {
+            activeFactors |= MoodFactors.PTSD;
+            ptsdFlashbackTicks = Math.max(ptsdFlashbackTicks, 140);
+        }
+        DepressionType previous = depression;
+        DepressionType next = classify(1.0f);
+        depression = (previous.active() && !next.active()) ? previous : next;
+    }
+
+    /** Remember the death across respawn/revive: depression, mood, and PTSD persist and deepen. */
+    public void onDeath() {
+        rememberedDeaths = Math.min(1_000_000, rememberedDeaths + 1);
+        ptsdLoad = clamp(ptsdLoad + 0.42f, 0, 1);
+        situationalStress = clamp(situationalStress + 0.35f, 0, 1);
+        chronicBurden = clamp(chronicBurden + 0.14f, 0, 1);
+        psychosisLoad = clamp(psychosisLoad + 0.12f, 0, 1);
+        moodReserve = clampSigned(moodReserve - 0.30f);
+        ptsdFlashbackTicks = Math.max(ptsdFlashbackTicks, 200);
+        ptsdFlashbackCooldown = 200;
+        activeFactors |= MoodFactors.DEATH_MEMORY;
+        if (ptsd()) activeFactors |= MoodFactors.PTSD;
+        DepressionType previous = depression;
+        DepressionType next = classify(1.0f);
+        depression = (previous.active() && !next.active()) ? previous : next;
+    }
+
+    /** Carry all mental disorders, PTSD, and death memories into a fresh respawned body. */
+    public MentalHealthModel rememberOnDeath() {
+        MentalHealthModel next = new MentalHealthModel(
+                moodReserve, 0f, 0f, therapyProgress,
+                lightDeficit, situationalStress, chronicBurden, psychosisLoad,
+                depression, activeFactors,
+                ptsdLoad, rememberedDeaths, ptsdFlashbackTicks, ptsdFlashbackCooldown);
+        next.onDeath();
+        return next;
+    }
+
+    /** Exact memory snapshot copy (used when finishing afterlife without double-counting the death). */
+    public MentalHealthModel copyMemory() {
+        MentalHealthModel copy = new MentalHealthModel(
+                moodReserve, antidepressant, anxiolytic, therapyProgress,
+                lightDeficit, situationalStress, chronicBurden, psychosisLoad,
+                depression, activeFactors,
+                ptsdLoad, rememberedDeaths, ptsdFlashbackTicks, ptsdFlashbackCooldown);
+        copy.caveSoundTicks = caveSoundTicks;
+        copy.positiveFoodGrace = positiveFoodGrace;
+        copy.negativeFoodGrace = negativeFoodGrace;
+        copy.previousOpiateOrStim = previousOpiateOrStim;
+        copy.withdrawalLoad = withdrawalLoad;
+        return copy;
     }
 
     public void onCaveSound() {
         caveSoundTicks = Math.max(caveSoundTicks, 200);
         moodReserve = clampSigned(moodReserve - 0.035f);
         psychosisLoad = clamp(psychosisLoad + 0.04f, 0, 1);
+        if (ptsd()) {
+            situationalStress = clamp(situationalStress + 0.08f, 0, 1);
+            ptsdFlashbackTicks = Math.max(ptsdFlashbackTicks, 100);
+        }
     }
 
     public void onNightSleep() {
@@ -245,6 +371,8 @@ public final class MentalHealthModel {
         situationalStress = Math.max(0, situationalStress - 0.35f);
         chronicBurden = Math.max(0, chronicBurden - 0.12f);
         psychosisLoad = Math.max(0, psychosisLoad - 0.15f);
+        ptsdLoad = Math.max(0, ptsdLoad - 0.06f);
+        ptsdFlashbackTicks = 0;
     }
 
     public void onCompanionshipOrPet() {
@@ -262,6 +390,7 @@ public final class MentalHealthModel {
                 moodReserve = clampSigned(moodReserve + dose * 0.14f * Math.max(0.6f, depression.positiveGainFactor()));
                 situationalStress = Math.max(0, situationalStress - dose * 0.18f);
                 lightDeficit = Math.max(0, lightDeficit - dose * 0.08f);
+                ptsdFlashbackTicks = Math.max(0, ptsdFlashbackTicks - Math.round(dose * 60));
             }
             default -> { }
         }

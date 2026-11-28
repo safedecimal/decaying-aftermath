@@ -22,9 +22,11 @@ public final class MoodFactors {
     public static final int NATURE = 1 << 14;
     public static final int THERAPY = 1 << 15;
     public static final int SEDATIVE = 1 << 16;
+    public static final int PTSD = 1 << 17;
+    public static final int DEATH_MEMORY = 1 << 18;
 
     public static final int NEGATIVE_MASK = DARKNESS | CAVE | HOSTILES | EERIE_MUSIC | BAD_FOOD
-            | SLEEP_DEPRIVED | COLD_OR_RAIN | PAIN_OR_ILLNESS | WITHDRAWAL;
+            | SLEEP_DEPRIVED | COLD_OR_RAIN | PAIN_OR_ILLNESS | WITHDRAWAL | PTSD | DEATH_MEMORY;
     public static final int POSITIVE_MASK = DAYLIGHT | GOOD_MUSIC | GOOD_FOOD | SLEEPING
             | COZY_WARMTH | NATURE | THERAPY | SEDATIVE;
 }

@@ -27,16 +27,20 @@ class MedicalMonitorRevisionTest {
     private SurvivalSnapshot state(float water,float food,float toxin,float gut,float mass,float radiation,float loss) {
         return new SurvivalSnapshot(water,food,37,0,toxin,1,1,0,0,0,0,0,1,0,gut,mass,radiation,loss);
     }
-    @Test void monitorMoodSpriteAndTooltipReflectDepressionStateAndActiveFactors() {
+    @Test void monitorMoodSpriteAndTooltipReflectDepressionAndPtsdStateAndActiveFactors() {
         var healthy=new BodyModel().snapshot();
         assertEquals("mood_happy",CuMedicalMonitor.moodSpriteName(healthy));
         var s=new SurvivalSnapshot(1,1,37,0,0,1,1,0,0,0,0,0,1,0,0,75,0,0,
-                -.65f,DepressionType.PSYCHOTIC,.5f,0,.4f,MoodFactors.EERIE_MUSIC|MoodFactors.DARKNESS|MoodFactors.THERAPY);
+                -.65f,DepressionType.PSYCHOTIC,.5f,0,.4f,
+                MoodFactors.EERIE_MUSIC|MoodFactors.DARKNESS|MoodFactors.THERAPY|MoodFactors.PTSD|MoodFactors.DEATH_MEMORY,
+                .6f,2,true);
         var depressed=body(s);
         assertEquals("mood_severe",CuMedicalMonitor.moodSpriteName(depressed));
         assertTrue(CuMedicalMonitor.critical(depressed,"HappinessText"));
         var details=CuMedicalMonitor.moodDetails(depressed);
         assertTrue(details.stream().anyMatch(line->line.contains("Психотическая депрессия")));
+        assertTrue(details.stream().anyMatch(line->line.contains("ПТСР")));
+        assertTrue(details.stream().anyMatch(line->line.contains("Память о смертях: 2")));
         assertTrue(details.stream().anyMatch(line->line.contains("жуткая пластинка")));
         assertTrue(details.stream().anyMatch(line->line.contains("антидепрессант")));
     }
@@ -143,7 +147,7 @@ class MedicalMonitorRevisionTest {
                 assertEquals(b.survival(),decoded.survival());assertArrayEquals(b.parts(),decoded.parts());
                 assertEquals(buffer.writerIndex(),buffer.readerIndex());
             }
-            assertTrue(BodyPayload.TYPE.id().toString().endsWith("body_v10"));
+            assertTrue(BodyPayload.TYPE.id().toString().endsWith("body_v11"));
         } finally { buffer.release(); }
     }
     private ValueInput input(Map<String,Object> data) {
@@ -215,6 +219,16 @@ class MedicalMonitorRevisionTest {
         assertEquals(true,data.get("faint_recovered"));
         assertTrue(SurvivalPersistence.load(input(data),saved).faintRecovered());
         assertFalse(SurvivalPersistence.load(input(Map.of("version",3)),saved).faintRecovered());
+    }
+    @Test void nativeSaveLoadPreservesPtsdFlashbackAndRememberedDeaths() {
+        var b=new BodyModel();b.kill();var respawned=b.respawnAfterDeath();
+        var data=new HashMap<String,Object>();data.put("version",6);
+        SurvivalPersistence.save(output(data),respawned.saveState());
+        var loaded=BodyModel.restoreState(SurvivalPersistence.load(input(data),new BodyModel().saveState()));
+        var s=loaded.snapshot().survival();
+        assertTrue(s.ptsd());assertTrue(s.ptsdFlashback());assertEquals(1,s.rememberedDeaths());
+        assertEquals(respawned.snapshot().survival().ptsdLoad(),s.ptsdLoad());
+        assertEquals(200,loaded.saveState().survivalState().ptsdFlashbackTicks());
     }
     @Test void unnecessaryProceduresAreAcceptedAndWrongPlacementWastesWithoutBenefit() {
         for(var part:BodyPart.values())for(var kind:TreatmentKind.values()) {

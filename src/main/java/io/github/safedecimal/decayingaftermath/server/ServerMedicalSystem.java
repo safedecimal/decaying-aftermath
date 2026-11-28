@@ -60,7 +60,7 @@ public final class ServerMedicalSystem {
         ServerPlayerEvents.JOIN.register(player -> { get(player); mirrorHealth(player); syncBody(player, get(player).snapshot()); });
         ServerPlayerEvents.COPY_FROM.register((oldPlayer, newPlayer, alive) -> {
             owner(newPlayer).decayingAftermath$setBody(alive && get(oldPlayer).mode()!=Mode.DEAD
-                    ? BodyModel.restoreState(get(oldPlayer).saveState()) : new BodyModel());
+                    ? BodyModel.restoreState(get(oldPlayer).saveState()) : get(oldPlayer).respawnAfterDeath());
             LAST_SOURCE.remove(newPlayer); mirrorHealth(newPlayer);
         });
         ServerPlayerEvents.AFTER_RESPAWN.register((oldPlayer, player, alive) -> syncBody(player, get(player).snapshot()));
@@ -95,6 +95,7 @@ public final class ServerMedicalSystem {
     public static void healFully(ServerPlayer player) {resetFully(player,true);}
     public static void restoreAfterDeath(ServerPlayer player) {resetFully(player,false);}
     private static void resetFully(ServerPlayer player,boolean announce) {
+        BodyModel prior=get(player);
         io.github.safedecimal.decayingaftermath.network.MedicalNetwork.cancelProcedures(player);
         io.github.safedecimal.decayingaftermath.network.DefibNetwork.cancelFor(player);
         io.github.safedecimal.decayingaftermath.compat.MedicalRagdollCompatibility.release(player);
@@ -103,7 +104,12 @@ public final class ServerMedicalSystem {
         player.getFoodData().setFoodLevel(20);player.getFoodData().setSaturation(5);
         player.setDeltaMovement(Vec3.ZERO);
         LAST_SOURCE.remove(player);SLEEP_TICKS.remove(player);CARRIED_MASS.remove(player);
-        owner(player).decayingAftermath$setBody(new BodyModel());
+        if(announce) {
+            owner(player).decayingAftermath$setBody(new BodyModel());
+        } else {
+            BodyModel next=prior.mode()==Mode.DEAD ? prior.respawnAfterDeath() : prior.withFreshBodyRememberingMental();
+            owner(player).decayingAftermath$setBody(next);
+        }
         applyInjuryModifiers(player,get(player).snapshot(),false);
         mirrorHealth(player);syncBody(player,get(player).snapshot());
         if(announce) io.github.safedecimal.decayingaftermath.network.MedicalNetwork.thought(player,"decaying_aftermath.heal.done");
@@ -244,7 +250,8 @@ public final class ServerMedicalSystem {
         float depressionPenalty=s.depression()==io.github.safedecimal.decayingaftermath.medical.DepressionType.MELANCHOLIC?.12f
                 :s.depression()==io.github.safedecimal.decayingaftermath.medical.DepressionType.PSYCHOTIC?.08f
                 :s.depression()==io.github.safedecimal.decayingaftermath.medical.DepressionType.SITUATIONAL?.05f:0;
-        double survival=active?Math.min(.85,ItemMassPolicy.movementPenalty(s.encumbrance())+s.thermalStress()*.18+s.fatigue()*.10+depressionPenalty):0;
+        float ptsdPenalty=s.ptsdFlashback()?.08f:s.ptsd()?.04f:0;
+        double survival=active?Math.min(.85,ItemMassPolicy.movementPenalty(s.encumbrance())+s.thermalStress()*.18+s.fatigue()*.10+depressionPenalty+ptsdPenalty):0;
         transientPenalty(player,Attributes.MOVEMENT_SPEED,SURVIVAL_SPEED,survival);
     }
     private static double limbPenalty(PartSnapshot limb) {

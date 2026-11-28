@@ -7,7 +7,8 @@ public final class MedicalPhysiology {
         var s=b.survival();float infection=s.gutInfection();
         for(var p:b.parts())infection=Math.max(infection,p.infection());
         float depressionPenalty=s.depression()==DepressionType.PERSISTENT?.08f:s.depression().severe()?.06f:0;
-        return Math.clamp(1-infection*.45f-(1-s.nutrition())*.25f-s.fatigue()*.1f-s.toxin()*.1f-s.radiationGy()*.08f-depressionPenalty,0,1);
+        float ptsdPenalty=s.ptsd()?.05f:0;
+        return Math.clamp(1-infection*.45f-(1-s.nutrition())*.25f-s.fatigue()*.1f-s.toxin()*.1f-s.radiationGy()*.08f-depressionPenalty-ptsdPenalty,0,1);
     }
     public static float mood(BodySnapshot b) {
         var s=b.survival();
@@ -16,6 +17,9 @@ public final class MedicalPhysiology {
                 -(1-s.nutrition())*.1f-(1-s.hydration())*.1f-s.nausea()*.25f;
         float physicalMood=Math.clamp(wellbeing*2-1,-1,1);
         float combined=Math.min(physicalMood, physicalMood*.45f + s.moodReserve()*.55f);
+        if(s.rememberedDeaths()>0) combined-=Math.min(.15f, s.rememberedDeaths()*.03f);
+        if(s.ptsd()) combined=Math.min(combined - s.ptsdLoad()*.20f, -.25f);
+        if(s.ptsdFlashback()) combined=Math.min(combined, -.45f);
         if(s.depression().severe()) combined=Math.min(combined, -.35f);
         else if(s.depression().active()) combined=Math.min(combined, -.15f);
         return Math.clamp(combined,-1,1);

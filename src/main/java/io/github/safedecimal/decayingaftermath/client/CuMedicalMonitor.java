@@ -75,9 +75,10 @@ public final class CuMedicalMonitor {
                 "Внутреннее: "+bleedFlowMlPerMinute(b,true)+" мл/мин");
     }
     public static String moodSpriteName(BodySnapshot b) {
-        var dep = b.survival().depression();
-        if (dep == DepressionType.PSYCHOTIC || dep == DepressionType.MELANCHOLIC) return "mood_severe";
-        if (dep.active()) return "mood_sad";
+        var s = b.survival();
+        var dep = s.depression();
+        if (dep == DepressionType.PSYCHOTIC || dep == DepressionType.MELANCHOLIC || s.ptsdFlashback()) return "mood_severe";
+        if (dep.active() || s.ptsd()) return "mood_sad";
         float mood = MedicalPhysiology.mood(b);
         if (mood >= 0.35f) return "mood_happy";
         if (mood <= -0.15f) return "mood_sad";
@@ -88,7 +89,8 @@ public final class CuMedicalMonitor {
         var dep = s.depression();
         var lines = new ArrayList<String>();
         String diag = switch (dep) {
-            case NONE -> MedicalPhysiology.mood(b) < -0.1f ? "Состояние: Подавленность" : "Состояние: Норма";
+            case NONE -> s.ptsd() ? "Состояние: Посттравматическое расстройство"
+                    : MedicalPhysiology.mood(b) < -0.1f ? "Состояние: Подавленность" : "Состояние: Норма";
             case SITUATIONAL -> "Диагноз: Ситуативная депрессия";
             case SEASONAL -> "Диагноз: Сезонная депрессия (САР)";
             case MELANCHOLIC -> "Диагноз: Меланхолическая депрессия";
@@ -96,8 +98,16 @@ public final class CuMedicalMonitor {
             case PERSISTENT -> "Диагноз: Хроническая дистимия";
         };
         lines.add(diag);
+        if (s.ptsd()) {
+            lines.add(s.ptsdFlashback()
+                    ? "ПТСР: Острый флешбэк (" + Math.round(s.ptsdLoad() * 100) + "%)"
+                    : "ПТСР: Активно (" + Math.round(s.ptsdLoad() * 100) + "%)");
+        }
+        if (s.rememberedDeaths() > 0) {
+            lines.add("Память о смертях: " + s.rememberedDeaths());
+        }
         String advice = switch (dep) {
-            case NONE -> null;
+            case NONE -> s.ptsd() ? "Лечение: антидепрессант, седатив, сон, безопасность" : null;
             case SITUATIONAL -> "Лечение: безопасность, еда, сон, седатив";
             case SEASONAL -> "Лечение: дневной свет на поверхности, сон";
             case MELANCHOLIC -> "Лечение: курс антидепрессантов, сон";
@@ -107,6 +117,8 @@ public final class CuMedicalMonitor {
         if (advice != null) lines.add(advice);
         int f = s.moodFactors();
         var neg = new ArrayList<String>();
+        if ((f & MoodFactors.PTSD) != 0) neg.add("ПТСР");
+        if ((f & MoodFactors.DEATH_MEMORY) != 0) neg.add("память о смерти");
         if ((f & MoodFactors.EERIE_MUSIC) != 0) neg.add("жуткая пластинка");
         if ((f & MoodFactors.DARKNESS) != 0) neg.add("темнота");
         if ((f & MoodFactors.CAVE) != 0) neg.add("пещера/эмбиент");
@@ -153,7 +165,7 @@ public final class CuMedicalMonitor {
             case "BPMText" -> MedicalPhysiology.systolic(b) < 90 || MedicalPhysiology.systolic(b) > 180;
             case "OpiateText" -> b.drug() >= 2.4f;
             case "OpiateText (1)" -> b.survival().toxin() > .9f;
-            case "HappinessText" -> b.survival().depression().severe() || MedicalPhysiology.mood(b) < -.5f;
+            case "HappinessText" -> b.survival().depression().severe() || b.survival().ptsdFlashback() || MedicalPhysiology.mood(b) < -.5f;
             default -> false;
         };
     }

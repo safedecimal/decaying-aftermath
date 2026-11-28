@@ -111,4 +111,103 @@ class MentalHealthModelTest {
         assertTrue(steak.moodDelta() > 0);
         assertTrue(pie.moodDelta() > steak.moodDelta());
     }
+
+    @Test
+    void deathTriggersPtsdAndRemembersDepressionAndDeathCountAcrossRespawnAndAfterlife() {
+        var darkOnly = new BodyEnvironment(18, .25f, false, true, false, false, false, 0, 48, true, true,
+                1, false, false, true, false, 0, 0f, 0, true);
+        var body = new BodyModel();
+        for (int i = 0; i < 12000; i++) {
+            body.tick(darkOnly);
+        }
+        assertEquals(DepressionType.SEASONAL, body.snapshot().survival().depression());
+        float preDeathMood = body.snapshot().survival().moodReserve();
+
+        body.kill();
+        assertEquals(BodySnapshot.Mode.DEAD, body.mode());
+
+        // COPY_FROM creates fresh physical body while remembering depression + PTSD + death
+        var respawned = body.respawnAfterDeath();
+        assertEquals(BodySnapshot.Mode.CONSCIOUS, respawned.mode());
+        assertEquals(1f, respawned.snapshot().blood());
+        var rs = respawned.snapshot().survival();
+        assertTrue(rs.depression().active(), "Pre-death depression must persist after death");
+        assertTrue(rs.ptsd(), "Dying must leave PTSD");
+        assertTrue(rs.ptsdFlashback(), "Waking after death triggers an acute flashback");
+        assertEquals(1, rs.rememberedDeaths());
+        assertTrue(rs.moodReserve() < preDeathMood);
+
+        // Aftermath finish calls withFreshBodyRememberingMental: must preserve memory without double-counting death
+        var afterAfterlife = respawned.withFreshBodyRememberingMental();
+        var as = afterAfterlife.snapshot().survival();
+        assertEquals(1, as.rememberedDeaths());
+        assertEquals(rs.depression(), as.depression());
+        assertEquals(rs.ptsdLoad(), as.ptsdLoad());
+
+        // Second death stacks remembered deaths and deepens PTSD
+        afterAfterlife.kill();
+        var secondRespawn = afterAfterlife.respawnAfterDeath();
+        assertEquals(2, secondRespawn.snapshot().survival().rememberedDeaths());
+        assertTrue(secondRespawn.snapshot().survival().ptsdLoad() > as.ptsdLoad());
+    }
+
+    @Test
+    void totemRevivePreservesDepressionPtsdAndAddsNearDeathTrauma() {
+        var darkCave = darkCaveWithEerieDisc();
+        var body = new BodyModel();
+        for (int i = 0; i < 6000; i++) {
+            body.tick(darkCave);
+        }
+        DepressionType preReviveDepression = body.snapshot().survival().depression();
+        assertTrue(preReviveDepression.active());
+
+        // First death remembered, then later totem revive
+        body.kill();
+        var afterFirstDeath = body.respawnAfterDeath();
+        float ptsdBeforeTotem = afterFirstDeath.snapshot().survival().ptsdLoad();
+        assertEquals(1, afterFirstDeath.snapshot().survival().rememberedDeaths());
+
+        afterFirstDeath.damage(BodyPart.HEAD, 30, DamageKind.BLUNT);
+        var revived = afterFirstDeath.reviveWithTotem();
+        var s = revived.snapshot().survival();
+        assertTrue(s.depression().active(), "Totem revive must remember active depression");
+        assertTrue(s.ptsd(), "Totem revive must remember PTSD");
+        assertTrue(s.ptsdLoad() > ptsdBeforeTotem, "Totem revive adds near-death PTSD burden");
+        assertEquals(1, s.rememberedDeaths());
+    }
+
+    @Test
+    void ptsdTriggersFlashbackUnderThreatAndEasesWithTherapyAndAnxiolytic() {
+        var body = new BodyModel();
+        body.kill();
+        var respawned = body.respawnAfterDeath();
+        var mental = respawned.saveState().survivalState();
+        assertTrue(mental.snapshot().ptsd());
+
+        var m = SurvivalModel.restore(mental).mental();
+        // Let initial flashback and cooldown expire in daylight
+        var sun = brightDaylightSurface();
+        for (int i = 0; i < 700; i++) {
+            m.tick(sun, 0, 0, 0, 1, 0, 37f, 0, true);
+        }
+        assertFalse(m.ptsdFlashback());
+        assertTrue(m.ptsd(), "PTSD should remain long after initial respawn");
+
+        // Exposure to hostile threats triggers a PTSD flashback
+        var threat = new BodyEnvironment(20, .25f, false, true, false, false, false, 0, 48, true, true,
+                10, false, false, false, false, 2, 0f, 0, true);
+        m.tick(threat, 0.5f, 0, 0, 1, 0.1f, 37f, 0, true);
+        assertTrue(m.ptsdFlashback());
+
+        // Treatment reduces PTSD burden over time while rememberedDeaths remains in memory
+        float beforeTreatment = m.ptsdLoad();
+        m.treat(TreatmentKind.ANXIOLYTIC, 1);
+        m.treat(TreatmentKind.ANTIDEPRESSANT, 1);
+        m.onNightSleep();
+        for (int i = 0; i < 6000; i++) {
+            m.tick(sun, 0, 0, 0, 1, 0, 37f, 0, true);
+        }
+        assertTrue(m.ptsdLoad() < beforeTreatment);
+        assertEquals(1, m.rememberedDeaths());
+    }
 }

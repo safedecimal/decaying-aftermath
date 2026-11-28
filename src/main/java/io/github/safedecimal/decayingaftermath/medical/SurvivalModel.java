@@ -20,14 +20,16 @@ public final class SurvivalModel {
         gutInfection=s.gutInfection();
         bodyMassKg=s.bodyMassKg(); radiationGy=s.radiationGy(); bloodLostLiters=s.bloodLostLiters();
         mental=new MentalHealthModel(s.moodReserve(),s.antidepressant(),s.anxiolytic(),
-                s.therapyProgress(),0,0,0,0,s.depression(),s.moodFactors());
+                s.therapyProgress(),0,0,0,0,s.depression(),s.moodFactors(),
+                s.ptsdLoad(),s.rememberedDeaths(),s.ptsdFlashback()?120:0,0);
     }
     public SurvivalSnapshot snapshot(float internalBleeding,float lungFunction) {
         return new SurvivalSnapshot(hydration,nutrition,temperature,fatigue,toxin,plasma,redCells,
                 antibiotic,stimulant,antagonist,coagulant,internalBleeding,lungFunction,encumbrance,gutInfection,
                 (float)bodyMassKg,(float)radiationGy,(float)bloodLostLiters,
                 mental.moodReserve(),mental.depression(),mental.antidepressant(),mental.anxiolytic(),
-                mental.therapyProgress(),mental.activeFactors());
+                mental.therapyProgress(),mental.activeFactors(),
+                mental.ptsdLoad(),mental.rememberedDeaths(),mental.ptsdFlashback());
     }
     public float bloodVolume() { return plasma*.55f+redCells*.45f; }
     public float effectiveOpiate(float burden) { return burden/(1+antagonist*4); }
@@ -39,6 +41,7 @@ public final class SurvivalModel {
     public float fatigue() { return fatigue; }
     public float temperature(){return temperature;}
     public MentalHealthModel mental() { return mental; }
+    public void setMental(MentalHealthModel mental) { this.mental = Objects.requireNonNull(mental); }
     public float thermalStress() { return Math.clamp((Math.abs(temperature-37)-1)/4,0,1); }
     public float systemicStress() {
         return Math.max(Math.min(1,(float)radiationGy*.1f),Math.max(gutInfection*.6f,Math.max(thermalStress(),Math.max(Math.clamp((.2f-hydration)*5,0,1),Math.min(1,toxin*.45f)))));
@@ -162,7 +165,14 @@ public final class SurvivalModel {
         }
     }
     public record SavedState(SurvivalSnapshot snapshot,float pendingFood,float pendingWater,float pendingGerms,int incubationTicks,
-            float lightDeficit,float situationalStress,float chronicBurden,float psychosisLoad) {
+            float lightDeficit,float situationalStress,float chronicBurden,float psychosisLoad,
+            int ptsdFlashbackTicks,int ptsdFlashbackCooldown) {
+        public SavedState(SurvivalSnapshot snapshot,float pendingFood,float pendingWater,float pendingGerms,int incubationTicks,
+                float lightDeficit,float situationalStress,float chronicBurden,float psychosisLoad) {
+            this(snapshot,pendingFood,pendingWater,pendingGerms,incubationTicks,
+                    lightDeficit,situationalStress,chronicBurden,psychosisLoad,
+                    snapshot.ptsdFlashback()?120:0,0);
+        }
         public SavedState(SurvivalSnapshot snapshot,float pendingFood,float pendingWater,float pendingGerms,int incubationTicks) {
             this(snapshot,pendingFood,pendingWater,pendingGerms,incubationTicks,0,0,0,0);
         }
@@ -175,11 +185,14 @@ public final class SurvivalModel {
             pendingGerms=unit(pendingGerms); incubationTicks=Math.clamp(incubationTicks,0,12000);
             lightDeficit=unit(lightDeficit); situationalStress=unit(situationalStress);
             chronicBurden=unit(chronicBurden); psychosisLoad=unit(psychosisLoad);
+            ptsdFlashbackTicks=Math.clamp(ptsdFlashbackTicks,0,12000);
+            ptsdFlashbackCooldown=Math.clamp(ptsdFlashbackCooldown,0,12000);
         }
     }
     public SavedState save(float internalBleeding,float lungFunction) {
         return new SavedState(snapshot(internalBleeding,lungFunction),pendingFood,pendingWater,pendingGerms,incubationTicks,
-                mental.lightDeficit(),mental.situationalStress(),mental.chronicBurden(),mental.psychosisLoad());
+                mental.lightDeficit(),mental.situationalStress(),mental.chronicBurden(),mental.psychosisLoad(),
+                mental.ptsdFlashbackTicks(),mental.ptsdFlashbackCooldown());
     }
     public static SurvivalModel restore(SavedState state) {
         SurvivalModel s=new SurvivalModel(state.snapshot()); s.pendingFood=state.pendingFood(); s.pendingWater=state.pendingWater();
@@ -187,7 +200,8 @@ public final class SurvivalModel {
         var snap=state.snapshot();
         s.mental=new MentalHealthModel(snap.moodReserve(),snap.antidepressant(),snap.anxiolytic(),
                 snap.therapyProgress(),state.lightDeficit(),state.situationalStress(),state.chronicBurden(),
-                state.psychosisLoad(),snap.depression(),snap.moodFactors());
+                state.psychosisLoad(),snap.depression(),snap.moodFactors(),
+                snap.ptsdLoad(),snap.rememberedDeaths(),state.ptsdFlashbackTicks(),state.ptsdFlashbackCooldown());
         return s;
     }
     private static float unit(float value) { return Math.clamp(value,0,1); }

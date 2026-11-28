@@ -38,6 +38,10 @@ public final class MedicalClient {
     private static Object currentPlayer;
     private static boolean waitingForLiveBody;
     private static int depressionThoughtTicks;
+    private static int ptsdThoughtTicks;
+    private static int ptsdThoughtIndex;
+    private static boolean lastPtsd;
+    private static boolean lastPtsdFlashback;
     private static io.github.safedecimal.decayingaftermath.medical.DepressionType lastDepression =
             io.github.safedecimal.decayingaftermath.medical.DepressionType.NONE;
     private static final MedicalPresentationTimeline TIMELINE = new MedicalPresentationTimeline();
@@ -180,7 +184,8 @@ public final class MedicalClient {
         if(deadMusic!=null&&deadMusic.finished(seconds)) {deadMusic.close();deadMusic=null;}
     }
     private static void updateDepressionFeedback(Minecraft client, BodySnapshot body) {
-        var dep = body.survival().depression();
+        var s = body.survival();
+        var dep = s.depression();
         if (dep != lastDepression) {
             if (dep.active() && !ThoughtTyper.hasMessage()) {
                 ThoughtTyper.enqueue(Component.translatable("decaying_aftermath.thought.depression." + dep.id()).getString());
@@ -188,18 +193,46 @@ public final class MedicalClient {
             lastDepression = dep;
             depressionThoughtTicks = 20 * 45;
         }
-        if (!dep.active()) {
+        if (dep.active()) {
+            if (depressionThoughtTicks > 0) depressionThoughtTicks--;
+            if (depressionThoughtTicks == 0) {
+                depressionThoughtTicks = dep == io.github.safedecimal.decayingaftermath.medical.DepressionType.PSYCHOTIC ? 20 * 35 : 20 * 75;
+                if (dep == io.github.safedecimal.decayingaftermath.medical.DepressionType.PSYCHOTIC && client.player != null) {
+                    client.getSoundManager().play(SimpleSoundInstance.forUI(net.minecraft.sounds.SoundEvents.AMBIENT_CAVE.value(), 0.7f, 0.28f));
+                }
+                if (!ThoughtTyper.hasMessage()) {
+                    ThoughtTyper.enqueue(Component.translatable("decaying_aftermath.thought.depression." + dep.id()).getString());
+                }
+            }
+        } else {
             depressionThoughtTicks = 0;
+        }
+
+        boolean ptsd = s.ptsd();
+        boolean flashback = s.ptsdFlashback();
+        if (flashback && !lastPtsdFlashback && client.player != null) {
+            client.getSoundManager().play(SimpleSoundInstance.forUI(net.minecraft.sounds.SoundEvents.AMBIENT_CAVE.value(), 0.65f, 0.34f));
+            if (!ThoughtTyper.hasMessage()) {
+                ThoughtTyper.enqueue(Component.translatable("decaying_aftermath.thought.ptsd." + (ptsdThoughtIndex++ & 3)).getString());
+            }
+            ptsdThoughtTicks = 20 * 45;
+        } else if (ptsd && !lastPtsd) {
+            if (!ThoughtTyper.hasMessage()) {
+                ThoughtTyper.enqueue(Component.translatable("decaying_aftermath.thought.ptsd." + (ptsdThoughtIndex++ & 3)).getString());
+            }
+            ptsdThoughtTicks = 20 * 50;
+        }
+        lastPtsd = ptsd;
+        lastPtsdFlashback = flashback;
+        if (!ptsd) {
+            ptsdThoughtTicks = 0;
             return;
         }
-        if (depressionThoughtTicks > 0) depressionThoughtTicks--;
-        if (depressionThoughtTicks == 0) {
-            depressionThoughtTicks = dep == io.github.safedecimal.decayingaftermath.medical.DepressionType.PSYCHOTIC ? 20 * 35 : 20 * 75;
-            if (dep == io.github.safedecimal.decayingaftermath.medical.DepressionType.PSYCHOTIC && client.player != null) {
-                client.getSoundManager().play(SimpleSoundInstance.forUI(net.minecraft.sounds.SoundEvents.AMBIENT_CAVE.value(), 0.7f, 0.28f));
-            }
+        if (ptsdThoughtTicks > 0) ptsdThoughtTicks--;
+        if (ptsdThoughtTicks == 0) {
+            ptsdThoughtTicks = flashback ? 20 * 30 : 20 * 65;
             if (!ThoughtTyper.hasMessage()) {
-                ThoughtTyper.enqueue(Component.translatable("decaying_aftermath.thought.depression." + dep.id()).getString());
+                ThoughtTyper.enqueue(Component.translatable("decaying_aftermath.thought.ptsd." + (ptsdThoughtIndex++ & 3)).getString());
             }
         }
     }
@@ -214,7 +247,9 @@ public final class MedicalClient {
         blackoutRelief = 0;
         standKeyHeld = false;
         pauseHintTicks=0;
-        depressionThoughtTicks=0; lastDepression=io.github.safedecimal.decayingaftermath.medical.DepressionType.NONE;
+        depressionThoughtTicks=0; ptsdThoughtTicks=0; ptsdThoughtIndex=0;
+        lastPtsd=false; lastPtsdFlashback=false;
+        lastDepression=io.github.safedecimal.decayingaftermath.medical.DepressionType.NONE;
         TIMELINE.reset();CONSCIOUSNESS_ECG.reset();PAIN.reset();previousMode=BodySnapshot.Mode.CONSCIOUS;
         VanillaMusicGate.reset();
         currentPlayer=null;waitingForLiveBody=false;
@@ -283,13 +318,17 @@ public final class MedicalClient {
                     Math.round(body.bpm())).getString(),graphics.guiWidth()/2,graphics.guiHeight()-68,0xFFFFAE72);
         }
         double sleepBlack=MedicalPresentationPolicy.sleepBlackout(body,TIMELINE.black(),blackoutRelief);
-        var dep = body.survival().depression();
-        if (dep.active() && body.mode() != BodySnapshot.Mode.DEAD) {
+        var s = body.survival();
+        var dep = s.depression();
+        if ((dep.active() || s.ptsd() || s.ptsdFlashback()) && body.mode() != BodySnapshot.Mode.DEAD) {
             double gloom = dep == io.github.safedecimal.decayingaftermath.medical.DepressionType.PSYCHOTIC ? 0.24
                     : dep == io.github.safedecimal.decayingaftermath.medical.DepressionType.MELANCHOLIC ? 0.18
-                    : dep == io.github.safedecimal.decayingaftermath.medical.DepressionType.SEASONAL ? 0.12 : 0.08;
+                    : dep == io.github.safedecimal.decayingaftermath.medical.DepressionType.SEASONAL ? 0.12
+                    : dep.active() ? 0.08 : 0.0;
+            if (s.ptsdFlashback()) gloom = Math.max(gloom, 0.22);
+            else if (s.ptsd()) gloom = Math.min(0.28, gloom + 0.07);
             if (isMedicalPanelOpen(client)) gloom *= 0.4;
-            graphics.fill(0, 0, graphics.guiWidth(), graphics.guiHeight(), color(gloom, 0x0A0B10));
+            if (gloom > 0) graphics.fill(0, 0, graphics.guiWidth(), graphics.guiHeight(), color(gloom, s.ptsdFlashback() ? 0x14080A : 0x0A0B10));
         }
         if (sleepBlack > 0 || TIMELINE.vignette() > 0) {
             double black = MedicalPresentationPolicy.blackOverlay(body,sleepBlack,isMedicalPanelOpen(client));
