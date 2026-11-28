@@ -27,7 +27,8 @@
     "AftermathMouseMixin",
     "AftermathGuiMixin",
     "AftermathVisionMixin",
-    "AftermathRedactionMixin"
+    "AftermathRedactionMixin",
+    "InjuredPoseMixin"
   ],
   "injectors": {
     "defaultRequire": 1

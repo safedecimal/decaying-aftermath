@@ -41,7 +41,7 @@ public final class ClientMedicalRagdolls {
             Api port = api();
             for (Player player : client.level.players()) {
                 int id = player.getId(); var visual = ClientMedicalVisuals.forLiving(player);
-                boolean collapse = visual != null && visual.collapsed() && !player.isSleeping();
+                boolean collapse = visual != null && visual.collapsed() && visual.ragdollSerial() > 0 && !player.isSleeping();
                 Object body = port.get().invoke(null, id); Owned owned = OWNED.get(id);
                 boolean matches = body != null && player.getUUID().equals(port.uuid().invoke(body)) && port.level().invoke(body) == client.level;
                 if (collapse && matches && visual.ragdollSerial() == (int)port.serial().invoke(body)) {

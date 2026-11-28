@@ -43,7 +43,7 @@ public final class MedicalRagdollCompatibility {
     }
     public static void update(ServerPlayer player, BodySnapshot snapshot) {
         if (broken || !OptionalMedicalCompatibility.ragdollifiedSupported()) return;
-        boolean collapse = MedicalCollapsePolicy.collapsed(snapshot.mode(), player.isAlive(), player.isSleeping(),
+        boolean collapse = MedicalCollapsePolicy.collapsed(snapshot, player.isAlive(), player.isSleeping(),
                 player.isCreative() || player.isSpectator());
         try {
             LIFECYCLE.update(player, player.getId(), player.level(), collapse);

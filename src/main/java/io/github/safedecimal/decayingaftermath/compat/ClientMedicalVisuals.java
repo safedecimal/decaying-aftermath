@@ -22,7 +22,7 @@ public final class ClientMedicalVisuals {
             context.client().execute(() -> {
                 var client = context.client();
                 CACHE.accept(arrived, client.level, payload.entityId(), payload.playerId(), payload.bleeding(),
-                        payload.dead(), payload.partBleeding(), payload.ragdollSerial(), System.nanoTime());
+                        payload.dead(), payload.partBleeding(), payload.ragdollSerial(), payload.posture(), System.nanoTime());
             });
         });
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> client.execute(ClientMedicalVisuals::reset));
@@ -38,9 +38,11 @@ public final class ClientMedicalVisuals {
             if (snapshot.mode() == BodySnapshot.Mode.DEAD) return null;
             var parts = java.util.Arrays.stream(snapshot.parts()).map(BodySnapshot.PartSnapshot::bleeding).toList();
             var summary = CACHE.live(client.level, entity.getId(), entity.getUUID(), true, true, System.nanoTime());
+            var posture = MedicalCollapsePolicy.posture(snapshot, entity.isAlive(), entity.isSleeping(),
+                    client.player.isCreative() || client.player.isSpectator());
             return new MedicalVisualCache.Visual(MedicalBleedOrigins.total(parts), false, parts,
-                    MedicalCollapsePolicy.collapsed(snapshot.mode(), entity.isAlive(), entity.isSleeping(),
-                            client.player.isCreative() || client.player.isSpectator()) && summary != null ? summary.ragdollSerial() : 0);
+                    posture == MedicalCollapsePolicy.Posture.COLLAPSED && summary != null ? summary.ragdollSerial() : 0,
+                    posture.ordinal());
         }
         return CACHE.live(client.level, entity.getId(), entity.getUUID(), true, true, System.nanoTime());
     }

@@ -223,10 +223,14 @@ public final class ServerMedicalSystem {
         BodySnapshot snapshot = model.snapshot();
         if(snapshot.energy()<.08f||snapshot.survival().encumbrance()>1.8f)player.setSprinting(false);
         if (player.tickCount % 5 == 0) applyInjuryModifiers(player, snapshot, true);
-        if (snapshot.mode() == Mode.UNCONSCIOUS) {
+        if (io.github.safedecimal.decayingaftermath.compat.MedicalCollapsePolicy.cannotWalk(snapshot)) {
             Vec3 motion = player.getDeltaMovement();
             player.setDeltaMovement(0, Math.min(0, motion.y), 0);
-            player.setSprinting(false); player.stopUsingItem();
+            player.setSprinting(false);
+            if (snapshot.mode() == Mode.UNCONSCIOUS) player.stopUsingItem();
+        }
+        if (snapshot.mode() == Mode.UNCONSCIOUS || snapshot.mode() == Mode.DEAD) {
+            io.github.safedecimal.decayingaftermath.network.SelfHarmNetwork.cancelFor(player);
         }
         if (snapshot.mode() == Mode.DEAD) {
             DamageSource source = LAST_SOURCE.getOrDefault(player, player.damageSources().generic());
@@ -239,12 +243,13 @@ public final class ServerMedicalSystem {
     }
 
     private static void applyInjuryModifiers(ServerPlayer player, BodySnapshot snapshot, boolean active) {
-        double legs = active ? (limbPenalty(snapshot.part(BodyPart.LEFT_LEG))
+        boolean immobilized = active && io.github.safedecimal.decayingaftermath.compat.MedicalCollapsePolicy.cannotWalk(snapshot);
+        double legs = immobilized ? 1.0 : active ? (limbPenalty(snapshot.part(BodyPart.LEFT_LEG))
                 + limbPenalty(snapshot.part(BodyPart.RIGHT_LEG))) * .5 : 0;
         double arms = active ? (limbPenalty(snapshot.part(BodyPart.LEFT_ARM))
                 + limbPenalty(snapshot.part(BodyPart.RIGHT_ARM))) * .5 : 0;
-        transientPenalty(player, Attributes.MOVEMENT_SPEED, LEG_SPEED, Math.min(.85, legs));
-        transientPenalty(player, Attributes.JUMP_STRENGTH, LEG_JUMP, Math.min(.95, legs * 1.2));
+        transientPenalty(player, Attributes.MOVEMENT_SPEED, LEG_SPEED, immobilized ? 1.0 : Math.min(.85, legs));
+        transientPenalty(player, Attributes.JUMP_STRENGTH, LEG_JUMP, immobilized ? 1.0 : Math.min(.95, legs * 1.2));
         transientPenalty(player, Attributes.ATTACK_SPEED, ARM_SPEED, Math.min(.7, arms));
         transientPenalty(player, Attributes.ATTACK_DAMAGE, ARM_DAMAGE, Math.min(.65, arms * .75));
         var s=snapshot.survival();
