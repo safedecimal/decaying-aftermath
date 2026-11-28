@@ -95,6 +95,23 @@ public final class ServerAftermathSystem {
     public static int remainingTicks(ServerPlayer player) {
         Session session=SESSIONS.get(player.getUUID()); return session==null ? 0 : session.remainingTicks;
     }
+    /** Explicit admin revive: ends the afterlife immediately at the death location and restores live mode. */
+    public static ServerPlayer reviveNow(ServerPlayer player) {
+        Session session = SESSIONS.get(player.getUUID());
+        if (session == null || session.finishing) return null;
+        if (session.pendingRespawn || !player.isAlive()) {
+            player = player.level().getServer().getPlayerList().respawn(player, false, Entity.RemovalReason.KILLED);
+            rebindConnection(player);
+            session.pendingRespawn = false;
+        }
+        ServerLevel level = player.level().getServer().getLevel(session.dimension);
+        if (level != null) {
+            player.teleportTo(level, session.anchor.x, session.anchor.y, session.anchor.z, Set.of(), session.yaw, 0, false);
+        }
+        player.setGameMode(GameType.byId(AftermathPolicy.returnGameModeId(session.returnMode.getId(), false)));
+        finish(player, session, false);
+        return player;
+    }
     public static void rememberMood(ServerPlayer player, BodySnapshot body) {
         if (body.mode()!=BodySnapshot.Mode.DEAD && !active(player))
             LIVE_MOOD.put(player.getUUID(), MedicalPhysiology.mood(body)*100);
@@ -157,7 +174,7 @@ public final class ServerAftermathSystem {
         sync(player,session,false);sendHealth(player);
         player.connection.send(new ClientboundSetCameraPacket(player));
     }
-    private static void rebindConnection(ServerPlayer player) {
+    static void rebindConnection(ServerPlayer player) {
         // PlayerList.respawn returns a new ServerPlayer but does not assign listener.player.
         // Vanilla's handleClientCommand normally performs these three steps afterwards.
         player.connection.player=player;

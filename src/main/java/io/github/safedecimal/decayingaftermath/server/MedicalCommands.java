@@ -14,6 +14,7 @@ import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 
@@ -44,6 +45,12 @@ public final class MedicalCommands {
 
             dispatcher.register(Commands.literal("trynew3dsystem")
                     .executes(context -> execTry3d(context.getSource())));
+
+            dispatcher.register(Commands.literal("revivenow")
+                    .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
+                    .executes(context -> execReviveNow(context.getSource(), java.util.List.of(context.getSource().getPlayerOrException())))
+                    .then(Commands.argument("targets", EntityArgument.players())
+                            .executes(context -> execReviveNow(context.getSource(), EntityArgument.getPlayers(context, "targets")))));
 
             dispatcher.register(buildRoot("aftermath"));
             dispatcher.register(buildRoot("abjection"));
@@ -309,6 +316,23 @@ public final class MedicalCommands {
         }
         source.sendSuccess(() -> Component.translatable(next ? "abjection.3d.enabled" : "abjection.3d.disabled"), false);
         return 1;
+    }
+
+    private static int execReviveNow(CommandSourceStack source, java.util.Collection<ServerPlayer> targets) throws CommandSyntaxException {
+        checkGamemaster(source);
+        int count = 0;
+        for (ServerPlayer target : targets) {
+            ServerMedicalSystem.reviveNow(target);
+            count++;
+        }
+        int finalCount = count;
+        if (finalCount == 1) {
+            ServerPlayer only = targets.iterator().next();
+            source.sendSuccess(() -> Component.translatable("abjection.revivenow.done", only.getDisplayName()), true);
+        } else {
+            source.sendSuccess(() -> Component.translatable("abjection.revivenow.done_multiple", finalCount), true);
+        }
+        return count;
     }
 
     private static int execStatus(CommandSourceStack source) throws CommandSyntaxException {

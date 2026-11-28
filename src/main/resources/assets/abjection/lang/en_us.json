@@ -173,5 +173,7 @@
   "abjection.thought.suicide": "Wait... What is that beeping? What did I do?! No, no, I DON'T WANT TO DIE! STOP!—",
   "abjection.suicide.unavailable": "You cannot do that right now.",
   "abjection.3d.enabled": "3D minigame mode enabled.",
-  "abjection.3d.disabled": "3D minigame mode disabled (2D)."
+  "abjection.3d.disabled": "3D minigame mode disabled (2D).",
+  "abjection.revivenow.done": "Revived %s immediately.",
+  "abjection.revivenow.done_multiple": "Revived %s players immediately."
 }

@@ -173,5 +173,7 @@
   "abjection.thought.suicide": "Стой... Что это пищит? Что я наделал?! Нет, нет, Я НЕ ХОЧУ УМИРАТЬ! СТОЙ!—",
   "abjection.suicide.unavailable": "Сейчас это невозможно.",
   "abjection.3d.enabled": "3D-режим мини-игр включён.",
-  "abjection.3d.disabled": "3D-режим мини-игр выключен (2D)."
+  "abjection.3d.disabled": "3D-режим мини-игр выключен (2D).",
+  "abjection.revivenow.done": "Игрок %s мгновенно реанимирован.",
+  "abjection.revivenow.done_multiple": "Реанимировано игроков: %s."
 }

@@ -140,6 +140,22 @@ public final class ServerMedicalSystem {
     /** Explicit administrator reset, independent of canAct and ordinary treatment budgets. */
     public static void healFully(ServerPlayer player) {resetFully(player,true);}
     public static void restoreAfterDeath(ServerPlayer player) {resetFully(player,false);}
+
+    /** Explicit admin revive: immediately revives from afterlife, death, dying, arrest, or blackout on the spot. */
+    public static ServerPlayer reviveNow(ServerPlayer player) {
+        ServerSuicideSystem.cancel(player);
+        if (ServerAftermathSystem.active(player)) {
+            ServerPlayer revived = ServerAftermathSystem.reviveNow(player);
+            return revived != null ? revived : player;
+        }
+        if (!player.isAlive() || owner(player).decayingAftermath$isVanillaDead()) {
+            player = player.level().getServer().getPlayerList().respawn(
+                    player, false, net.minecraft.world.entity.Entity.RemovalReason.KILLED);
+            ServerAftermathSystem.rebindConnection(player);
+        }
+        restoreAfterDeath(player);
+        return player;
+    }
     private static void resetFully(ServerPlayer player,boolean announce) {
         BodyModel prior=get(player);
         io.github.safedecimal.decayingaftermath.network.MedicalNetwork.cancelProcedures(player);

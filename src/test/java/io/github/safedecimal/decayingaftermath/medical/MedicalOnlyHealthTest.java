@@ -82,5 +82,11 @@ class MedicalOnlyHealthTest {
         assertTrue(cmds.contains("Commands.literal(\"mood\")"));
         assertTrue(cmds.contains("Commands.literal(\"depression\")"));
         assertTrue(cmds.contains("Commands.literal(\"ptsd\")"));
+        int reviveIdx = cmds.indexOf("Commands.literal(\"revivenow\")");
+        assertTrue(reviveIdx > 0);
+        String reviveSnippet = cmds.substring(reviveIdx, Math.min(cmds.length(), reviveIdx + 360));
+        assertTrue(reviveSnippet.contains(".requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))"));
+        assertTrue(reviveSnippet.contains("EntityArgument.players()"));
+        assertTrue(cmds.contains("ServerMedicalSystem.reviveNow(target)"));
     }
 }
