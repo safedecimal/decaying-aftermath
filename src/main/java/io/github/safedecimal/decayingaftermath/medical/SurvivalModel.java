@@ -145,6 +145,14 @@ public final class SurvivalModel {
     public void starvation(float amount) { if (Float.isFinite(amount)&&amount>0) nutrition=unit(nutrition-amount*.02f); }
     public void wakeFromNight() { fatigue=Math.max(0,fatigue-.65f); mental.onNightSleep(); }
     public void cool(float amount) { if(temperature>37.2f)temperature=Math.max(37.2f,temperature-.04f*Math.clamp(amount,0,1)); }
+    public void adminSetSurvival(float hyd, float nut, float temp, float fat, float tox, float rad) {
+        if (Float.isFinite(hyd)) hydration = unit(hyd);
+        if (Float.isFinite(nut)) nutrition = unit(nut);
+        if (Float.isFinite(temp)) temperature = Math.clamp(temp, 25f, 45f);
+        if (Float.isFinite(fat)) fatigue = unit(fat);
+        if (Float.isFinite(tox)) toxin = Math.clamp(tox, 0f, 3f);
+        if (Float.isFinite(rad)) radiationGy = Math.clamp(rad, 0f, 100f);
+    }
     /** Sole explicit exception: existing supernatural Last Standing reserves remain unchanged. */
     public void restoreLastStandingBlood(float blood) { plasma=redCells=unit(blood); }
     public boolean canTreat(TreatmentKind kind) { Objects.requireNonNull(kind);return true; }

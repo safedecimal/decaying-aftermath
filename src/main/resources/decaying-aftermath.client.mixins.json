@@ -28,7 +28,8 @@
     "AftermathGuiMixin",
     "AftermathVisionMixin",
     "AftermathRedactionMixin",
-    "InjuredPoseMixin"
+    "InjuredPoseMixin",
+    "ClientHealthMixin"
   ],
   "injectors": {
     "defaultRequire": 1

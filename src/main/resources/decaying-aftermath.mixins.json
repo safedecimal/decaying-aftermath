@@ -12,7 +12,9 @@
     "UnconsciousPacketMixin",
     "SurvivalFoodMixin",
     "AftermathDeathMixin",
-    "AftermathConnectionAccessor"
+    "AftermathConnectionAccessor",
+    "DamageCommandMixin",
+    "KillCommandMixin"
   ],
   "injectors": {
     "defaultRequire": 1

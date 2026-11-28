@@ -135,6 +135,95 @@ public final class BodyModel {
         evaluateAndAlign(false);
     }
 
+    /** Undead/spider bites contaminate unprotected open wounds. */
+    public void contaminateWound(BodyPart part, float amount) {
+        Objects.requireNonNull(part, "part");
+        if (mode == Mode.DEAD || !Float.isFinite(amount) || amount <= 0) return;
+        int i = part.ordinal();
+        if (openWounds[i] && disinfectionTicks[i] <= 0) {
+            infection[i] = unit(infection[i] + Math.min(0.35f, amount));
+            infectionAgeTicks[i] = WoundInfection.INCUBATION_TICKS;
+            evaluateAndAlign(false);
+        }
+    }
+
+    /** Admin state setters for /abjection set commands. */
+    public void adminSetVitals(float bloodFraction, float oxygenFraction, float energyFraction, float brainFraction) {
+        if (Float.isFinite(bloodFraction)) {
+            blood = unit(bloodFraction);
+            survival.restoreLastStandingBlood(blood);
+        }
+        if (Float.isFinite(oxygenFraction)) oxygen = unit(oxygenFraction);
+        if (Float.isFinite(energyFraction)) energy = unit(energyFraction);
+        if (Float.isFinite(brainFraction)) brainHealth = unit(brainFraction);
+        evaluateAndAlign(false);
+    }
+
+    public void adminSetPart(BodyPart part, String field, float value) {
+        Objects.requireNonNull(part);
+        int i = part.ordinal();
+        switch (field) {
+            case "integrity" -> integrity[i] = unit(value);
+            case "pain" -> localPain[i] = unit(value);
+            case "bleeding" -> {
+                float v = unit(value);
+                bleeding[i] = v <= 0 ? BleedProfile.NONE : BleedProfile.fromImpact(DamageKind.CUT, v * 10f);
+                if (v > 0) openWounds[i] = true;
+            }
+            case "infection" -> infection[i] = unit(value);
+            case "burn" -> burns[i] = unit(value);
+            default -> { }
+        }
+        evaluateAndAlign(false);
+    }
+
+    public void adminSetFracture(BodyPart part, boolean value) {
+        if (!part.isLimb()) return;
+        int i = part.ordinal();
+        fractured[i] = value;
+        if (!value) boneHealing[i] = 0;
+        evaluateAndAlign(false);
+    }
+
+    public void adminSetSplint(BodyPart part, boolean value) {
+        if (!part.isLimb()) return;
+        splinted[part.ordinal()] = value;
+        evaluateAndAlign(false);
+    }
+
+    public void adminSetMode(Mode targetMode) {
+        if (targetMode == null) return;
+        if (targetMode == Mode.DEAD) { kill(); return; }
+        this.mode = targetMode;
+        if (targetMode == Mode.CONSCIOUS) {
+            cardiacTicks = 0;
+            dyingTicks = -1;
+            wakeTicks = 0;
+            lastStandingTicks = 0;
+            bpm = 72;
+            blood = Math.max(0.5f, blood);
+            oxygen = Math.max(0.6f, oxygen);
+            energy = Math.max(0.3f, energy);
+            vitalFloorForConscious();
+            reconcileBlood();
+        } else if (targetMode == Mode.UNCONSCIOUS) {
+            wakeTicks = 0;
+        } else if (targetMode == Mode.LAST_STANDING) {
+            lastStandingSpent = true;
+            lastStandingTicks = LAST_STANDING_TICKS;
+            lastStandingBoostTicks = LAST_STANDING_BOOST_TICKS;
+            restoreLastStandingReserves();
+        } else if (targetMode == Mode.DYING) {
+            lastStandingSpent = true;
+            dyingTicks = DYING_TICKS;
+        }
+    }
+
+    private void vitalFloorForConscious() {
+        integrity[BodyPart.HEAD.ordinal()] = Math.max(0.35f, integrity[BodyPart.HEAD.ordinal()]);
+        integrity[BodyPart.TORSO.ordinal()] = Math.max(0.35f, integrity[BodyPart.TORSO.ordinal()]);
+    }
+
     public void fall(float amount) {
         if (!Float.isFinite(amount) || amount <= 0 || mode == Mode.DEAD) return;
         for(var hit:FallTrauma.hits(amount))if(hit.amount()>0)damage(hit.part(),hit.amount(),hit.kind());
@@ -394,6 +483,7 @@ public final class BodyModel {
     public void kill() { mode = Mode.DEAD; bpm = 0; wakeTicks = lastStandingTicks = cardiacTicks = 0; dyingTicks = 0; }
 
     public Mode mode() { return mode; }
+    public SurvivalModel survival() { return survival; }
 
     public boolean canDefibrillate() { return mode != Mode.DEAD; }
 

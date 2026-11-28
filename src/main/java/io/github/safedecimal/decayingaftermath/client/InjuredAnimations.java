@@ -209,38 +209,25 @@ public final class InjuredAnimations {
         model.rightLeg.resetPose();
         model.leftLeg.resetPose();
 
-        float tilt = ((seed & 3) - 1.5f) * 0.08f;
         float flatX = -(float) (Math.PI * 0.5);
 
-        model.body.setPos(0f, 21.5f, 4.0f);
+        model.body.setPos(0f, 22.0f, 4.0f);
         model.body.xRot = flatX;
-        model.body.yRot = tilt;
-        model.body.zRot = tilt * 0.6f;
 
-        model.head.setPos(0f, 21.5f, 4.0f);
-        model.head.xRot = flatX + 0.12f;
-        model.head.yRot = tilt * 1.6f + 0.25f;
-        model.head.zRot = -0.22f;
+        model.head.setPos(0f, 22.0f, 4.0f);
+        model.head.xRot = flatX;
 
-        model.rightArm.setPos(-5.5f, 21.5f, 2.0f);
-        model.rightArm.xRot = flatX + 0.08f;
-        model.rightArm.yRot = 0.25f;
-        model.rightArm.zRot = 0.58f;
+        model.rightArm.setPos(-5.0f, 22.0f, 2.0f);
+        model.rightArm.xRot = flatX;
 
-        model.leftArm.setPos(5.5f, 21.5f, 2.0f);
-        model.leftArm.xRot = flatX + 0.05f;
-        model.leftArm.yRot = -0.22f;
-        model.leftArm.zRot = -0.48f;
+        model.leftArm.setPos(5.0f, 22.0f, 2.0f);
+        model.leftArm.xRot = flatX;
 
-        model.rightLeg.setPos(-2.2f, 21.5f, -8.0f);
-        model.rightLeg.xRot = flatX - 0.04f;
-        model.rightLeg.yRot = 0.12f;
-        model.rightLeg.zRot = 0.18f;
+        model.rightLeg.setPos(-1.9f, 22.0f, -8.0f);
+        model.rightLeg.xRot = flatX;
 
-        model.leftLeg.setPos(2.2f, 21.5f, -8.0f);
-        model.leftLeg.xRot = flatX - 0.06f;
-        model.leftLeg.yRot = -0.15f;
-        model.leftLeg.zRot = -0.22f;
+        model.leftLeg.setPos(1.9f, 22.0f, -8.0f);
+        model.leftLeg.xRot = flatX;
     }
 
     private static EnumMap<Clip, LoadedClip> ensureLoaded() {

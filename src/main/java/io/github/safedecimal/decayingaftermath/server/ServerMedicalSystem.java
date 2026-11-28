@@ -12,9 +12,17 @@ import io.github.safedecimal.decayingaftermath.medical.BodySnapshot.PartSnapshot
 import io.github.safedecimal.decayingaftermath.medical.TreatmentKind;
 import io.github.safedecimal.decayingaftermath.medical.DamageKind;
 import io.github.safedecimal.decayingaftermath.medical.ItemMassPolicy;
-import net.minecraft.world.effect.MobEffects;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.stats.Stats;
+import net.minecraft.world.damagesource.CombatRules;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.tags.ItemTags;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.ItemAttributeModifiers;
+import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
 import net.minecraft.world.entity.projectile.arrow.ThrownTrident;
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
@@ -79,6 +87,9 @@ public final class ServerMedicalSystem {
     }
     public static void setSyncHandler(BiConsumer<ServerPlayer, BodySnapshot> handler) {
         syncHandler = java.util.Objects.requireNonNull(handler);
+    }
+    public static void syncNow(ServerPlayer player) {
+        syncBody(player, get(player).snapshot());
     }
     private static void syncBody(ServerPlayer player, BodySnapshot snapshot) {
         io.github.safedecimal.decayingaftermath.compat.MedicalRagdollCompatibility.update(player, snapshot);
@@ -145,62 +156,164 @@ public final class ServerMedicalSystem {
         try { action.run(); } finally { BRIDGE.set(BRIDGE.get() - 1); }
     }
 
-    /** Called only at Player.actuallyHurt's one post-mitigation HP write. */
+    /** Replaces vanilla HP subtraction: resolves hit body part, mitigates via that slot's armor, applies anatomical trauma. */
+    public static float applyIncomingHit(ServerPlayer player, ServerLevel level, DamageSource source, float rawAmount) {
+        if (!Float.isFinite(rawAmount) || rawAmount <= 0) return 0f;
+        if (source.is(DamageTypes.GENERIC_KILL) || source.is(DamageTypes.FELL_OUT_OF_WORLD)) {
+            applyDamage(player, source, rawAmount);
+            return rawAmount;
+        }
+        BodyPart hitPart = resolvePart(player, source);
+        float afterArmor = rawAmount;
+        if (!source.is(DamageTypeTags.BYPASSES_ARMOR)) {
+            if (source.is(DamageTypeTags.IS_EXPLOSION) || source.is(DamageTypeTags.IS_FIRE)) {
+                EquipmentSlot[] allSlots = { EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET };
+                afterArmor = mitigateBySlots(player, source, rawAmount, 1.0f, allSlots);
+                owner(player).decayingAftermath$hurtEquipment(source, rawAmount, allSlots);
+            } else {
+                EquipmentSlot[] slots = armorSlotsForPart(hitPart);
+                float coverage = (hitPart == BodyPart.LEFT_ARM || hitPart == BodyPart.RIGHT_ARM) ? 0.65f : 1.0f;
+                afterArmor = mitigateBySlots(player, source, rawAmount, coverage, slots);
+                owner(player).decayingAftermath$hurtEquipment(source, rawAmount, slots);
+            }
+        }
+        float mitigated = owner(player).decayingAftermath$afterMagic(source, afterArmor);
+        if (!Float.isFinite(mitigated) || mitigated <= 0f) return 0f;
+
+        player.causeFoodExhaustion(source.getFoodExhaustion());
+        player.getCombatTracker().recordDamage(source, mitigated);
+        if (mitigated < Float.MAX_VALUE) {
+            player.awardStat(Stats.DAMAGE_TAKEN, Math.round(mitigated * 10.0f));
+        }
+        player.gameEvent(GameEvent.ENTITY_DAMAGE);
+        applyDamageToPart(player, hitPart, source, mitigated);
+        return mitigated;
+    }
+
+    /** Direct medical kill for /kill and void without touching vanilla HP. */
+    public static void killMedically(ServerPlayer player, DamageSource source) {
+        BodyModel model = get(player);
+        ServerAftermathSystem.rememberMood(player, model.snapshot());
+        LAST_SOURCE.put(player, source);
+        model.kill();
+        syncBody(player, model.snapshot());
+        if (player.isAlive()) {
+            player.die(source);
+        }
+    }
+
     public static void applyDamage(ServerPlayer player, DamageSource source, float amount) {
         if (!Float.isFinite(amount) || amount <= 0) return;
+        applyDamageToPart(player, resolvePart(player, source), source, amount);
+    }
+
+    private static void applyDamageToPart(ServerPlayer player, BodyPart hitPart, DamageSource source, float amount) {
         BodyModel model = get(player);
-        ServerAftermathSystem.rememberMood(player,model.snapshot());
+        ServerAftermathSystem.rememberMood(player, model.snapshot());
         LAST_SOURCE.put(player, source);
-        if (source.is(DamageTypes.GENERIC_KILL) || source.is(DamageTypes.FELL_OUT_OF_WORLD)) model.kill();
-        else if (source.is(DamageTypeTags.IS_FALL)) model.fall(amount);
-        else if (source.is(DamageTypeTags.IS_DROWNING) || source.is(DamageTypes.IN_WALL)) model.reduceOxygen(Math.min(1, amount * .08f));
-        else if (source.is(DamageTypes.STARVE)) model.starve(amount);
-        else if(source.is(DamageTypes.FREEZE))model.damage(BodyPart.TORSO,amount,DamageKind.FROSTBITE);
-        else if(source.is(DamageTypes.MAGIC)||source.is(DamageTypes.WITHER))model.poison(Math.min(1,amount*.08f));
-        else if (source.is(DamageTypeTags.IS_EXPLOSION)) {
-            model.damage(BodyPart.TORSO, amount * .3f,DamageKind.EXPLOSION);
-            model.damage(BodyPart.HEAD, amount * .18f,DamageKind.EXPLOSION);
-            model.damage(BodyPart.LEFT_ARM, amount * .11f,DamageKind.EXPLOSION); model.damage(BodyPart.RIGHT_ARM, amount * .11f,DamageKind.EXPLOSION);
-            model.damage(BodyPart.LEFT_LEG, amount * .15f,DamageKind.EXPLOSION); model.damage(BodyPart.RIGHT_LEG, amount * .15f,DamageKind.EXPLOSION);
+        if (source.is(DamageTypes.GENERIC_KILL) || source.is(DamageTypes.FELL_OUT_OF_WORLD)) {
+            model.kill();
+        } else if (source.is(DamageTypeTags.IS_FALL)) {
+            model.fall(amount);
+        } else if (source.is(DamageTypeTags.IS_DROWNING) || source.is(DamageTypes.IN_WALL)) {
+            model.reduceOxygen(Math.min(1, amount * .08f));
+        } else if (source.is(DamageTypes.STARVE)) {
+            model.starve(amount);
+        } else if (source.is(DamageTypes.FREEZE)) {
+            model.damage(BodyPart.TORSO, amount, DamageKind.FROSTBITE);
+        } else if (source.is(DamageTypes.MAGIC) || source.is(DamageTypes.WITHER)) {
+            model.poison(Math.min(1, amount * .08f));
+        } else if (source.is(DamageTypeTags.IS_EXPLOSION)) {
+            model.damage(BodyPart.TORSO, amount * .3f, DamageKind.EXPLOSION);
+            model.damage(BodyPart.HEAD, amount * .18f, DamageKind.EXPLOSION);
+            model.damage(BodyPart.LEFT_ARM, amount * .11f, DamageKind.EXPLOSION);
+            model.damage(BodyPart.RIGHT_ARM, amount * .11f, DamageKind.EXPLOSION);
+            model.damage(BodyPart.LEFT_LEG, amount * .15f, DamageKind.EXPLOSION);
+            model.damage(BodyPart.RIGHT_LEG, amount * .15f, DamageKind.EXPLOSION);
         } else if (source.is(DamageTypeTags.IS_FIRE)) {
-            for (BodyPart part : BodyPart.values()) model.damage(part, amount / BodyPart.values().length,DamageKind.BURN);
-        } else if(source.is(DamageTypeTags.IS_PROJECTILE)) {
-            boolean embedded=source.getDirectEntity() instanceof AbstractArrow && !(source.getDirectEntity() instanceof ThrownTrident);
-            model.projectile(resolvePart(player,source),amount,embedded);
+            for (BodyPart part : BodyPart.values()) {
+                model.damage(part, amount / BodyPart.values().length, DamageKind.BURN);
+            }
+        } else if (source.is(DamageTypeTags.IS_PROJECTILE)) {
+            boolean embedded = source.getDirectEntity() instanceof AbstractArrow
+                    && !(source.getDirectEntity() instanceof ThrownTrident);
+            model.projectile(hitPart, amount, embedded);
         } else {
-            Entity attacker=source.getEntity();boolean cutting=attacker instanceof LivingEntity living
-                    && (living.getMainHandItem().is(ItemTags.SWORDS)||living.getMainHandItem().is(ItemTags.AXES));
-            if(source.is(DamageTypes.CACTUS)||source.is(DamageTypes.SWEET_BERRY_BUSH))cutting=true;
-            model.damage(resolvePart(player, source), amount,cutting?DamageKind.CUT:DamageKind.BLUNT);
+            applyMobOrPhysicalHit(model, hitPart, source, amount);
         }
         if (model.snapshot().mode() == Mode.DEAD) tryBodyTotem(player, source);
-        mirrorHealth(player);
         syncBody(player, get(player).snapshot());
+    }
+
+    private static void applyMobOrPhysicalHit(BodyModel model, BodyPart hitPart, DamageSource source, float amount) {
+        Entity attacker = source.getEntity();
+        String mobId = attacker == null ? "" : BuiltInRegistries.ENTITY_TYPE.getKey(attacker.getType()).getPath();
+        if (mobId.equals("cave_spider") || mobId.equals("bee") || mobId.equals("pufferfish")) {
+            model.damage(hitPart, amount, DamageKind.PUNCTURE);
+            model.poison(0.20f);
+            model.contaminateWound(hitPart, 0.10f);
+            return;
+        }
+        if (mobId.equals("zombie") || mobId.equals("husk") || mobId.equals("drowned")
+                || mobId.equals("zombie_villager") || mobId.equals("zombified_piglin")
+                || mobId.equals("spider") || mobId.equals("silverfish") || mobId.equals("phantom")) {
+            model.damage(hitPart, amount, DamageKind.CUT);
+            model.contaminateWound(hitPart, 0.14f);
+            return;
+        }
+        if (mobId.equals("iron_golem") || mobId.equals("warden") || mobId.equals("ravager")
+                || mobId.equals("hoglin") || mobId.equals("zoglin") || mobId.equals("slime")
+                || mobId.equals("magma_cube") || mobId.equals("goat") || mobId.equals("polar_bear")) {
+            model.damage(hitPart, amount * 1.15f, DamageKind.BLUNT);
+            return;
+        }
+        boolean cutting = attacker instanceof LivingEntity living
+                && (living.getMainHandItem().is(ItemTags.SWORDS) || living.getMainHandItem().is(ItemTags.AXES))
+                || mobId.equals("vindicator") || mobId.equals("piglin_brute")
+                || mobId.equals("wither_skeleton") || mobId.equals("wolf")
+                || source.is(DamageTypes.CACTUS) || source.is(DamageTypes.SWEET_BERRY_BUSH);
+        model.damage(hitPart, amount, cutting ? DamageKind.CUT : DamageKind.BLUNT);
+    }
+
+    private static EquipmentSlot[] armorSlotsForPart(BodyPart part) {
+        return switch (part) {
+            case HEAD -> new EquipmentSlot[] { EquipmentSlot.HEAD };
+            case TORSO, LEFT_ARM, RIGHT_ARM -> new EquipmentSlot[] { EquipmentSlot.CHEST };
+            case LEFT_LEG, RIGHT_LEG -> new EquipmentSlot[] { EquipmentSlot.LEGS, EquipmentSlot.FEET };
+        };
+    }
+
+    private static float mitigateBySlots(ServerPlayer player, DamageSource source, float amount,
+            float coverage, EquipmentSlot... slots) {
+        float armor = 0f, toughness = 0f;
+        for (EquipmentSlot slot : slots) {
+            ItemStack piece = player.getItemBySlot(slot);
+            if (piece.isEmpty()) continue;
+            ItemAttributeModifiers mods = piece.getOrDefault(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY);
+            armor += (float) mods.compute(Attributes.ARMOR, 0.0, slot);
+            toughness += (float) mods.compute(Attributes.ARMOR_TOUGHNESS, 0.0, slot);
+        }
+        return CombatRules.getDamageAfterAbsorb(player, amount, source, armor * coverage, toughness * coverage);
     }
 
     /** A mod's direct HP delta has no reliable hit position; route it to the torso once. */
     public static void directHealth(ServerPlayer player, float requested) {
-        if (!Float.isFinite(requested)) { mirrorHealth(player); return; }
-        ServerAftermathSystem.rememberMood(player,get(player).snapshot());
+        if (!Float.isFinite(requested)) return;
+        ServerAftermathSystem.rememberMood(player, get(player).snapshot());
         float delta = requested - player.getHealth();
         if (delta < 0) {
             DamageSource source = MedicalDamageContext.activeDamageSource(player);
             if (source != null) applyDamage(player, source, -delta);
-            else get(player).damage(BodyPart.TORSO, -delta,DamageKind.BLUNT);
-        }
-        else if (delta > 0) adaptHealing(player, delta);
-        mirrorHealth(player);
+            else get(player).damage(BodyPart.TORSO, -delta, DamageKind.BLUNT);
+        } else if (delta > 0) adaptHealing(player, delta);
     }
     public static void adaptHealing(ServerPlayer player, float amount) {
         if (!Float.isFinite(amount) || amount <= 0) return;
         get(player).treat(BodyPart.TORSO, TreatmentKind.HEALING_POTION, Math.clamp(amount / 8, 0, 1));
-        mirrorHealth(player);
+        syncBody(player, get(player).snapshot());
     }
     public static void mirrorHealth(ServerPlayer player) {
-        BodySnapshot snapshot = get(player).snapshot();
-        float value = snapshot.mode() == Mode.DEAD ? 0
-                : Math.max(Math.min(1, player.getMaxHealth()), player.getMaxHealth() * snapshot.condition());
-        if (Math.abs(player.getHealth() - value) > .001f) bridge(() -> player.setHealth(value));
+        // Vanilla HP variable is excised; keep body sync only.
     }
 
     private static void tick(ServerPlayer player) {
@@ -289,6 +402,13 @@ public final class ServerMedicalSystem {
             hit = box.inflate(.15).clip(direct.oldPosition(), direct.position()).orElse(direct.position());
         Entity attacker = source.getEntity();
         if (hit == null && attacker != null) {
+            if (io.github.safedecimal.decayingaftermath.compat.MedicalCollapsePolicy.cannotWalk(get(player).snapshot())) {
+                return BodyPart.values()[player.getRandom().nextInt(BodyPart.values().length)];
+            }
+            if (attacker.getBbHeight() < 1.15f) {
+                int r = player.getRandom().nextInt(4);
+                return r == 0 ? BodyPart.TORSO : (r <= 2 ? BodyPart.LEFT_LEG : BodyPart.RIGHT_LEG);
+            }
             Vec3 eye = attacker.getEyePosition();
             hit = box.clip(eye, eye.add(attacker.getLookAngle().scale(6))).orElse(null);
             if (hit == null) hit = new Vec3(attacker.getX(), Math.clamp(eye.y, box.minY, box.maxY), attacker.getZ());
@@ -297,10 +417,16 @@ public final class ServerMedicalSystem {
         double relativeHeight = Math.clamp((hit.y - box.minY) / Math.max(.01, box.maxY - box.minY), 0, 1);
         double yaw = Math.toRadians(player.getYRot());
         double side = (hit.x - player.getX()) * Math.cos(yaw) + (hit.z - player.getZ()) * Math.sin(yaw);
-        if (relativeHeight > .82) return BodyPart.HEAD;
+        if (relativeHeight > .80) return BodyPart.HEAD;
         if (relativeHeight < .42) return side >= 0 ? BodyPart.LEFT_LEG : BodyPart.RIGHT_LEG;
-        if (Math.abs(side) > (box.maxX - box.minX) * .35)
+        if (Math.abs(side) > (box.maxX - box.minX) * .30)
             return side >= 0 ? BodyPart.LEFT_ARM : BodyPart.RIGHT_ARM;
+        if (attacker != null && !source.is(DamageTypeTags.IS_PROJECTILE)) {
+            int roll = player.getRandom().nextInt(10);
+            if (roll < 2) return BodyPart.LEFT_ARM;
+            if (roll < 4) return BodyPart.RIGHT_ARM;
+            if (roll == 4 && attacker.getBbHeight() >= 2.2f) return BodyPart.HEAD;
+        }
         return BodyPart.TORSO;
     }
 

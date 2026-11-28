@@ -1,11 +1,13 @@
 package io.github.safedecimal.decayingaftermath.mixin;
 
 import io.github.safedecimal.decayingaftermath.medical.BodyModel;
+import io.github.safedecimal.decayingaftermath.medical.BodySnapshot;
 import io.github.safedecimal.decayingaftermath.server.ServerBodyOwner;
 import io.github.safedecimal.decayingaftermath.server.ServerMedicalSystem;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
@@ -20,8 +22,9 @@ import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import io.github.safedecimal.decayingaftermath.compat.MedicalDamageContext;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-/** Preserve the original damage chain; intercept its final HP write with the captured source. */
+/** Removes vanilla player HP & HP-death; routes all hits directly to anatomical medical body parts. */
 @Mixin(Player.class)
 public abstract class PlayerBodyMixin {
     @Inject(method = "attack", at = @At("HEAD"), cancellable = true)
@@ -33,14 +36,16 @@ public abstract class PlayerBodyMixin {
     private void decayingAftermath$damageBody(ServerLevel level, DamageSource source,
             float unmitigatedAmount, Operation<Void> original) {
         if ((Object) this instanceof ServerPlayer player) {
+            if (player.isInvulnerableTo(level, source)) return;
             try (var scope = MedicalDamageContext.begin(player, source)) {
-                original.call(level, source, unmitigatedAmount);
+                float delivered = ServerMedicalSystem.applyIncomingHit(player, level, source, unmitigatedAmount);
+                MedicalDamageContext.captureCruorHit(player, source, delivered);
                 scope.complete();
             }
         } else original.call(level, source, unmitigatedAmount);
     }
 
-    /** LivingEntity owns inherited health methods; only actual ServerPlayer instances are intercepted. */
+    /** LivingEntity owns inherited health methods; vanilla player HP variable is completely excised. */
     @Mixin(LivingEntity.class)
     public abstract static class Health implements ServerBodyOwner {
         @Unique private BodyModel decayingAftermath$body;
@@ -58,12 +63,38 @@ public abstract class PlayerBodyMixin {
         @Override public void decayingAftermath$setBodyReady(boolean ready) { decayingAftermath$bodyReady = ready; }
         @Override @Invoker("checkTotemDeathProtection")
         public abstract boolean decayingAftermath$tryTotem(DamageSource source);
+        @Override @Invoker("getDamageAfterMagicAbsorb")
+        public abstract float decayingAftermath$afterMagic(DamageSource source, float amount);
+        @Override @Invoker("doHurtEquipment")
+        public abstract void decayingAftermath$hurtEquipment(DamageSource source, float amount, EquipmentSlot... slots);
+
+        @Inject(method = "getHealth", at = @At("HEAD"), cancellable = true)
+        private void abjection$medicalHealthOnly(CallbackInfoReturnable<Float> cir) {
+            if ((Object) this instanceof ServerPlayer player) {
+                BodyModel body = decayingAftermath$body;
+                cir.setReturnValue(body != null && body.mode() == BodySnapshot.Mode.DEAD ? 0.0F : player.getMaxHealth());
+            }
+        }
 
         @Inject(method = "setHealth", at = @At("HEAD"), cancellable = true)
-        private void decayingAftermath$directHp(float value, CallbackInfo ci) {
-            if ((Object) this instanceof ServerPlayer player && decayingAftermath$bodyReady
-                    && !ServerMedicalSystem.isHealthBridge()) {
-                ServerMedicalSystem.directHealth(player, value);
+        private void abjection$removeVanillaHealthWrite(float value, CallbackInfo ci) {
+            if ((Object) this instanceof Player) {
+                ci.cancel();
+            }
+        }
+
+        @Inject(method = "isDeadOrDying", at = @At("HEAD"), cancellable = true)
+        private void abjection$medicalDeathCheckOnly(CallbackInfoReturnable<Boolean> cir) {
+            if ((Object) this instanceof ServerPlayer) {
+                BodyModel body = decayingAftermath$body;
+                cir.setReturnValue(body != null && body.mode() == BodySnapshot.Mode.DEAD);
+            }
+        }
+
+        @Inject(method = "kill", at = @At("HEAD"), cancellable = true)
+        private void abjection$medicalKill(ServerLevel level, CallbackInfo ci) {
+            if ((Object) this instanceof ServerPlayer player) {
+                ServerMedicalSystem.killMedically(player, player.damageSources().genericKill());
                 ci.cancel();
             }
         }

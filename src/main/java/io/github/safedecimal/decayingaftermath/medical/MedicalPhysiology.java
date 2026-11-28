@@ -17,6 +17,7 @@ public final class MedicalPhysiology {
                 -(1-s.nutrition())*.1f-(1-s.hydration())*.1f-s.nausea()*.25f;
         float physicalMood=Math.clamp(wellbeing*2-1,-1,1);
         float combined=Math.min(physicalMood, physicalMood*.45f + s.moodReserve()*.55f);
+        if(s.moodReserve()<0) combined=Math.min(combined, s.moodReserve());
         if(s.rememberedDeaths()>0) combined-=Math.min(.15f, s.rememberedDeaths()*.03f);
         if(s.ptsd()) combined=Math.min(combined - s.ptsdLoad()*.20f, -.25f);
         if(s.ptsdFlashback()) combined=Math.min(combined, -.45f);

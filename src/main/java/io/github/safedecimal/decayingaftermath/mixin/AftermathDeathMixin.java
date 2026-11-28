@@ -19,8 +19,8 @@ public abstract class AftermathDeathMixin {
         ServerPlayer player=(ServerPlayer)(Object)this;
         boolean explicit=source.is(DamageTypes.GENERIC_KILL)||source.is(DamageTypes.FELL_OUT_OF_WORLD);
         var body=ServerMedicalSystem.get(player).snapshot();
-        if(MedicalDeathPolicy.rejectBlackoutDeath(body,explicit)) {
-            // A late vanilla/compat HP=0 callback cannot turn a recoverable blackout into a death.
+        if(MedicalDeathPolicy.rejectBlackoutDeath(body,explicit) || (body.mode()!=io.github.safedecimal.decayingaftermath.medical.BodySnapshot.Mode.DEAD && !explicit)) {
+            // Only true medical Mode.DEAD or explicit void/kill may kill the player; never vanilla HP=0.
             ServerMedicalSystem.mirrorHealth(player);MedicalNetwork.sync(player,body);ci.cancel();
         }
     }

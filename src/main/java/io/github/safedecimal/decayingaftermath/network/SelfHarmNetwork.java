@@ -69,6 +69,16 @@ public final class SelfHarmNetwork {
         return SESSIONS.containsKey(player.getUUID());
     }
 
+    public static boolean triggerNow(ServerPlayer player) {
+        if (SESSIONS.containsKey(player.getUUID())) return true;
+        BodySnapshot body = ServerMedicalSystem.get(player).snapshot();
+        if (body.mode() != BodySnapshot.Mode.CONSCIOUS) return false;
+        WeaponMatch weapon = findWeapon(player);
+        if (weapon == null) return false;
+        beginSession(player, body, weapon);
+        return SESSIONS.containsKey(player.getUUID());
+    }
+
     public static void cancelFor(ServerPlayer player) {
         Session session = SESSIONS.remove(player.getUUID());
         if (session != null) {

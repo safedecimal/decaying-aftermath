@@ -407,6 +407,75 @@ public final class MentalHealthModel {
         }
     }
 
+    /** Explicit admin setter for /abjection set commands. */
+    public void adminSetMood(float reserve) {
+        moodReserve = clampSigned(reserve);
+        if (moodReserve >= 0f) {
+            chronicBurden = 0f;
+            situationalStress = 0f;
+            lightDeficit = 0f;
+            psychosisLoad = 0f;
+            depression = DepressionType.NONE;
+        } else if (moodReserve <= -0.70f) {
+            chronicBurden = Math.max(chronicBurden, 0.85f);
+            if (!depression.active()) depression = DepressionType.MELANCHOLIC;
+        } else if (moodReserve <= -0.20f) {
+            situationalStress = Math.max(situationalStress, 0.50f);
+            if (!depression.active()) depression = DepressionType.SITUATIONAL;
+        }
+    }
+
+    public void adminSetDepression(DepressionType type) {
+        DepressionType target = type == null ? DepressionType.NONE : type;
+        this.depression = target;
+        switch (target) {
+            case NONE -> {
+                moodReserve = Math.max(0.25f, moodReserve);
+                chronicBurden = 0f;
+                situationalStress = 0f;
+                lightDeficit = 0f;
+                psychosisLoad = 0f;
+            }
+            case SITUATIONAL -> {
+                moodReserve = Math.min(moodReserve, -0.35f);
+                situationalStress = Math.max(situationalStress, 0.65f);
+            }
+            case SEASONAL -> {
+                moodReserve = Math.min(moodReserve, -0.35f);
+                lightDeficit = Math.max(lightDeficit, 0.65f);
+            }
+            case MELANCHOLIC -> {
+                moodReserve = Math.min(moodReserve, -0.80f);
+                chronicBurden = Math.max(chronicBurden, 0.75f);
+            }
+            case PSYCHOTIC -> {
+                moodReserve = Math.min(moodReserve, -0.85f);
+                psychosisLoad = Math.max(psychosisLoad, 0.75f);
+            }
+            case PERSISTENT -> {
+                moodReserve = Math.min(moodReserve, -0.30f);
+                chronicBurden = Math.max(chronicBurden, 0.65f);
+            }
+        }
+    }
+
+    public void adminSetPtsd(float load) {
+        this.ptsdLoad = clamp(load, 0f, 1f);
+        if (ptsd()) {
+            activeFactors |= MoodFactors.PTSD;
+            ptsdFlashbackTicks = 160;
+        } else {
+            activeFactors &= ~MoodFactors.PTSD;
+            ptsdFlashbackTicks = 0;
+        }
+    }
+
+    public void adminSetDeaths(int count) {
+        this.rememberedDeaths = Math.clamp(count, 0, 1_000_000);
+        if (rememberedDeaths > 0) activeFactors |= MoodFactors.DEATH_MEMORY;
+        else activeFactors &= ~MoodFactors.DEATH_MEMORY;
+    }
+
     private DepressionType classify(float brainHealth) {
         if (moodReserve > -0.15f && chronicBurden < 0.45f && lightDeficit < 0.55f
                 && situationalStress < 0.55f && psychosisLoad < 0.55f) {
