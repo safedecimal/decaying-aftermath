@@ -18,8 +18,15 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class VoluntarySleepTest {
     @Test
-    void voluntarySleepFillsProgressOverGameTicksAndAutoWakesWhenRestedOrFullConsciousness() {
+    void alertAndFullConsciousnessBlocksSleepWhileTiredBodySleepsAndAutoWakes() {
+        var fresh = new BodyModel();
+        assertFalse(fresh.canStartSleep(), "Cannot sleep when fully rested and 100% conscious");
+        assertFalse(fresh.snapshot().canSleep());
+        assertFalse(fresh.startVoluntarySleep());
+
         var body = new BodyModel();
+        body.adminSetVitals(Float.NaN, Float.NaN, 0.70f, Float.NaN);
+        assertTrue(body.canStartSleep());
         assertTrue(body.startVoluntarySleep());
         assertTrue(body.voluntarySleeping());
         assertTrue(body.snapshot().voluntarySleeping());
@@ -32,8 +39,8 @@ class VoluntarySleepTest {
         assertTrue(body.voluntarySleeping());
         assertEquals(60f / BodyModel.FULL_SLEEP_TICKS, body.snapshot().sleepProgress(), 0.001f);
 
-        // Healthy body reaches MIN_CONSCIOUS_WAKE_TICKS at 100% consciousness/energy -> wakes automatically
-        for (int i = 0; i < BodyModel.MIN_CONSCIOUS_WAKE_TICKS; i++) {
+        // Recovers to 100% consciousness & energy -> wakes automatically
+        for (int i = 0; i < BodyModel.FULL_SLEEP_TICKS; i++) {
             body.tick(BodyEnvironment.temperate(false, false));
         }
         assertFalse(body.voluntarySleeping());
@@ -45,13 +52,15 @@ class VoluntarySleepTest {
         var body = new BodyModel();
         assertFalse(body.wakeVoluntarily(), "Cannot wake if not sleeping");
 
+        body.adminSetVitals(Float.NaN, Float.NaN, 0.50f, Float.NaN);
         assertTrue(body.startVoluntarySleep());
         for (int i = 0; i < 20; i++) body.tick(BodyEnvironment.temperate(false, false));
         assertTrue(body.wakeVoluntarily(), "Manual Awake wakes from voluntary sleep");
         assertFalse(body.voluntarySleeping());
 
         // Fainting into UNCONSCIOUS clears voluntary sleep and rejects manual Awake
-        body.startVoluntarySleep();
+        body.adminSetVitals(Float.NaN, Float.NaN, 0.50f, Float.NaN);
+        assertTrue(body.startVoluntarySleep());
         body.damage(BodyPart.HEAD, 28f, DamageKind.BLUNT);
         assertEquals(BodySnapshot.Mode.UNCONSCIOUS, body.mode());
         assertFalse(body.voluntarySleeping());
@@ -61,7 +70,8 @@ class VoluntarySleepTest {
     @Test
     void voluntarySleepActivatesSleepCircleAndSyncsOverNetwork() throws Exception {
         var body = new BodyModel();
-        body.startVoluntarySleep();
+        body.adminSetVitals(Float.NaN, Float.NaN, 0.50f, Float.NaN);
+        assertTrue(body.startVoluntarySleep());
         for (int i = 0; i < 40; i++) body.tick(BodyEnvironment.temperate(false, false));
         var snap = body.snapshot();
         assertEquals(1.0, MedicalPresentationPolicy.sleepCircleAlpha(snap, false));
@@ -96,5 +106,12 @@ class VoluntarySleepTest {
         assertTrue(MedicalInventoryLayout.SLEEP_X >= MedicalInventoryLayout.HOTBAR_X + 182);
         String screen = Files.readString(Path.of("src/main/java/io/github/safedecimal/decayingaftermath/client/VoluntarySleepScreen.java"));
         assertTrue(screen.contains("if (!body.voluntarySleeping() || body.mode() != BodySnapshot.Mode.CONSCIOUS)"));
+
+        String bedMixin = Files.readString(Path.of("src/main/java/io/github/safedecimal/decayingaftermath/mixin/BedSleepMixin.java"));
+        assertTrue(bedMixin.contains("startSleepInBed"));
+        assertTrue(bedMixin.contains("ServerMedicalSystem.startSleep"));
+
+        String sleepStatus = Files.readString(Path.of("src/main/java/io/github/safedecimal/decayingaftermath/mixin/SleepStatusMixin.java"));
+        assertTrue(sleepStatus.contains("cir.setReturnValue(false)"));
     }
 }

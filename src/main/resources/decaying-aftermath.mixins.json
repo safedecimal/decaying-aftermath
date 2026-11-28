@@ -14,7 +14,9 @@
     "AftermathDeathMixin",
     "AftermathConnectionAccessor",
     "DamageCommandMixin",
-    "KillCommandMixin"
+    "KillCommandMixin",
+    "BedSleepMixin",
+    "SleepStatusMixin"
   ],
   "injectors": {
     "defaultRequire": 1

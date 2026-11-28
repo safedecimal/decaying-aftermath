@@ -153,8 +153,7 @@ public final class MedicalInventoryScreen extends AbstractContainerScreen<Invent
             MedicalStatusIcons.body(graphics,states[i],b);
         }
         graphics.item(Items.KNOWLEDGE_BOOK.getDefaultInstance(),MedicalInventoryLayout.RECIPE_X,MedicalInventoryLayout.RECIPE_Y);
-        boolean canSleep = ClientMedicalState.snapshot().mode() == BodySnapshot.Mode.CONSCIOUS
-                && !ClientMedicalState.snapshot().voluntarySleeping();
+        boolean canSleep = ClientMedicalState.snapshot().canSleep();
         boolean sleepHover = virtualX(mouseX) >= MedicalInventoryLayout.SLEEP_X
                 && virtualX(mouseX) < MedicalInventoryLayout.SLEEP_X + MedicalInventoryLayout.SLEEP_SIZE
                 && virtualY(mouseY) >= MedicalInventoryLayout.SLEEP_Y
@@ -177,7 +176,8 @@ public final class MedicalInventoryScreen extends AbstractContainerScreen<Invent
         double vx = virtualX(mouseX), vy = virtualY(mouseY);
         if (vx >= MedicalInventoryLayout.SLEEP_X && vx < MedicalInventoryLayout.SLEEP_X + MedicalInventoryLayout.SLEEP_SIZE
                 && vy >= MedicalInventoryLayout.SLEEP_Y && vy < MedicalInventoryLayout.SLEEP_Y + MedicalInventoryLayout.SLEEP_SIZE) {
-            graphics.setTooltipForNextFrame(font, List.of(Component.translatable("abjection.sleep.button").getVisualOrderText()), mouseX, mouseY);
+            String key = body.canSleep() ? "abjection.sleep.button" : "abjection.sleep.too_awake";
+            graphics.setTooltipForNextFrame(font, List.of(Component.translatable(key).getVisualOrderText()), mouseX, mouseY);
             return;
         }
         BodyPart hover=partAt(vx,vy);
@@ -253,9 +253,11 @@ public final class MedicalInventoryScreen extends AbstractContainerScreen<Invent
                 && e.x()>=MedicalInventoryLayout.SLEEP_X && e.x()<MedicalInventoryLayout.SLEEP_X+MedicalInventoryLayout.SLEEP_SIZE
                 && e.y()>=MedicalInventoryLayout.SLEEP_Y && e.y()<MedicalInventoryLayout.SLEEP_Y+MedicalInventoryLayout.SLEEP_SIZE) {
             clearMedicalCarry();
-            if(ClientMedicalState.snapshot().mode()==BodySnapshot.Mode.CONSCIOUS) {
+            if(ClientMedicalState.snapshot().canSleep()) {
                 ClientMedicalState.startSleep();
                 onClose();
+            } else if(ClientMedicalState.snapshot().mode()==BodySnapshot.Mode.CONSCIOUS) {
+                ThoughtTyper.enqueue(Component.translatable("abjection.sleep.too_awake").getString());
             }
             return true;
         }

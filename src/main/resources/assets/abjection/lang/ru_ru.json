@@ -168,5 +168,6 @@
   "abjection.sleep.button": "Лечь спать (где угодно)",
   "abjection.sleep.awake": "Awake",
   "abjection.sleep.awake_done": "Вы проснулись.",
-  "abjection.sleep.awake_denied": "Вы не спите самостоятельно."
+  "abjection.sleep.awake_denied": "Вы не спите самостоятельно.",
+  "abjection.sleep.too_awake": "Я сейчас слишком бодр, чтобы уснуть."
 }

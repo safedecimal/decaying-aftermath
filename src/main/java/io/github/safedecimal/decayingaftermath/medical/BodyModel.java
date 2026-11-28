@@ -322,8 +322,14 @@ public final class BodyModel {
     public boolean voluntarySleeping() { return voluntarySleeping && mode == Mode.CONSCIOUS; }
     public int voluntarySleepTicks() { return voluntarySleepTicks; }
 
-    public boolean startVoluntarySleep() {
+    /** Cannot sleep when alert/energetic and 100% conscious. */
+    public boolean canStartSleep() {
         if (mode != Mode.CONSCIOUS || cardiacTicks < 0 || voluntarySleeping) return false;
+        return !(consciousness() >= 0.995f && energy >= 0.90f && survival.fatigue() <= 0.10f);
+    }
+
+    public boolean startVoluntarySleep() {
+        if (!canStartSleep()) return false;
         voluntarySleeping = true;
         voluntarySleepTicks = 0;
         return true;

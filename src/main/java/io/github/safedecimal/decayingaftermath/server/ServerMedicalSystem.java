@@ -112,7 +112,12 @@ public final class ServerMedicalSystem {
             return false;
         }
         BodyModel body = get(player);
-        if (!body.startVoluntarySleep()) return false;
+        if (!body.startVoluntarySleep()) {
+            if (body.mode() == Mode.CONSCIOUS && !body.voluntarySleeping()) {
+                io.github.safedecimal.decayingaftermath.network.MedicalNetwork.thought(player, "abjection.sleep.too_awake");
+            }
+            return false;
+        }
         io.github.safedecimal.decayingaftermath.network.MedicalNetwork.cancelProcedures(player);
         io.github.safedecimal.decayingaftermath.network.DefibNetwork.cancelFor(player);
         player.closeContainer();
@@ -124,7 +129,11 @@ public final class ServerMedicalSystem {
 
     public static boolean wakeFromSleep(ServerPlayer player) {
         BodyModel body = get(player);
+        int sleptTicks = body.voluntarySleepTicks();
         if (!body.wakeVoluntarily()) return false;
+        if (sleptTicks >= 200) {
+            player.resetStat(Stats.CUSTOM.get(Stats.TIME_SINCE_REST));
+        }
         syncBody(player, body.snapshot());
         return true;
     }
@@ -357,9 +366,13 @@ public final class ServerMedicalSystem {
         else {
             Integer slept=SLEEP_TICKS.remove(player);if(slept!=null&&slept>=100)model.finishNightSleep();
         }
+        boolean wasVoluntarySleeping = model.voluntarySleeping();
         model.irradiate(ServerRadiationSources.dosePerTick(player));
         model.tick(ServerSurvivalEnvironment.sample(player,CARRIED_MASS.getOrDefault(player,0f)));
         BodySnapshot snapshot = model.snapshot();
+        if (wasVoluntarySleeping && !snapshot.voluntarySleeping() && snapshot.mode() == Mode.CONSCIOUS) {
+            player.resetStat(Stats.CUSTOM.get(Stats.TIME_SINCE_REST));
+        }
         if(snapshot.energy()<.08f||snapshot.survival().encumbrance()>1.8f)player.setSprinting(false);
         if (player.tickCount % 5 == 0) applyInjuryModifiers(player, snapshot, true);
         if (snapshot.voluntarySleeping() || io.github.safedecimal.decayingaftermath.compat.MedicalCollapsePolicy.cannotWalk(snapshot)) {

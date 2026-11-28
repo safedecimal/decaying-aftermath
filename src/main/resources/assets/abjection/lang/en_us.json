@@ -168,5 +168,6 @@
   "abjection.sleep.button": "Sleep (anywhere)",
   "abjection.sleep.awake": "Awake",
   "abjection.sleep.awake_done": "You woke up.",
-  "abjection.sleep.awake_denied": "You are not voluntarily asleep."
+  "abjection.sleep.awake_denied": "You are not voluntarily asleep.",
+  "abjection.sleep.too_awake": "I am too wide awake to fall asleep right now."
 }

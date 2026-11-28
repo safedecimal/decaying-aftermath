@@ -25,6 +25,10 @@ public record BodySnapshot(float condition, float blood, float oxygen, float pai
     }
     public boolean cardiacArrest() { return cardiacTicks < 0; }
     public boolean racingHeart() { return CardiacRhythm.unstable(cardiacTicks); }
+    public boolean canSleep() {
+        return mode == Mode.CONSCIOUS && cardiacTicks >= 0 && !voluntarySleeping
+                && !(consciousness >= 0.995f && energy >= 0.90f && survival.fatigue() <= 0.10f);
+    }
     public BodySnapshot withCardiacTicks(int ticks) {
         return new BodySnapshot(condition,blood,oxygen,pain,drug,bpm,mode,consciousnessProgress,
                 energy,consciousness,parts,survival,bloodGroup,ticks,brainHealth,voluntarySleeping,sleepProgress);
