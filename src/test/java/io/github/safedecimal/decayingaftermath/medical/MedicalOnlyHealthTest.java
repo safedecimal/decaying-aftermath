@@ -73,6 +73,10 @@ class MedicalOnlyHealthTest {
         String killCmd = Files.readString(Path.of("src/main/java/io/github/safedecimal/decayingaftermath/mixin/KillCommandMixin.java"));
         assertTrue(killCmd.contains("ServerMedicalSystem.killMedically"));
 
+        String serverSys = Files.readString(Path.of("src/main/java/io/github/safedecimal/decayingaftermath/server/ServerMedicalSystem.java"));
+        assertTrue(serverSys.contains("decayingAftermath$isVanillaDead()"));
+        assertFalse(serverSys.contains("if (player.isAlive()) {\n            player.die(source);"));
+
         String cmds = Files.readString(Path.of("src/main/java/io/github/safedecimal/decayingaftermath/server/MedicalCommands.java"));
         assertTrue(cmds.contains("buildRoot(\"abjection\")"));
         assertTrue(cmds.contains("Commands.literal(\"mood\")"));

@@ -225,14 +225,14 @@ public final class ServerMedicalSystem {
         return mitigated;
     }
 
-    /** Direct medical kill for /kill and void without touching vanilla HP. */
+    /** Direct medical kill for /kill, /suicide, and void without touching vanilla HP. */
     public static void killMedically(ServerPlayer player, DamageSource source) {
         BodyModel model = get(player);
         ServerAftermathSystem.rememberMood(player, model.snapshot());
         LAST_SOURCE.put(player, source);
         model.kill();
         syncBody(player, model.snapshot());
-        if (player.isAlive()) {
+        if (!player.isRemoved() && !owner(player).decayingAftermath$isVanillaDead()) {
             player.die(source);
         }
     }
@@ -358,8 +358,14 @@ public final class ServerMedicalSystem {
             if (player.tickCount % 5 == 0) syncBody(player, model.snapshot());
             return;
         }
-        boolean wasAlive = player.isAlive();
-        if (!wasAlive) return;
+        if (player.isRemoved() || owner(player).decayingAftermath$isVanillaDead()) return;
+        if (model.mode() == Mode.DEAD) {
+            DamageSource source = LAST_SOURCE.getOrDefault(player, player.damageSources().generic());
+            if (!tryBodyTotem(player, source)) {
+                player.die(source);
+            }
+            return;
+        }
         ServerAftermathSystem.rememberMood(player,model.snapshot());
         if(player.tickCount%20==0||!CARRIED_MASS.containsKey(player))CARRIED_MASS.put(player,InventoryMass.carried(player));
         if(player.isSleeping())SLEEP_TICKS.merge(player,1,Integer::sum);

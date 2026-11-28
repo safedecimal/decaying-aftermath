@@ -14,6 +14,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.gen.Invoker;
 import org.spongepowered.asm.mixin.injection.At;
@@ -48,8 +49,11 @@ public abstract class PlayerBodyMixin {
     /** LivingEntity owns inherited health methods; vanilla player HP variable is completely excised. */
     @Mixin(LivingEntity.class)
     public abstract static class Health implements ServerBodyOwner {
+        @Shadow protected boolean dead;
         @Unique private BodyModel decayingAftermath$body;
         @Unique private boolean decayingAftermath$bodyReady;
+
+        @Override public boolean decayingAftermath$isVanillaDead() { return dead; }
 
         @Override public BodyModel decayingAftermath$getBody() {
             if (decayingAftermath$body == null) decayingAftermath$body = new BodyModel();

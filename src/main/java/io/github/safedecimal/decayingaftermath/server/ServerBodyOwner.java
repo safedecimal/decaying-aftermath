@@ -12,4 +12,5 @@ public interface ServerBodyOwner {
     boolean decayingAftermath$tryTotem(DamageSource source);
     float decayingAftermath$afterMagic(DamageSource source, float amount);
     void decayingAftermath$hurtEquipment(DamageSource source, float amount, EquipmentSlot... slots);
+    boolean decayingAftermath$isVanillaDead();
 }
