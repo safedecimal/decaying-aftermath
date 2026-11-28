@@ -267,5 +267,13 @@
         "stream": false
       }
     ]
+  },
+  "headgib": {
+    "sounds": [
+      {
+        "name": "abjection:headgib",
+        "stream": false
+      }
+    ]
   }
 }

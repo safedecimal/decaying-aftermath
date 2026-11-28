@@ -1,21 +1,58 @@
 package io.github.safedecimal.decayingaftermath.client;
 
+import io.github.safedecimal.decayingaftermath.compat.ClientMedicalRagdolls;
+import io.github.safedecimal.decayingaftermath.network.HeadBleedPayload;
 import io.github.safedecimal.decayingaftermath.network.SuicidePayload;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.resources.sounds.EntityBoundSoundInstance;
+import net.minecraft.core.particles.BlockParticleOption;
+import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.phys.Vec3;
 
-/** Client-side private diegetic /suicide beep, spoken panic line, and head-only explosion. */
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.UUID;
+
+/** Client-side private diegetic /suicide beep, spoken panic line, HUD flash, and headless neck blood gush. */
 public final class SuicideClient {
+    private static final DustParticleOptions BLOOD_DUST = new DustParticleOptions(0xFF9E0B14, 1.35f);
+    private static final BlockParticleOption BLOOD_DROP = new BlockParticleOption(ParticleTypes.BLOCK, Blocks.REDSTONE_BLOCK.defaultBlockState());
+
+    public static final class NeckBleed {
+        public final int entityId;
+        public final UUID playerUuid;
+        public final double fallbackX, fallbackY, fallbackZ;
+        public int remainingTicks;
+
+        NeckBleed(int entityId, UUID playerUuid, double x, double y, double z, int ticks) {
+            this.entityId = entityId;
+            this.playerUuid = playerUuid;
+            this.fallbackX = x;
+            this.fallbackY = y;
+            this.fallbackZ = z;
+            this.remainingTicks = ticks;
+        }
+
+        public Vec3 origin() {
+            Vec3 ragdollNeck = ClientMedicalRagdolls.neckOrigin(entityId, playerUuid);
+            return ragdollNeck != null ? ragdollNeck : new Vec3(fallbackX, fallbackY - 0.35, fallbackZ);
+        }
+    }
+
+    private static final List<NeckBleed> NECK_BLEEDS = new ArrayList<>();
     private static boolean registered;
     private static boolean countingDown;
     private static int flashTicks;
+    private static Object currentLevel;
 
     private SuicideClient() { }
 
@@ -24,20 +61,56 @@ public final class SuicideClient {
         registered = true;
         ClientPlayNetworking.registerGlobalReceiver(SuicidePayload.TYPE, (payload, context) ->
                 context.client().execute(() -> handle(payload)));
+        ClientPlayNetworking.registerGlobalReceiver(HeadBleedPayload.TYPE, (payload, context) ->
+                context.client().execute(() -> {
+                    NECK_BLEEDS.removeIf(b -> b.playerUuid.equals(payload.playerUuid()));
+                    NECK_BLEEDS.add(new NeckBleed(payload.entityId(), payload.playerUuid(),
+                            payload.x(), payload.y(), payload.z(), payload.durationTicks()));
+                }));
     }
 
     public static boolean active() { return countingDown; }
 
+    public static List<NeckBleed> activeNeckBleeds() { return List.copyOf(NECK_BLEEDS); }
+
     public static void reset() {
         countingDown = false;
         flashTicks = 0;
+        NECK_BLEEDS.clear();
+        currentLevel = null;
         Minecraft.getInstance().getSoundManager().stop(Identifier.fromNamespaceAndPath("abjection", "selfdestruct1"), SoundSource.PLAYERS);
     }
 
     public static void tick(Minecraft client) {
+        if (client.level != currentLevel) {
+            NECK_BLEEDS.clear();
+            currentLevel = client.level;
+        }
         if (flashTicks > 0) flashTicks--;
         if (countingDown && (client.player == null || !client.player.isAlive() || AftermathClient.active())) {
-            reset();
+            countingDown = false;
+            Minecraft.getInstance().getSoundManager().stop(Identifier.fromNamespaceAndPath("abjection", "selfdestruct1"), SoundSource.PLAYERS);
+        }
+        if (client.level == null || client.isPaused() || NECK_BLEEDS.isEmpty()) return;
+
+        Iterator<NeckBleed> it = NECK_BLEEDS.iterator();
+        while (it.hasNext()) {
+            NeckBleed bleed = it.next();
+            if (--bleed.remainingTicks <= 0) {
+                it.remove();
+                continue;
+            }
+            Vec3 pos = bleed.origin();
+            int count = bleed.remainingTicks > 300 ? 5 : 2;
+            for (int i = 0; i < count; i++) {
+                double vx = (Math.random() - 0.5) * 0.14;
+                double vy = 0.08 + Math.random() * 0.18;
+                double vz = (Math.random() - 0.5) * 0.14;
+                client.level.addParticle(BLOOD_DUST, pos.x, pos.y, pos.z, vx, vy, vz);
+                if (i % 2 == 0) {
+                    client.level.addParticle(BLOOD_DROP, pos.x, pos.y, pos.z, vx * 1.3, vy * 1.4, vz * 1.3);
+                }
+            }
         }
     }
 
@@ -51,7 +124,9 @@ public final class SuicideClient {
     private static void handle(SuicidePayload payload) {
         Minecraft client = Minecraft.getInstance();
         if (payload.stage() == SuicidePayload.ABORT) {
-            reset();
+            countingDown = false;
+            flashTicks = 0;
+            client.getSoundManager().stop(Identifier.fromNamespaceAndPath("abjection", "selfdestruct1"), SoundSource.PLAYERS);
             return;
         }
         if (payload.stage() == SuicidePayload.START) {
@@ -71,21 +146,6 @@ public final class SuicideClient {
             ThoughtTyper.reset();
             if (client.player != null) {
                 playDiegetic(client, "selfdestruct2");
-                if (client.level != null) {
-                    double hx = client.player.getX();
-                    double hy = client.player.getEyeY();
-                    double hz = client.player.getZ();
-                    client.level.addParticle(ParticleTypes.EXPLOSION_EMITTER, hx, hy, hz, 0, 0, 0);
-                    for (int i = 0; i < 18; i++) {
-                        double vx = (Math.random() - 0.5) * 0.35;
-                        double vy = (Math.random() - 0.2) * 0.35;
-                        double vz = (Math.random() - 0.5) * 0.35;
-                        client.level.addParticle(ParticleTypes.EXPLOSION, hx, hy, hz, vx, vy, vz);
-                        client.level.addParticle(ParticleTypes.LARGE_SMOKE, hx, hy, hz, vx * 0.7, vy * 0.7, vz * 0.7);
-                        client.level.addParticle(ParticleTypes.FLAME, hx, hy, hz, vx, vy, vz);
-                        client.level.addParticle(ParticleTypes.CRIT, hx, hy, hz, vx * 1.4, vy * 1.4, vz * 1.4);
-                    }
-                }
             }
         }
     }

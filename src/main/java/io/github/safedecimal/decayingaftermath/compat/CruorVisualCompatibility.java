@@ -43,6 +43,31 @@ public final class CruorVisualCompatibility {
         if (broken || client.level == null) return;
         try {
             NativeFields fields = FIELDS.get(nativeBodyBlood.getClass());
+            Object droplets = fields.droplets().get(nativeBodyBlood);
+            for (var neck : io.github.safedecimal.decayingaftermath.client.SuicideClient.activeNeckBleeds()) {
+                var pos = neck.origin();
+                var random = client.level.getRandom();
+                Object blood = fields.bloodOf().invoke(null, client.player != null ? client.player : client.level.players().stream().findFirst().orElse(null));
+                if (blood != null) {
+                    int burst = neck.remainingTicks > 300 ? 4 : 2;
+                    fields.emitting().invoke(droplets, neck.entityId);
+                    try {
+                        for (int i = 0; i < burst; i++) {
+                            fields.spawn().invoke(droplets,
+                                    pos.x + (random.nextFloat() - .5) * .08,
+                                    pos.y,
+                                    pos.z + (random.nextFloat() - .5) * .08,
+                                    (random.nextFloat() - .5f) * .16f,
+                                    .10f + random.nextFloat() * .18f,
+                                    (random.nextFloat() - .5f) * .16f,
+                                    1.25f, (int) fields.color().invoke(blood), (int) fields.dried().invoke(blood), 3,
+                                    .95f + random.nextFloat() * .25f, 140);
+                        }
+                    } finally {
+                        fields.emitting().invoke(droplets, -1);
+                    }
+                }
+            }
             // Injury can bleed at high cosmetic HP or after reconnect, without a fresh native hit packet.
             for (var player : client.level.players()) {
                 var visual = ClientMedicalVisuals.forLiving(player);

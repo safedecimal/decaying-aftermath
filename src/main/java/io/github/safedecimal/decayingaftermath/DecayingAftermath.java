@@ -23,6 +23,7 @@ public final class DecayingAftermath implements ModInitializer {
         io.github.safedecimal.decayingaftermath.network.SelfHarmNetwork.register();
         io.github.safedecimal.decayingaftermath.server.ServerAftermathSystem.register();
         io.github.safedecimal.decayingaftermath.server.ServerSuicideSystem.register();
+        io.github.safedecimal.decayingaftermath.compat.AftermathRagdollCompatibility.register();
         LOGGER.info("Abjection initialized.");
     }
 }

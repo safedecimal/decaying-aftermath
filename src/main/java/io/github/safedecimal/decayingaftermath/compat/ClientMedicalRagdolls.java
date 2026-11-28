@@ -109,6 +109,29 @@ public final class ClientMedicalRagdolls {
             return Double.isFinite(x)&&Double.isFinite(y)&&Double.isFinite(z)?new Vec3(x,y,z):null;
         } catch (ReflectiveOperationException | LinkageError error) {fail(error); return null;}
     }
+    /** Computes the top of the Ragdollified torso (severed neck stump) in world space. */
+    public static Vec3 neckOrigin(int id, UUID uuid) {
+        if (broken || uuid==null || !OptionalMedicalCompatibility.ragdollifiedSupported()) return null;
+        try {
+            Api port=api(); Object body=port.get().invoke(null,id);
+            if (body==null || !uuid.equals(port.uuid().invoke(body)) || port.level().invoke(body)!=Minecraft.getInstance().level) return null;
+            Object transform=port.transform().invoke(body,port.part().getField("TORSO").get(null));
+            if (transform==null) return null;
+            Object pos=transform.getClass().getField("position").get(transform);
+            Object rot=transform.getClass().getField("rotation").get(transform);
+            Class<?> vec=pos.getClass(); Class<?> quat=rot.getClass();
+            double px=vec.getField("x").getFloat(pos), py=vec.getField("y").getFloat(pos), pz=vec.getField("z").getFloat(pos);
+            double qx=quat.getField("x").getFloat(rot), qy=quat.getField("y").getFloat(rot),
+                   qz=quat.getField("z").getFloat(rot), qw=quat.getField("w").getFloat(rot);
+            // Rotate local (0, 0.375, 0) up-vector to the top edge of the torso (neck stump).
+            double upY = 0.375;
+            double ux = 2.0 * (qx * qy - qw * qz) * upY;
+            double uy = (1.0 - 2.0 * (qx * qx + qz * qz)) * upY;
+            double uz = 2.0 * (qy * qz + qw * qx) * upY;
+            double nx = px + ux, ny = py + uy, nz = pz + uz;
+            return Double.isFinite(nx) && Double.isFinite(ny) && Double.isFinite(nz) ? new Vec3(nx, ny, nz) : null;
+        } catch (ReflectiveOperationException | LinkageError error) { fail(error); return null; }
+    }
     public static void unpinDeath(int id, UUID uuid) {
         if (broken || uuid==null || !OptionalMedicalCompatibility.ragdollifiedSupported()) return;
         try {

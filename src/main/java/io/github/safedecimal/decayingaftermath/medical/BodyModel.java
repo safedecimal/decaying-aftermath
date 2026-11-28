@@ -53,6 +53,7 @@ public final class BodyModel {
     private boolean lastStandingSpent, faintRecovered;
     private boolean voluntarySleeping;
     private int voluntarySleepTicks;
+    private boolean headBlownOff;
 
     public BodyModel() { reset(); }
 
@@ -72,7 +73,7 @@ public final class BodyModel {
         brainHealth=1;
         lastStandingTicks = wakeTicks = stableTicks = cardiacTicks = 0; lastStandingSpent = false;
         lastStandingBoostTicks = 0; dyingTicks = -1; faintRecovered = false;
-        voluntarySleeping = false; voluntarySleepTicks = 0;
+        voluntarySleeping = false; voluntarySleepTicks = 0; headBlownOff = false;
     }
 
     /** Input is already mitigated vanilla damage units, not normalized tissue damage. */
@@ -545,6 +546,9 @@ public final class BodyModel {
 
     /** Explicit lethal sources such as void/kill; ordinary attacks use damage(). */
     public void kill() { mode = Mode.DEAD; bpm = 0; wakeTicks = lastStandingTicks = cardiacTicks = 0; dyingTicks = 0; }
+
+    public boolean headBlownOff() { return headBlownOff; }
+    public void setHeadBlownOff(boolean value) { this.headBlownOff = value; }
 
     public Mode mode() { return mode; }
     public SurvivalModel survival() { return survival; }

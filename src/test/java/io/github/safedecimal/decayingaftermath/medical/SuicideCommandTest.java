@@ -2,6 +2,7 @@ package io.github.safedecimal.decayingaftermath.medical;
 
 import com.google.gson.JsonParser;
 import io.github.safedecimal.decayingaftermath.client.ThoughtTyper;
+import io.github.safedecimal.decayingaftermath.network.HeadBleedPayload;
 import io.github.safedecimal.decayingaftermath.network.SuicidePayload;
 import io.github.safedecimal.decayingaftermath.server.ServerSuicideSystem;
 import io.netty.buffer.Unpooled;
@@ -12,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -21,7 +23,7 @@ class SuicideCommandTest {
         var soundsJson = JsonParser.parseString(new String(
                 getClass().getClassLoader().getResourceAsStream("assets/abjection/sounds.json").readAllBytes(),
                 StandardCharsets.UTF_8)).getAsJsonObject();
-        for (String name : new String[]{"selfdestruct1", "selfdestruct2"}) {
+        for (String name : new String[]{"selfdestruct1", "selfdestruct2", "headgib"}) {
             assertTrue(soundsJson.has(name), name);
             byte[] ogg = getClass().getClassLoader()
                     .getResourceAsStream("assets/abjection/sounds/" + name + ".ogg").readAllBytes();
@@ -44,9 +46,28 @@ class SuicideCommandTest {
             SuicidePayload.CODEC.encode(buf, new SuicidePayload(SuicidePayload.DETONATE));
             assertEquals(SuicidePayload.DETONATE, SuicidePayload.CODEC.decode(buf).stage());
             assertEquals(buf.writerIndex(), buf.readerIndex());
+
+            buf.clear();
+            var bleed = new HeadBleedPayload(12, new UUID(1, 2), 10.5, 65.6, -4.2, 400);
+            HeadBleedPayload.CODEC.encode(buf, bleed);
+            assertEquals(bleed, HeadBleedPayload.CODEC.decode(buf));
+            assertEquals(buf.writerIndex(), buf.readerIndex());
         } finally {
             buf.release();
         }
+    }
+
+    @Test
+    void serverExplosionNeverBreaksBlocksAndRagdollSeversHead() throws Exception {
+        String server = Files.readString(Path.of("src/main/java/io/github/safedecimal/decayingaftermath/server/ServerSuicideSystem.java"));
+        assertTrue(server.contains("Level.ExplosionInteraction.NONE"));
+        assertTrue(server.contains("shouldBlockExplode"));
+        assertTrue(server.contains("body.setHeadBlownOff(true)"));
+        assertTrue(server.contains("\"headgib\""));
+
+        String ragdoll = Files.readString(Path.of("src/main/java/io/github/safedecimal/decayingaftermath/compat/AftermathRagdollCompatibility.java"));
+        assertTrue(ragdoll.contains("addSeveredPartProvider"));
+        assertTrue(ragdoll.contains("severedMask"));
     }
 
     @Test
