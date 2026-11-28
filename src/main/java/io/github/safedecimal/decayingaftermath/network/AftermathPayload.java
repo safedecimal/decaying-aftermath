@@ -9,7 +9,7 @@ import net.minecraft.resources.Identifier;
 public record AftermathPayload(boolean active, boolean depression, int remainingTicks, long token,
         Identifier dimension, double x, double y, double z, float yaw, int corpseId) implements CustomPacketPayload {
     public static final Type<AftermathPayload> TYPE = new Type<>(
-            Identifier.fromNamespaceAndPath("decaying_aftermath", "afterlife"));
+            Identifier.fromNamespaceAndPath("abjection", "afterlife"));
     public static final StreamCodec<RegistryFriendlyByteBuf, AftermathPayload> CODEC = new StreamCodec<>() {
         @Override public AftermathPayload decode(RegistryFriendlyByteBuf buffer) {
             return new AftermathPayload(buffer.readBoolean(), buffer.readBoolean(), buffer.readVarInt(),

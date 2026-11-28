@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "minecraft:cooked_beef",
+    "minecraft:sweet_berries",
+    "minecraft:honey_bottle"
+  ],
+  "result": {
+    "id": "abjection:pemmican",
+    "count": 2
+  }
+}

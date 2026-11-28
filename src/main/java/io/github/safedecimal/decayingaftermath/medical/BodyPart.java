@@ -8,5 +8,5 @@ public enum BodyPart {
     public boolean isLeg() { return this == LEFT_LEG || this == RIGHT_LEG; }
     public boolean isLimb() { return isArm() || isLeg(); }
     public boolean isVital() { return this == HEAD || this == TORSO; }
-    public String translationKey() { return "decaying_aftermath.body." + name().toLowerCase(java.util.Locale.ROOT); }
+    public String translationKey() { return "abjection.body." + name().toLowerCase(java.util.Locale.ROOT); }
 }

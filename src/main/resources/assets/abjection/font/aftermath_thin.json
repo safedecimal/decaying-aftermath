@@ -1,0 +1,14 @@
+{
+  "providers": [
+    {
+      "type": "ttf",
+      "file": "abjection:vcr_osd_mono.ttf",
+      "size": 9,
+      "oversample": 4,
+      "shift": [
+        0,
+        0
+      ]
+    }
+  ]
+}

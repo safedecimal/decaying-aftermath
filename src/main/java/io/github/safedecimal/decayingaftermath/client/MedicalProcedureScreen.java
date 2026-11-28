@@ -39,7 +39,7 @@ public final class MedicalProcedureScreen extends Screen {
     private static final double SYRINGE_ENTRY_Y=128+219*.25,SYRINGE_END_Y=128+345*.25;
 
     public MedicalProcedureScreen(MedicalInventoryScreen previous,int slot,BodyPart part,TreatmentKind kind) {
-        super(Component.translatable("decaying_aftermath.procedure.title"));
+        super(Component.translatable("abjection.procedure.title"));
         this.previous=previous;this.slot=slot;this.part=part;this.kind=kind;
         budget=new ProcedureBudget(0,MedicalSupplyPolicy.ticksPerFill(kind));
         if(kind.injection()) {objectX=116;objectY=128+168*.25-SYRINGE_HEIGHT;}
@@ -53,7 +53,7 @@ public final class MedicalProcedureScreen extends Screen {
             started=true;initialFill=remaining=lastFill=MedicalNetwork.remainingFill(source());
             if(minecraft.player!=null&&!minecraft.player.hasInfiniteMaterials()
                     &&!MedicalNetwork.canSeparateSupply(minecraft.player.inventoryMenu,slot,source())) {
-                ThoughtTyper.enqueue(Component.translatable("decaying_aftermath.thought.supply_space").getString());onClose();return;
+                ThoughtTyper.enqueue(Component.translatable("abjection.thought.supply_space").getString());onClose();return;
             }
             ClientMedicalState.beginProcedure(slot,part,kind);
         }
@@ -169,7 +169,7 @@ public final class MedicalProcedureScreen extends Screen {
             if(entering&&!syringeInserted) {syringeLockX=desiredX;MedicalClient.sound("procedure_syringe",.6f,1);}
             syringeAngle=entering?(desiredX-syringeLockX)*.5:syringeAngle*(1-4*seconds);
             if(entering&&Math.abs(desiredX-syringeLockX)>20) {
-                MedicalClient.sound("procedure_syringe_fail",.6f,1);ThoughtTyper.enqueue(Component.translatable("decaying_aftermath.thought.careful").getString());onClose();return;
+                MedicalClient.sound("procedure_syringe_fail",.6f,1);ThoughtTyper.enqueue(Component.translatable("abjection.thought.careful").getString());onClose();return;
             }
             if(syringeInserted&&!entering&&delivered>0) {syringeInserted=false;onClose();return;}
             objectX=entering?syringeLockX:desiredX;objectY=desiredY;syringeInserted=entering;
@@ -337,18 +337,18 @@ public final class MedicalProcedureScreen extends Screen {
         if(isPotion())drawPotion(graphics,toolX,toolY);
         if(!holding&&!completed)drawGrip(graphics,toolX,toolY,visualAngle,canGrab(hand.x(),hand.y(),objectX,objectY,angle));
         graphics.disableScissor();
-        Component supplyLabel=kind.reusable()?Component.translatable("decaying_aftermath.procedure.reusable")
-                :Component.translatable("decaying_aftermath.procedure.remaining",(int)Math.ceil(remaining*100-.00001f));
+        Component supplyLabel=kind.reusable()?Component.translatable("abjection.procedure.reusable")
+                :Component.translatable("abjection.procedure.remaining",(int)Math.ceil(remaining*100-.00001f));
         graphics.centeredText(font,supplyLabel.getString(),128,244,0xFFE4E9E4);
         float bar=kind.reusable()?(source().getMaxDamage()-source().getDamageValue())/(float)Math.max(1,source().getMaxDamage()):remaining;
         graphics.fill(89,259,167,261,0xFF414A43);graphics.fill(89,259,89+Math.round(78*bar),261,0xFFC3CFC4);
-        if(errorTicks>0)graphics.centeredText(font,Component.translatable("decaying_aftermath.procedure.guide.steady").getString(),128,222,0xFFF08888);
+        if(errorTicks>0)graphics.centeredText(font,Component.translatable("abjection.procedure.guide.steady").getString(),128,222,0xFFF08888);
         graphics.pose().popMatrix();
-        var lines=ProcedureVisuals.lines(guide()+" "+Component.translatable("decaying_aftermath.procedure.rotate_hand").getString(),280,font::width);
+        var lines=ProcedureVisuals.lines(guide()+" "+Component.translatable("abjection.procedure.rotate_hand").getString(),280,font::width);
         graphics.pose().pushMatrix();graphics.pose().translate(ox,oy);graphics.pose().scale(scale,scale);
         int gy=-lines.size()*11-17;for(String line:lines) {graphics.centeredText(font,line,128,gy,0xFFE4E9E4);gy+=11;}
         graphics.pose().popMatrix();
-        graphics.centeredText(font,Component.translatable("decaying_aftermath.procedure.cancel").getString(),width/2,Math.min(height-12,(int)(oy+272*scale+6)),0xFFB8C0BA);
+        graphics.centeredText(font,Component.translatable("abjection.procedure.cancel").getString(),width/2,Math.min(height-12,(int)(oy+272*scale+6)),0xFFB8C0BA);
         // Medical foreground is extracted once at the end of Gui.extractRenderState.
         MedicalPanelRenderer.extractTooltip(graphics,MedicalPanelLayout.forScreen(width,height),mouseX,mouseY);
     }
@@ -367,7 +367,7 @@ public final class MedicalProcedureScreen extends Screen {
         int fillHeight=Math.round(59*remaining);
         if(fillHeight>0) {
             int sourceHeight=Math.max(1,Math.round(78*remaining));
-            graphics.blit(RenderPipelines.GUI_TEXTURED,Identifier.fromNamespaceAndPath("decaying_aftermath","textures/gui/procedures/syringe_fill.png"),
+            graphics.blit(RenderPipelines.GUI_TEXTURED,Identifier.fromNamespaceAndPath("abjection","textures/gui/procedures/syringe_fill.png"),
                     -9,-40-fillHeight,0f,78-sourceHeight,15,fillHeight,20,sourceHeight,20,78,syringeColor());
         }
         graphics.fill(-15,-SYRINGE_HEIGHT+Math.round((1-remaining)*20)-1,14,-SYRINGE_HEIGHT+Math.round((1-remaining)*20)+1,0xFFEAEAEA);graphics.pose().popMatrix();
@@ -390,7 +390,7 @@ public final class MedicalProcedureScreen extends Screen {
     private void drawSelectedPart(GuiGraphicsExtractor graphics,int x,int y,int w,int h) {ProcedureVisuals.part(graphics,part,x,y,w,h);}
     private String guide() {
         String suffix=isWrap()?"wrap":kind.injection()?"syringe":isAntiseptic()?"antiseptic":isPotion()?"potion":kind.simpleTool()?"tool":kind==TreatmentKind.SPLINT?(stage==0?"splint_align":"splint_straps"):(stage==0?"tourniquet_fit":"tourniquet_tighten");
-        return Component.translatable("decaying_aftermath.procedure.guide."+suffix).getString();
+        return Component.translatable("abjection.procedure.guide."+suffix).getString();
     }
     private void finish() {
         if(ended)return;

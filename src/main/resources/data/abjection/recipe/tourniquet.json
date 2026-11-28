@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "group": "abjection_medical",
+  "ingredients": [
+    "minecraft:leather",
+    "minecraft:string",
+    "minecraft:iron_nugget"
+  ],
+  "result": {
+    "id": "abjection:tourniquet",
+    "count": 1
+  }
+}

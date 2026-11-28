@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class CuDefibAssetsTest {
     private byte[] bytes(String path)throws Exception {
-        try(var input=getClass().getClassLoader().getResourceAsStream("assets/decaying_aftermath/"+path)) {
+        try(var input=getClass().getClassLoader().getResourceAsStream("assets/abjection/"+path)) {
             assertNotNull(input,path);return input.readAllBytes();
         }
     }
@@ -55,9 +55,9 @@ class CuDefibAssetsTest {
     @Test void sourceReadoutsAndHintsAreLocalizedWithoutTheOldSymbolAndRhythmGame()throws Exception {
         for(String lang:new String[]{"en_us","ru_ru"}) {
             var data=json("lang/"+lang+".json");
-            for(String key:new String[]{"cu_aed_guide","cu_manual_guide","cu_exit","empty_battery"})assertTrue(data.has("decaying_aftermath.defib."+key));
-            for(int state=0;state<6;state++)assertTrue(data.has("decaying_aftermath.defib.cu_aed_state"+state));
-            for(String key:new String[]{"pad","keys","lock","calibrate","automatic_fire"})assertFalse(data.has("decaying_aftermath.defib."+key));
+            for(String key:new String[]{"cu_aed_guide","cu_manual_guide","cu_exit","empty_battery"})assertTrue(data.has("abjection.defib."+key));
+            for(int state=0;state<6;state++)assertTrue(data.has("abjection.defib.cu_aed_state"+state));
+            for(String key:new String[]{"pad","keys","lock","calibrate","automatic_fire"})assertFalse(data.has("abjection.defib."+key));
         }
     }
     @Test void numericTypefaceIsTheActualCuFaceWithVerifiedAtlasAndMetrics()throws Exception {

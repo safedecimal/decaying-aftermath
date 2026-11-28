@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 class CuAssetBindingTest {
-    private static final String ROOT="assets/decaying_aftermath/";
+    private static final String ROOT="assets/abjection/";
     private byte[] bytes(String path)throws Exception {
         try(InputStream input=getClass().getClassLoader().getResourceAsStream(ROOT+path)) {
             assertNotNull(input,path);return input.readAllBytes();

@@ -15,7 +15,7 @@ public final class ClientMedicalState {
     public static void register() {
         ClientPlayNetworking.registerGlobalReceiver(BodyPayload.TYPE,(p,c)->c.client().execute(()->{state=p.snapshot();received=true;}));
         ClientPlayNetworking.registerGlobalReceiver(ThoughtPayload.TYPE,(p,c)->c.client().execute(()->{
-            if(p.message().equals("decaying_aftermath.heal.done"))MedicalClient.adminHealConfirmed();
+            if(p.message().equals("abjection.heal.done"))MedicalClient.adminHealConfirmed();
             else ThoughtTyper.enqueue(Component.translatable(p.message()).getString());
         }));
     }

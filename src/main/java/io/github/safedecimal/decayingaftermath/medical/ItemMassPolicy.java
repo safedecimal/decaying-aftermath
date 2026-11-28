@@ -11,9 +11,9 @@ public final class ItemMassPolicy {
             Map.entry("minecraft:arrow",.025f),Map.entry("minecraft:feather",.005f),
             Map.entry("minecraft:bucket",.5f),Map.entry("minecraft:water_bucket",1.5f),
             Map.entry("minecraft:lava_bucket",1.8f),Map.entry("minecraft:shulker_box",1.5f),
-            Map.entry("minecraft:bundle",.2f),Map.entry("decaying_aftermath:backpack",2f),
-            Map.entry("decaying_aftermath:water_bottle",.5f),Map.entry("decaying_aftermath:dirty_water_bottle",.5f),
-            Map.entry("decaying_aftermath:blood_bag",.45f),Map.entry("decaying_aftermath:saline",.5f));
+            Map.entry("minecraft:bundle",.2f),Map.entry("abjection:backpack",2f),
+            Map.entry("abjection:water_bottle",.5f),Map.entry("abjection:dirty_water_bottle",.5f),
+            Map.entry("abjection:blood_bag",.45f),Map.entry("abjection:saline",.5f));
     public static float unitMass(String id,boolean block,float blockMass,float ordinaryMass,Map<String,Float> overrides) {
         Float custom=overrides.get(id);
         if(custom!=null&&Float.isFinite(custom)&&custom>=0)return custom;

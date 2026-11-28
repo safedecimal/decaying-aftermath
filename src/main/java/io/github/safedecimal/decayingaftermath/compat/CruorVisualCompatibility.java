@@ -62,7 +62,7 @@ public final class CruorVisualCompatibility {
             }
         } catch (ReflectiveOperationException | IllegalStateException | LinkageError error) {
             broken = true;
-            System.getLogger("decaying_aftermath.compat").log(System.Logger.Level.WARNING,
+            System.getLogger("abjection.compat").log(System.Logger.Level.WARNING,
                     "Cruor visual bridge disabled after incompatible native API: " + error);
         }
     }
@@ -93,7 +93,7 @@ public final class CruorVisualCompatibility {
             return true;
         } catch (ReflectiveOperationException | IllegalStateException | LinkageError error) {
             broken = true;
-            System.getLogger("decaying_aftermath.compat").log(System.Logger.Level.WARNING, "Cruor wound-origin bridge disabled: " + error);
+            System.getLogger("abjection.compat").log(System.Logger.Level.WARNING, "Cruor wound-origin bridge disabled: " + error);
             return false;
         }
     }

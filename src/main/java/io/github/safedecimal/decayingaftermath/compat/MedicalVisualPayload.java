@@ -11,7 +11,7 @@ import net.minecraft.resources.Identifier;
 public record MedicalVisualPayload(int entityId, UUID playerId, float bleeding, boolean dead,
         java.util.List<Float> partBleeding, int ragdollSerial) implements CustomPacketPayload {
     public static final Type<MedicalVisualPayload> TYPE = new Type<>(
-            Identifier.fromNamespaceAndPath("decaying_aftermath", "medical_visual_v2"));
+            Identifier.fromNamespaceAndPath("abjection", "medical_visual_v2"));
     public static final StreamCodec<RegistryFriendlyByteBuf, MedicalVisualPayload> CODEC =
             CustomPacketPayload.codec(MedicalVisualPayload::write, MedicalVisualPayload::read);
     public MedicalVisualPayload {

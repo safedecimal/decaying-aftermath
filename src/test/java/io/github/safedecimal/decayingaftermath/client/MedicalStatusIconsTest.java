@@ -71,7 +71,7 @@ class MedicalStatusIconsTest {
         assertEquals("disinfected",icon.name());
         assertEquals(0xFFFFFFFF,MedicalStatusIcons.disinfectionColor(clean));
         assertEquals(0xFF191919,MedicalStatusIcons.disinfectionColor(expiring));
-        try(var png=getClass().getResourceAsStream("/assets/decaying_aftermath/textures/gui/status/disinfected.png")) {
+        try(var png=getClass().getResourceAsStream("/assets/abjection/textures/gui/status/disinfected.png")) {
             assertNotNull(png);
             var sprite=javax.imageio.ImageIO.read(png);
             assertEquals(17,sprite.getWidth());assertEquals(23,sprite.getHeight());
@@ -106,8 +106,8 @@ class MedicalStatusIconsTest {
         try(var en=resource("lang/en_us.json");var ru=resource("lang/ru_ru.json")) {
             var english=JsonParser.parseReader(new InputStreamReader(en,StandardCharsets.UTF_8)).getAsJsonObject();
             var russian=JsonParser.parseReader(new InputStreamReader(ru,StandardCharsets.UTF_8)).getAsJsonObject();
-            assertEquals("Bleeding",english.get("decaying_aftermath.status.bleed_type.heading").getAsString());
-            assertEquals("Кровотечение",russian.get("decaying_aftermath.status.bleed_type.heading").getAsString());
+            assertEquals("Bleeding",english.get("abjection.status.bleed_type.heading").getAsString());
+            assertEquals("Кровотечение",russian.get("abjection.status.bleed_type.heading").getAsString());
             for(var type:MedicalStatusIcons.BleedType.values()) {
                 assertTrue(english.get(type.translationKey).getAsString().matches("[A-Za-z]+"));
                 assertTrue(russian.get(type.translationKey).getAsString().matches("[А-Яа-яЁё]+"));
@@ -129,7 +129,7 @@ class MedicalStatusIconsTest {
         }
     }
     private java.io.InputStream resource(String path) {
-        var resource=getClass().getResourceAsStream("/assets/decaying_aftermath/"+path);
+        var resource=getClass().getResourceAsStream("/assets/abjection/"+path);
         assertNotNull(resource,path);
         return resource;
     }

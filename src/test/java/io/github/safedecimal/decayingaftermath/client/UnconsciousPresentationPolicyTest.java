@@ -53,7 +53,7 @@ class UnconsciousPresentationPolicyTest {
         var fainted = body(BodySnapshot.Mode.UNCONSCIOUS, 1, 1, 72);
         var conscious = body(BodySnapshot.Mode.CONSCIOUS, 1, 1, 72);
         var chicken = sound("minecraft:entity.chicken.ambient");
-        var heartbeat = sound("decaying_aftermath:heartbeat");
+        var heartbeat = sound("abjection:heartbeat");
         assertFalse(UnconsciousPresentationPolicy.keepsPlayback(fainted, chicken));
         assertTrue(UnconsciousPresentationPolicy.keepsPlayback(fainted, heartbeat));
         assertTrue(UnconsciousPresentationPolicy.keepsPlayback(conscious, chicken));

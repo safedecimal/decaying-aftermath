@@ -19,15 +19,15 @@ class MedicalItemResourceTest {
     @Test
     void allTwentyTwoRegisteredItemNamesHaveModernModelsAndOriginalIconAssets() throws IOException {
         for (String name : ITEMS) {
-            JsonObject item = json("assets/decaying_aftermath/items/" + name + ".json");
+            JsonObject item = json("assets/abjection/items/" + name + ".json");
             assertEquals("minecraft:model", item.getAsJsonObject("model").get("type").getAsString());
-            assertEquals("decaying_aftermath:item/" + name,
+            assertEquals("abjection:item/" + name,
                     item.getAsJsonObject("model").get("model").getAsString());
-            JsonObject model = json("assets/decaying_aftermath/models/item/" + name + ".json");
+            JsonObject model = json("assets/abjection/models/item/" + name + ".json");
             assertEquals("minecraft:item/generated", model.get("parent").getAsString());
-            assertEquals("decaying_aftermath:item/" + name,
+            assertEquals("abjection:item/" + name,
                     model.getAsJsonObject("textures").get("layer0").getAsString());
-            byte[] png = bytes("assets/decaying_aftermath/textures/item/" + name + ".png");
+            byte[] png = bytes("assets/abjection/textures/item/" + name + ".png");
             assertTrue(png.length > 8);
             assertArrayEquals(new byte[] {(byte) 137, 80, 78, 71, 13, 10, 26, 10},
                     java.util.Arrays.copyOf(png, 8));
@@ -40,16 +40,16 @@ class MedicalItemResourceTest {
         int[] ingredients = {2, 3, 4, 3};
         for (int index = 0; index < 4; index++) {
             String name = ITEMS.get(index);
-            JsonObject recipe = json("data/decaying_aftermath/recipe/" + name + ".json");
+            JsonObject recipe = json("data/abjection/recipe/" + name + ".json");
             assertEquals("minecraft:crafting_shapeless", recipe.get("type").getAsString());
             assertEquals(ingredients[index], recipe.getAsJsonArray("ingredients").size());
             recipe.getAsJsonArray("ingredients").forEach(ingredient ->
                     assertTrue(ingredient.isJsonPrimitive() && ingredient.getAsJsonPrimitive().isString()));
-            assertEquals("decaying_aftermath:" + name, recipe.getAsJsonObject("result").get("id").getAsString());
+            assertEquals("abjection:" + name, recipe.getAsJsonObject("result").get("id").getAsString());
             assertEquals(counts[index], recipe.getAsJsonObject("result").get("count").getAsInt());
         }
-        assertNull(getClass().getClassLoader().getResource("data/decaying_aftermath/recipe/fentanyl.json"));
-        JsonObject bandage = json("data/decaying_aftermath/recipe/bandage.json");
+        assertNull(getClass().getClassLoader().getResource("data/abjection/recipe/fentanyl.json"));
+        JsonObject bandage = json("data/abjection/recipe/bandage.json");
         assertEquals("#minecraft:wool", bandage.getAsJsonArray("ingredients").get(0).getAsString());
         assertEquals("#minecraft:wool", bandage.getAsJsonArray("ingredients").get(1).getAsString());
     }
@@ -57,10 +57,10 @@ class MedicalItemResourceTest {
     @Test
     void medicalTranslationsKeepEnglishLiteralAndLocalizeRussianThought() throws IOException {
         for (String locale : List.of("en_us", "ru_ru")) {
-            JsonObject language = json("assets/decaying_aftermath/lang/" + locale + ".json");
-            for (String name : ITEMS) assertTrue(language.has("item.decaying_aftermath." + name));
+            JsonObject language = json("assets/abjection/lang/" + locale + ".json");
+            for (String name : ITEMS) assertTrue(language.has("item.abjection." + name));
             assertEquals(locale.equals("en_us")?"It's seems didn't help..":"Кажется, это не помогло...",
-                    language.get("decaying_aftermath.thought.healing_potion_wasted").getAsString());
+                    language.get("abjection.thought.healing_potion_wasted").getAsString());
         }
     }
 

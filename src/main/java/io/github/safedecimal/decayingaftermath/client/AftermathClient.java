@@ -166,7 +166,7 @@ public final class AftermathClient {
                 var thought=AftermathPolicy.thought(lane,seconds);
                 graphics.pose().pushMatrix(); graphics.pose().translate((float)(thought.x()*width),(float)(thought.y()*height));
                 graphics.pose().scale((float)thought.scale(),(float)thought.scale());
-                graphics.text(client.font,Component.translatable("decaying_aftermath.afterlife.thought."+thought.index())
+                graphics.text(client.font,Component.translatable("abjection.afterlife.thought."+thought.index())
                         .withStyle(Style.EMPTY.withItalic(true)),0,0,alpha(thought.opacity(),0xC4C4C4),false);
                 graphics.pose().popMatrix();
             }

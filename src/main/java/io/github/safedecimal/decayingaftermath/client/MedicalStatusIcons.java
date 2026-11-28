@@ -21,7 +21,7 @@ public final class MedicalStatusIcons {
 
         BleedType(String name) {
             icon = new Icon("wound_type_"+name,16,16);
-            translationKey = "decaying_aftermath.status.bleed_type."+name;
+            translationKey = "abjection.status.bleed_type."+name;
         }
     }
 

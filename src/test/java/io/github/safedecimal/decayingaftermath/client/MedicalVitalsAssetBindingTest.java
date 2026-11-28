@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class MedicalVitalsAssetBindingTest {
     private byte[] bytes(String path)throws Exception {
-        try(InputStream input=getClass().getClassLoader().getResourceAsStream("assets/decaying_aftermath/"+path)) {
+        try(InputStream input=getClass().getClassLoader().getResourceAsStream("assets/abjection/"+path)) {
             assertNotNull(input,path);return input.readAllBytes();
         }
     }
@@ -46,7 +46,7 @@ class MedicalVitalsAssetBindingTest {
         var sounds=json("sounds.json");
         for(String name:new String[]{"brain_dying_music","death_music"}) {
             var record=sounds.getAsJsonObject(name).getAsJsonArray("sounds").get(0).getAsJsonObject();
-            assertEquals("decaying_aftermath:"+name,record.get("name").getAsString());assertTrue(record.get("stream").getAsBoolean());
+            assertEquals("abjection:"+name,record.get("name").getAsString());assertTrue(record.get("stream").getAsBoolean());
         }
         assertFalse(sounds.has("procedure_tourniquet"));
         assertTrue(sounds.has("procedure_syringe_loop"));assertTrue(sounds.has("last_standing_drone"));

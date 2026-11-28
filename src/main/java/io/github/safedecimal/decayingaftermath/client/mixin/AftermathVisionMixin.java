@@ -14,6 +14,6 @@ public abstract class AftermathVisionMixin {
     @Inject(method="update(Lnet/minecraft/client/DeltaTracker;)V",at=@At("TAIL"))
     private void decayingAftermath$monochrome(DeltaTracker delta,CallbackInfo ci) {
         if (AftermathClient.depression()) ((GameRenderer)(Object)this).getRequestedPostEffects()
-                .add(Identifier.fromNamespaceAndPath("decaying_aftermath","afterlife_monochrome"));
+                .add(Identifier.fromNamespaceAndPath("abjection","afterlife_monochrome"));
     }
 }

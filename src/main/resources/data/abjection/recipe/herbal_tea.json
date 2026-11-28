@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "abjection:water_bottle",
+    "minecraft:sweet_berries",
+    "minecraft:dandelion"
+  ],
+  "result": {
+    "id": "abjection:herbal_tea",
+    "count": 1
+  }
+}

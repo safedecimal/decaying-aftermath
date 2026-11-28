@@ -140,7 +140,7 @@ final class DefibShockPolicyTest {
         var screen=Files.readString(root.resolve("client/DefibScreen.java"));
         assertTrue(screen.contains("if(next.result()==DefibNetwork.HARM)harmTicks=60;"));
         for(String lang:new String[]{"ru_ru","en_us"})
-            assertTrue(Files.readString(Path.of("src/main/resources/assets/decaying_aftermath/lang",lang+".json")).contains("decaying_aftermath.defib.harm"));
+            assertTrue(Files.readString(Path.of("src/main/resources/assets/abjection/lang",lang+".json")).contains("abjection.defib.harm"));
     }
     @Test void harmfulShockOutcomeAndZeroPulseRoundTripInDeviceState() {
         var state=new DefibNetwork.State(17,DefibNetwork.HARM,false,2,-1,125,105,1,0,200,.83f,0,0,0,0,0,.95f,-880,130,200,false);

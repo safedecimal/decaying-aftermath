@@ -36,7 +36,7 @@ public final class OptionalMedicalCompatibility {
             send.invoke(null, hit.victim(), hit.source(), hit.damage(), fatal);
         } catch (ReflectiveOperationException | LinkageError error) {
             cruorBroken = true;
-            System.getLogger("decaying_aftermath.compat").log(System.Logger.Level.WARNING,
+            System.getLogger("abjection.compat").log(System.Logger.Level.WARNING,
                     "Cruor bridge disabled after incompatible native API: " + error);
         }
     }

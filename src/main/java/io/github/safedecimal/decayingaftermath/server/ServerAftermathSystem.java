@@ -39,7 +39,7 @@ import net.minecraft.world.phys.Vec3;
 
 /** Actual spectator on the server, not a free camera with a client-only countdown. */
 public final class ServerAftermathSystem {
-    private static final String SAVE_KEY = "decaying_aftermath_afterlife";
+    private static final String SAVE_KEY = "abjection_afterlife";
     private static final Map<UUID, Session> SESSIONS = new HashMap<>();
     private static final Map<UUID, Float> LIVE_MOOD = new HashMap<>();
     private static boolean registered;
@@ -110,6 +110,7 @@ public final class ServerAftermathSystem {
                 AftermathPolicy.checkedSeconds(SurvivalConfig.get().deathAftermathSeconds)*20,true);
         SESSIONS.put(player.getUUID(),session);
         MedicalNetwork.cancelProcedures(player); DefibNetwork.cancelFor(player);
+        io.github.safedecimal.decayingaftermath.network.SelfHarmNetwork.cancelFor(player);
         sync(player,session,true);
     }
     private static void tick(MinecraftServer server) {
@@ -185,7 +186,9 @@ public final class ServerAftermathSystem {
         node.putBoolean("hardcore",session.hardcore); node.putInt("remaining_ticks",session.remainingTicks);
     }
     public static void load(ServerPlayer player, ValueInput input) {
-        input.child(SAVE_KEY).ifPresent(node -> {
+        var child = input.child(SAVE_KEY);
+        if (child.isEmpty()) child = input.child("decaying_aftermath_afterlife");
+        child.ifPresent(node -> {
             int remaining=node.getIntOr("remaining_ticks",0);
             Identifier dimension=Identifier.tryParse(node.getStringOr("dimension","minecraft:overworld"));
             double x=node.getDoubleOr("x",0),y=node.getDoubleOr("y",64),z=node.getDoubleOr("z",0);

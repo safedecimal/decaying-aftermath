@@ -18,7 +18,7 @@ class CuMedicalMonitorTest {
         return new BodySnapshot(1,.75f,.8f,.2f,1.25f,72,BodySnapshot.Mode.CONSCIOUS,1,.25f,.4f,parts);
     }
     @Test void everyReadoutRetainsOriginalRectTransformCoordinatesAndTextAlignment()throws Exception {
-        try(var in=getClass().getClassLoader().getResourceAsStream("assets/decaying_aftermath/cu_exact_monitor_provenance.json")) {
+        try(var in=getClass().getClassLoader().getResourceAsStream("assets/abjection/cu_exact_monitor_provenance.json")) {
             assertNotNull(in);
             var manifest=JsonParser.parseString(new String(in.readAllBytes(),StandardCharsets.UTF_8)).getAsJsonObject();
             assertEquals("48c7f2296fc4a659faae3b1822884ca5b7ff73d6767ef159e6a6c2bc0b2d38f1",manifest.get("source_assembly_sha256").getAsString());
@@ -99,11 +99,11 @@ class CuMedicalMonitorTest {
         }
     }
     @Test void fullNativeSpritesRetainTrimOffsetsHashesDimensionsAndAllScreenStaticIcons()throws Exception {
-        try(var in=getClass().getClassLoader().getResourceAsStream("assets/decaying_aftermath/cu_exact_monitor_provenance.json")) {
+        try(var in=getClass().getClassLoader().getResourceAsStream("assets/abjection/cu_exact_monitor_provenance.json")) {
             var manifest=JsonParser.parseString(new String(in.readAllBytes(),StandardCharsets.UTF_8)).getAsJsonObject();
             for(var element:manifest.getAsJsonArray("sprites")) {
                 var r=element.getAsJsonObject();
-                try(var resource=getClass().getClassLoader().getResourceAsStream("assets/decaying_aftermath/"+r.get("path").getAsString())) {
+                try(var resource=getClass().getClassLoader().getResourceAsStream("assets/abjection/"+r.get("path").getAsString())) {
                     assertNotNull(resource);var bytes=resource.readAllBytes();
                     assertEquals(r.get("sha256").getAsString(),HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(bytes)));
                     var image=ImageIO.read(new java.io.ByteArrayInputStream(bytes));

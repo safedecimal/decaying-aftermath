@@ -15,7 +15,7 @@ import java.util.function.Consumer;
 
 /** Original CU prefab geometry, sprites, inertial hand and separate charge/shock controls. */
 public final class DefibScreen extends Screen {
-    private static final String KEY="decaying_aftermath.defib.";
+    private static final String KEY="abjection.defib.";
     private final int session;
     private final boolean automatic;
     private final Screen previous;
@@ -133,7 +133,7 @@ public final class DefibScreen extends Screen {
         float a=(float)Math.toDegrees(Math.atan2(y+174,x+225))-90;return (a+540)%360-180;
     }
     private static void sprite(GuiGraphicsExtractor g,String name,float cx,float cy,int w,int h,int sw,int sh,int color) {
-        g.blit(RenderPipelines.GUI_TEXTURED,Identifier.fromNamespaceAndPath("decaying_aftermath","textures/gui/defib/"+name+".png"),
+        g.blit(RenderPipelines.GUI_TEXTURED,Identifier.fromNamespaceAndPath("abjection","textures/gui/defib/"+name+".png"),
                 Math.round(128+cx*.25f-w*.125f),Math.round(128-cy*.25f-h*.125f),0f,0f,
                 Math.round(w*.25f),Math.round(h*.25f),sw,sh,sw,sh,color);
     }
@@ -197,7 +197,7 @@ public final class DefibScreen extends Screen {
         sprite(g,"manual_screen",0,33,768,660,256,220,0xFFFFFFFF);
         g.pose().pushMatrix();g.pose().translate(128-225*.25f,128+174*.25f);
         g.pose().rotate((float)Math.toRadians(-DefibGame.angleForCharge(dialCharge)));
-        g.blit(RenderPipelines.GUI_TEXTURED,Identifier.fromNamespaceAndPath("decaying_aftermath","textures/gui/defib/manual_dial.png"),
+        g.blit(RenderPipelines.GUI_TEXTURED,Identifier.fromNamespaceAndPath("abjection","textures/gui/defib/manual_dial.png"),
                 -19,-19,0f,0f,38,38,50,50,50,50,0xFFFFFFFF);g.pose().popMatrix();
         sprite(g,"manual_charge",8,-174,111,111,37,37,0xFFFFFFFF);
         sprite(g,"manual_shock",234.3f,-174,111,111,37,37,0xFFFFFFFF);

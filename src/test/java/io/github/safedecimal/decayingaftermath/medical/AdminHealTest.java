@@ -21,6 +21,6 @@ class AdminHealTest {
         var s=Files.readString(Path.of("src/main/java/io/github/safedecimal/decayingaftermath/server/ServerMedicalSystem.java"));
         assertTrue(s.contains("cancelProcedures(player)"));assertTrue(s.contains("DefibNetwork.cancelFor(player)"));
         assertTrue(s.contains("player.removeAllEffects();player.clearFire();player.setTicksFrozen(0)"));assertTrue(s.contains("decayingAftermath$setBody(new BodyModel())"));
-        assertTrue(s.contains("MedicalNetwork.thought(player,\"decaying_aftermath.heal.done\")"));
+        assertTrue(s.contains("MedicalNetwork.thought(player,\"abjection.heal.done\")"));
     }
 }

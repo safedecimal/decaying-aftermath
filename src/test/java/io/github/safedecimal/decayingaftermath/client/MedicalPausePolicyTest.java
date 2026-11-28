@@ -28,7 +28,7 @@ class MedicalPausePolicyTest {
     @Test void realPauseEntryPointsAreGuardedAndChatDoesNotHideTheOverlay() throws Exception {
         var root=Path.of("src/main/java/io/github/safedecimal/decayingaftermath/client");
         var c=Files.readString(root.resolve("MedicalClient.java"));assertFalse(c.contains("if(screen!=null&&!(screen instanceof MedicalInventoryScreen)"));
-        assertTrue(c.contains("decaying_aftermath.pause.denied"));assertTrue(c.contains("color(.65*Math.min(1,pauseHintTicks/20d)"));
+        assertTrue(c.contains("abjection.pause.denied"));assertTrue(c.contains("color(.65*Math.min(1,pauseHintTicks/20d)"));
         assertTrue(Files.readString(root.resolve("mixin/MedicalPauseMixin.java")).contains("pauseGame(Z)V"));
         assertTrue(Files.readString(root.resolve("mixin/MedicalPauseScreenMixin.java")).contains("setPauseScreen(ZZ)V"));
     }

@@ -11,7 +11,7 @@ public final class DeviceRemovalControls {
     public record Button(TreatmentKind kind,int x,int y,int width,int height) {
         public boolean contains(double px,double py) { return px>=x&&px<x+width&&py>=y&&py<y+height; }
         public String translationKey() { return kind==TreatmentKind.TOURNIQUET
-                ?"decaying_aftermath.device.remove_tourniquet":"decaying_aftermath.device.remove_splint"; }
+                ?"abjection.device.remove_tourniquet":"abjection.device.remove_splint"; }
     }
     public static List<Button> buttons(BodySnapshot.PartSnapshot part) {
         var result=new ArrayList<Button>();

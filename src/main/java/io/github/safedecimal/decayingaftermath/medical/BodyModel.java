@@ -114,6 +114,27 @@ public final class BodyModel {
         evaluateAndAlign(false);
     }
 
+    /** Self-harm inflicts real cut damage/pain/bleeding while numbing emotional distress. */
+    public void applySelfHarm(BodyPart part, float physicalDamage, float mentalRelief) {
+        Objects.requireNonNull(part, "part");
+        if (mode == Mode.DEAD || !Float.isFinite(physicalDamage) || physicalDamage <= 0) return;
+        float amount = Math.min(physicalDamage, 100);
+        int i = part.ordinal();
+        integrity[i] = unit(integrity[i] - amount * DamageKind.CUT.tissue);
+        localPain[i] = unit(localPain[i] + amount * DamageKind.CUT.pain);
+        openWounds[i] = true;
+        infectionAgeTicks[i] = 0;
+        BleedProfile wound = BleedProfile.fromImpact(DamageKind.CUT, amount);
+        if (tourniquet[i]) suppressedBleeding[i] = suppressedBleeding[i].add(wound);
+        else {
+            bleeding[i] = bleeding[i].add(wound);
+            if (bandaged[i]) bleeding[i] = bleeding[i].scale(.7f);
+        }
+        faintRecovered = false;
+        survival.mental().onSelfHarm(mentalRelief);
+        evaluateAndAlign(false);
+    }
+
     public void fall(float amount) {
         if (!Float.isFinite(amount) || amount <= 0 || mode == Mode.DEAD) return;
         for(var hit:FallTrauma.hits(amount))if(hit.amount()>0)damage(hit.part(),hit.amount(),hit.kind());

@@ -66,13 +66,13 @@ public final class DefibNetwork {
     private static void start(ServerPlayer actor,ServerPlayer patient,InteractionHand hand,int slot,ItemStack device,boolean automatic) {
         if(!ServerPlayNetworking.canSend(actor,State.TYPE) || actor.isSpectator() || !ServerMedicalSystem.canAct(actor))return;
         if(!eligible(actor,patient)) {
-            MedicalNetwork.thought(actor,"decaying_aftermath.defib.not_needed");
+            MedicalNetwork.thought(actor,"abjection.defib.not_needed");
             return;
         }
         var previous=SESSIONS.get(actor.getUUID());
         if(previous!=null && valid(previous))return;
         float battery=actor.getAbilities().instabuild?1:DefibrillatorItem.battery(device);
-        if(battery<=(automatic?.02f:0)) {MedicalNetwork.thought(actor,"decaying_aftermath.defib.empty_battery");return;}
+        if(battery<=(automatic?.02f:0)) {MedicalNetwork.thought(actor,"abjection.defib.empty_battery");return;}
         int seed=actor.getRandom().nextInt();
         var session=new Session(actor,patient,hand,slot,device,++nextId,automatic,
                 actor.level().getGameTime(),new DefibGame(automatic,seed,actor.level().getGameTime(),battery));
@@ -135,7 +135,7 @@ public final class DefibNetwork {
     public record State(int session,int result,boolean automatic,int stage,int held,long serverTick,long stageAt,int shocks,
                         float currentCharge,float desiredCharge,float battery,float pad0X,float pad0Y,float pad1X,float pad1Y,
                         float bpm,float oxygen,int cardiacTicks,int estimateLow,int estimateHigh,boolean leftHand) implements CustomPacketPayload {
-        public static final Type<State> TYPE=new Type<>(Identifier.fromNamespaceAndPath("decaying_aftermath","cu_defib_state"));
+        public static final Type<State> TYPE=new Type<>(Identifier.fromNamespaceAndPath("abjection","cu_defib_state"));
         public static final StreamCodec<RegistryFriendlyByteBuf,State> CODEC=CustomPacketPayload.codec(State::write,State::read);
         public Type<State> type(){return TYPE;}
         private void write(RegistryFriendlyByteBuf b) {
@@ -152,7 +152,7 @@ public final class DefibNetwork {
     }
     /** Carries only an inventory slot of the sender; the patient is always the sender. */
     public record Apply(int slot) implements CustomPacketPayload {
-        public static final Type<Apply> TYPE=new Type<>(Identifier.fromNamespaceAndPath("decaying_aftermath","defib_apply"));
+        public static final Type<Apply> TYPE=new Type<>(Identifier.fromNamespaceAndPath("abjection","defib_apply"));
         public static final StreamCodec<RegistryFriendlyByteBuf,Apply> CODEC=CustomPacketPayload.codec(Apply::write,Apply::read);
         public Type<Apply> type(){return TYPE;}
         private void write(RegistryFriendlyByteBuf b){b.writeVarInt(slot);}
@@ -162,7 +162,7 @@ public final class DefibNetwork {
         public Input {
             if(control<0||control>DefibGame.SHOCK||!DefibGame.validPoint(x,y))throw new IllegalArgumentException("Invalid CU defibrillator input");
         }
-        public static final Type<Input> TYPE=new Type<>(Identifier.fromNamespaceAndPath("decaying_aftermath","cu_defib_input"));
+        public static final Type<Input> TYPE=new Type<>(Identifier.fromNamespaceAndPath("abjection","cu_defib_input"));
         public static final StreamCodec<RegistryFriendlyByteBuf,Input> CODEC=CustomPacketPayload.codec(Input::write,Input::read);
         public Type<Input> type(){return TYPE;}
         private void write(RegistryFriendlyByteBuf b){b.writeInt(session);b.writeByte(control);b.writeFloat(x);b.writeFloat(y);}

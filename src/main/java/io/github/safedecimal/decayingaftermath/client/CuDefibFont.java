@@ -16,7 +16,7 @@ public final class CuDefibFont {
     private static final Data DATA=load();
     private CuDefibFont() {}
     private static Data load() {
-        try(var input=CuDefibFont.class.getResourceAsStream("/assets/decaying_aftermath/cu_defib_font.json")) {
+        try(var input=CuDefibFont.class.getResourceAsStream("/assets/abjection/cu_defib_font.json")) {
             if(input==null)throw new IllegalStateException("Missing original CU defibrillator font");
             var json=JsonParser.parseReader(new InputStreamReader(input,StandardCharsets.UTF_8)).getAsJsonObject();
             Map<Integer,Glyph> glyphs=new HashMap<>();
@@ -39,7 +39,7 @@ public final class CuDefibFont {
     public static boolean draw(GuiGraphicsExtractor g,String text,float cx,float cy,float size,float rectWidth,int color,int alignment) {
         if(!supports(text))return false;
         String[] lines=text.split("\n",-1);float factor=size/DATA.point,step=153.99731f*factor;
-        var texture=Identifier.fromNamespaceAndPath("decaying_aftermath","textures/gui/defib/retro_gaming.png");
+        var texture=Identifier.fromNamespaceAndPath("abjection","textures/gui/defib/retro_gaming.png");
         for(int i=0;i<lines.length;i++) {
             float lineWidth=width(lines[i],size),x=switch(alignment) {
                 case 1 -> cx-rectWidth/2;

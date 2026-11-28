@@ -20,7 +20,7 @@ public enum DepressionType {
     }
 
     public String id() { return id; }
-    public String translationKey() { return "decaying_aftermath.depression." + id; }
+    public String translationKey() { return "abjection.depression." + id; }
     /** Melancholic anhedonia blunts ordinary positive stimuli; therapy bypasses it. */
     public float positiveGainFactor() { return positiveGainFactor; }
     public float naturalRecoveryFactor() { return naturalRecoveryFactor; }

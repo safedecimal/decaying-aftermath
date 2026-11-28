@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class UnconsciousVisionAssetTest {
     @Test void minecraftDecodesTheTwoPassWorldBlur() throws Exception {
-        var asset = getClass().getResourceAsStream("/assets/decaying_aftermath/post_effect/unconscious_vision.json");
+        var asset = getClass().getResourceAsStream("/assets/abjection/post_effect/unconscious_vision.json");
         assertNotNull(asset);
         try (var reader = new InputStreamReader(asset, StandardCharsets.UTF_8)) {
             var chain = PostChainConfig.CODEC.parse(JsonOps.INSTANCE, JsonParser.parseReader(reader)).getOrThrow();

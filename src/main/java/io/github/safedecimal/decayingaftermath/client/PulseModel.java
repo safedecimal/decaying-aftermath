@@ -72,11 +72,11 @@ public final class PulseModel {
 
     public static String conditionTranslationKey(double condition) {
         if (condition >= 0.9) {
-            return "decaying_aftermath.condition.stable";
+            return "abjection.condition.stable";
         }
         if (condition >= 0.55) {
-            return "decaying_aftermath.condition.strained";
+            return "abjection.condition.strained";
         }
-        return "decaying_aftermath.condition.critical";
+        return "abjection.condition.critical";
     }
 }

@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "group": "abjection_medical",
+  "ingredients": [
+    "minecraft:glass_bottle",
+    "minecraft:honey_bottle",
+    "minecraft:paper"
+  ],
+  "result": {
+    "id": "abjection:antiseptic",
+    "count": 1
+  }
+}

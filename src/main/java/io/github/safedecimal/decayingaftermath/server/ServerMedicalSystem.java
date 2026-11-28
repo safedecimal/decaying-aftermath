@@ -37,16 +37,16 @@ import net.minecraft.world.phys.Vec3;
 
 /** Server authority and a guarded compatibility mirror; Minecraft HP never stores a second life. */
 public final class ServerMedicalSystem {
-    private static final String SAVE_KEY = "decaying_aftermath_body";
+    private static final String SAVE_KEY = "abjection_body";
     private static final ThreadLocal<Integer> BRIDGE = ThreadLocal.withInitial(() -> 0);
     private static final Map<ServerPlayer, DamageSource> LAST_SOURCE = new WeakHashMap<>();
     private static BiConsumer<ServerPlayer, BodySnapshot> syncHandler = (player, snapshot) -> {};
     private static boolean registered;
-    private static final Identifier LEG_SPEED = Identifier.fromNamespaceAndPath("decaying_aftermath", "injured_leg_speed");
-    private static final Identifier LEG_JUMP = Identifier.fromNamespaceAndPath("decaying_aftermath", "injured_leg_jump");
-    private static final Identifier ARM_SPEED = Identifier.fromNamespaceAndPath("decaying_aftermath", "injured_arm_speed");
-    private static final Identifier ARM_DAMAGE = Identifier.fromNamespaceAndPath("decaying_aftermath", "injured_arm_damage");
-    private static final Identifier SURVIVAL_SPEED = Identifier.fromNamespaceAndPath("decaying_aftermath", "survival_speed");
+    private static final Identifier LEG_SPEED = Identifier.fromNamespaceAndPath("abjection", "injured_leg_speed");
+    private static final Identifier LEG_JUMP = Identifier.fromNamespaceAndPath("abjection", "injured_leg_jump");
+    private static final Identifier ARM_SPEED = Identifier.fromNamespaceAndPath("abjection", "injured_arm_speed");
+    private static final Identifier ARM_DAMAGE = Identifier.fromNamespaceAndPath("abjection", "injured_arm_damage");
+    private static final Identifier SURVIVAL_SPEED = Identifier.fromNamespaceAndPath("abjection", "survival_speed");
     private static final Map<ServerPlayer,Float> CARRIED_MASS = new WeakHashMap<>();
     private static final Map<ServerPlayer,Integer> SLEEP_TICKS = new WeakHashMap<>();
     private ServerMedicalSystem() {}
@@ -98,6 +98,7 @@ public final class ServerMedicalSystem {
         BodyModel prior=get(player);
         io.github.safedecimal.decayingaftermath.network.MedicalNetwork.cancelProcedures(player);
         io.github.safedecimal.decayingaftermath.network.DefibNetwork.cancelFor(player);
+        io.github.safedecimal.decayingaftermath.network.SelfHarmNetwork.cancelFor(player);
         io.github.safedecimal.decayingaftermath.compat.MedicalRagdollCompatibility.release(player);
         player.removeAllEffects();player.clearFire();player.setTicksFrozen(0);
         player.setAirSupply(player.getMaxAirSupply());player.resetFallDistance();
@@ -112,7 +113,7 @@ public final class ServerMedicalSystem {
         }
         applyInjuryModifiers(player,get(player).snapshot(),false);
         mirrorHealth(player);syncBody(player,get(player).snapshot());
-        if(announce) io.github.safedecimal.decayingaftermath.network.MedicalNetwork.thought(player,"decaying_aftermath.heal.done");
+        if(announce) io.github.safedecimal.decayingaftermath.network.MedicalNetwork.thought(player,"abjection.heal.done");
     }
     public static void tryStandUp(ServerPlayer player) {
         if (!player.isAlive() || player.isCreative() || player.isSpectator() || player.isSleeping()
@@ -318,6 +319,7 @@ public final class ServerMedicalSystem {
     }
     public static void load(ServerPlayer player, ValueInput input) {
         var optional = input.child(SAVE_KEY);
+        if (optional.isEmpty()) optional = input.child("decaying_aftermath_body");
         BodyModel model = new BodyModel();
         if (optional.isPresent()) {
             ValueInput node = optional.get(); PartSnapshot[] parts = new PartSnapshot[BodyPart.values().length];

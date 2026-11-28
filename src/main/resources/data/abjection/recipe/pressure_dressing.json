@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "group": "abjection_medical",
+  "ingredients": [
+    "abjection:bandage",
+    "abjection:bandage",
+    "minecraft:string"
+  ],
+  "result": {
+    "id": "abjection:pressure_dressing",
+    "count": 1
+  }
+}

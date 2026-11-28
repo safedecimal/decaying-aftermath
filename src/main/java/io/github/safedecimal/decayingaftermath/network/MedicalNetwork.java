@@ -18,7 +18,7 @@ import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 
 /** Server-owned fractional supplies; one active unit is peeled without refilling its neighbours. */
 public final class MedicalNetwork {
-    public static final String FILL_KEY="decaying_aftermath_fill";
+    public static final String FILL_KEY="abjection_fill";
     private static final Map<UUID,Session> SESSIONS=new HashMap<>();
     private static final Map<UUID,Long> LAST_CAVE_SOUND=new HashMap<>();
     private MedicalNetwork() {}
@@ -60,7 +60,9 @@ public final class MedicalNetwork {
     public static float remainingFill(ItemStack stack) {
         if(stack==null||stack.isEmpty())return 0;
         if(MedicalItems.treatment(stack)==null)return 1;
-        return MedicalSupplyPolicy.fill(stack.getOrDefault(DataComponents.CUSTOM_DATA,CustomData.EMPTY).copyTag().getFloatOr(FILL_KEY,1));
+        var tag=stack.getOrDefault(DataComponents.CUSTOM_DATA,CustomData.EMPTY).copyTag();
+        float val=tag.contains(FILL_KEY)?tag.getFloatOr(FILL_KEY,1):tag.getFloatOr("decaying_aftermath_fill",1);
+        return MedicalSupplyPolicy.fill(val);
     }
     private static void handle(ServerPlayer player,MedicalActionPayload request) {
         if(request.action()==MedicalActionPayload.END) {SESSIONS.remove(player.getUUID());return;}
@@ -117,7 +119,7 @@ public final class MedicalNetwork {
             player.inventoryMenu.broadcastChanges();
         List<Transfer> transfers=creative||kind.reusable()?List.of():planUnused(player.inventoryMenu,request.slot(),stack);
         if(transfers==null) {
-            if(!session.warnedSpace) {thought(player,"decaying_aftermath.thought.supply_space");session.warnedSpace=true;}
+            if(!session.warnedSpace) {thought(player,"abjection.thought.supply_space");session.warnedSpace=true;}
             return;
         }
         boolean spray=kind==TreatmentKind.ANTISEPTIC;
@@ -178,6 +180,7 @@ public final class MedicalNetwork {
     private static void writeFill(ItemStack stack,float fill) {
         float value=MedicalSupplyPolicy.fill(fill);
         CustomData.update(DataComponents.CUSTOM_DATA,stack,tag -> {
+            tag.remove("decaying_aftermath_fill");
             if(value==1)tag.remove(FILL_KEY);else tag.putFloat(FILL_KEY,value);
         });
         if(stack.getOrDefault(DataComponents.CUSTOM_DATA,CustomData.EMPTY).copyTag().isEmpty())

@@ -3,7 +3,7 @@ package io.github.safedecimal.decayingaftermath.medical;
 /** Shared, testable policy: drinking is permitted, but medicinal effects are wasted. */
 public final class PotionPolicy {
     public static final String WASTED_HEALING_THOUGHT = "It's seems didn't help..";
-    public static final String WASTED_HEALING_THOUGHT_KEY = "decaying_aftermath.thought.healing_potion_wasted";
+    public static final String WASTED_HEALING_THOUGHT_KEY = "abjection.thought.healing_potion_wasted";
     private PotionPolicy() {}
     public static boolean isMedical(boolean instantHealing, boolean regeneration) {
         return instantHealing || regeneration;

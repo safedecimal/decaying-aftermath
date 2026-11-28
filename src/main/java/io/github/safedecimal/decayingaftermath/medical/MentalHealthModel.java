@@ -380,6 +380,17 @@ public final class MentalHealthModel {
         situationalStress = Math.max(0, situationalStress - 0.08f);
     }
 
+    /** Physical self-injury temporarily numbs emotional pain without curing chronic depression. */
+    public void onSelfHarm(float relief) {
+        if (!Float.isFinite(relief) || relief <= 0) return;
+        float numbing = clamp(relief, 0, 0.45f);
+        moodReserve = clampSigned(moodReserve + numbing);
+        situationalStress = Math.max(0, situationalStress - numbing * 1.25f);
+        psychosisLoad = Math.max(0, psychosisLoad - numbing * 0.35f);
+        ptsdFlashbackTicks = 0;
+        depression = classify(1.0f);
+    }
+
     public void treat(TreatmentKind kind, float amount) {
         if (kind == null || !Float.isFinite(amount) || amount <= 0) return;
         float dose = clamp(amount, 0, 1);

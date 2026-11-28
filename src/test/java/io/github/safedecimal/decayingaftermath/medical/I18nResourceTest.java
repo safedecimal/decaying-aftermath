@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class I18nResourceTest {
     private JsonObject language(String locale) throws IOException {
-        try(var in=getClass().getClassLoader().getResourceAsStream("assets/decaying_aftermath/lang/"+locale+".json")) {
+        try(var in=getClass().getClassLoader().getResourceAsStream("assets/abjection/lang/"+locale+".json")) {
             assertNotNull(in);
             return JsonParser.parseString(new String(in.readAllBytes(),StandardCharsets.UTF_8)).getAsJsonObject();
         }
@@ -18,7 +18,7 @@ class I18nResourceTest {
     @Test void russianAndEnglishHaveIdenticalCompleteKeySets() throws IOException {
         var en=language("en_us");var ru=language("ru_ru");
         assertEquals(en.keySet(),ru.keySet());assertTrue(en.size()>=41);
-        for(String key:new String[]{"decaying_aftermath.procedure.guide.steady","decaying_aftermath.thought.supply_space"})
+        for(String key:new String[]{"abjection.procedure.guide.steady","abjection.thought.supply_space"})
             assertTrue(en.has(key),key);
         for(String key:en.keySet()) {assertFalse(en.get(key).getAsString().isBlank());assertFalse(ru.get(key).getAsString().isBlank());}
     }
@@ -36,6 +36,6 @@ class I18nResourceTest {
     @Test void allMedicalMinigamesHaveLocalizedInstructions() throws IOException {
         var ru=language("ru_ru");
         for(String suffix:new String[]{"wrap","syringe","potion","splint_align","splint_straps","tourniquet_fit","tourniquet_tighten"})
-            assertTrue(ru.get("decaying_aftermath.procedure.guide."+suffix).getAsString().matches(".*[А-Яа-яЁё].*"));
+            assertTrue(ru.get("abjection.procedure.guide."+suffix).getAsString().matches(".*[А-Яа-яЁё].*"));
     }
 }

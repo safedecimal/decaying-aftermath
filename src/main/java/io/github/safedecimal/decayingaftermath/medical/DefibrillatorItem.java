@@ -13,7 +13,7 @@ import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
 
 public final class DefibrillatorItem extends Item {
-    public static final String BATTERY_KEY="decaying_aftermath:defib_battery";
+    public static final String BATTERY_KEY="abjection:defib_battery";
     private final boolean automatic;
     public DefibrillatorItem(Properties properties,boolean automatic) {
         super(properties); this.automatic=automatic;
@@ -21,8 +21,9 @@ public final class DefibrillatorItem extends Item {
     public boolean automatic() { return automatic; }
     public static float battery(ItemStack stack) {
         float legacy=stack.getMaxDamage()>0?1-stack.getDamageValue()/(float)stack.getMaxDamage():1;
-        return DefibGame.sanitizeBattery(stack.getOrDefault(DataComponents.CUSTOM_DATA,CustomData.EMPTY)
-                .copyTag().getFloatOr(BATTERY_KEY,legacy));
+        var tag=stack.getOrDefault(DataComponents.CUSTOM_DATA,CustomData.EMPTY).copyTag();
+        float raw=tag.contains(BATTERY_KEY)?tag.getFloatOr(BATTERY_KEY,legacy):tag.getFloatOr("decaying_aftermath:defib_battery",legacy);
+        return DefibGame.sanitizeBattery(raw);
     }
     public static void battery(ItemStack stack,float remaining) {
         float value=DefibGame.sanitizeBattery(remaining);

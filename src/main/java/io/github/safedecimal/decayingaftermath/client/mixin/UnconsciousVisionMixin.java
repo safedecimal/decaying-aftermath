@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(GameRenderer.class)
 public abstract class UnconsciousVisionMixin {
     @Unique private static final Identifier decayingAftermath$blur =
-            Identifier.fromNamespaceAndPath("decaying_aftermath", "unconscious_vision");
+            Identifier.fromNamespaceAndPath("abjection", "unconscious_vision");
     @Shadow @Final private Minecraft minecraft;
 
     // Vanilla collects world post effects in update and applies them before any GUI is drawn.

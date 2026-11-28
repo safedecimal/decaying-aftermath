@@ -41,7 +41,7 @@ public final class MedicalInventoryScreen extends AbstractContainerScreen<Invent
     private BodyPart selected=BodyPart.TORSO;
 
     public MedicalInventoryScreen(Player player) {
-        super(player.inventoryMenu,player.getInventory(),Component.translatable("decaying_aftermath.inventory.title"),CANVAS_W,CANVAS_H);
+        super(player.inventoryMenu,player.getInventory(),Component.translatable("abjection.inventory.title"),CANVAS_W,CANVAS_H);
         recipeBook=new CraftingRecipeBookComponent(menu);
     }
 
@@ -155,7 +155,7 @@ public final class MedicalInventoryScreen extends AbstractContainerScreen<Invent
     }
     @Override protected void extractLabels(GuiGraphicsExtractor graphics,int mouseX,int mouseY) {
         graphics.text(font,Component.translatable("container.crafting").getString(),215,19,0xFFFFFFFF,false);
-        graphics.text(font,Component.translatable("decaying_aftermath.inventory.selected",Component.translatable("container.inventory"),pretty(selected)).getString(),30,153,0xFFFFFFFF,false);
+        graphics.text(font,Component.translatable("abjection.inventory.selected",Component.translatable("container.inventory"),pretty(selected)).getString(),30,153,0xFFFFFFFF,false);
     }
     private void extractBodyTooltip(GuiGraphicsExtractor graphics,BodySnapshot body,int mouseX,int mouseY) {
         BodyPart hover=partAt(virtualX(mouseX),virtualY(mouseY));
@@ -166,17 +166,17 @@ public final class MedicalInventoryScreen extends AbstractContainerScreen<Invent
     }
     static List<Component> bodyTooltip(BodyPart hover,BodySnapshot.PartSnapshot part) {
         var lines=new ArrayList<Component>();
-        lines.add(Component.translatable("decaying_aftermath.body_status",pretty(hover),
-                (part.fractured()?Component.translatable("decaying_aftermath.status.fractured").getString():"")
-                +(MedicalStatusIcons.hasExternalBleeding(part)?Component.translatable("decaying_aftermath.status.bleeding").getString():"")
-                +(part.infection()>=.25f?Component.translatable("decaying_aftermath.status.infection").getString():"")
-                +(part.disinfected()?Component.translatable("decaying_aftermath.status.disinfected").getString():"")
-                +(part.anesthetized()?Component.translatable("decaying_aftermath.status.anesthetized").getString():"")
-                +(part.burn()>.01f?Component.translatable("decaying_aftermath.status.burn").getString():"")
-                +(part.coldInjury()?Component.translatable("decaying_aftermath.status.cold_injury").getString():"")
-                +(part.foreignBody()?Component.translatable("decaying_aftermath.status.foreign_body").getString():"")
-                +(part.tourniquet()?Component.translatable("decaying_aftermath.status.remove_tourniquet").getString():"")
-                +(part.splinted()?Component.translatable("decaying_aftermath.status.remove_splint").getString():"")));
+        lines.add(Component.translatable("abjection.body_status",pretty(hover),
+                (part.fractured()?Component.translatable("abjection.status.fractured").getString():"")
+                +(MedicalStatusIcons.hasExternalBleeding(part)?Component.translatable("abjection.status.bleeding").getString():"")
+                +(part.infection()>=.25f?Component.translatable("abjection.status.infection").getString():"")
+                +(part.disinfected()?Component.translatable("abjection.status.disinfected").getString():"")
+                +(part.anesthetized()?Component.translatable("abjection.status.anesthetized").getString():"")
+                +(part.burn()>.01f?Component.translatable("abjection.status.burn").getString():"")
+                +(part.coldInjury()?Component.translatable("abjection.status.cold_injury").getString():"")
+                +(part.foreignBody()?Component.translatable("abjection.status.foreign_body").getString():"")
+                +(part.tourniquet()?Component.translatable("abjection.status.remove_tourniquet").getString():"")
+                +(part.splinted()?Component.translatable("abjection.status.remove_splint").getString():"")));
         for(var type:MedicalStatusIcons.bleedingTypes(part)) lines.add(Component.translatable(type.translationKey));
         return List.copyOf(lines);
     }

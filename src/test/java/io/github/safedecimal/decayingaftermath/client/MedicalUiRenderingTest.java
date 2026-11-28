@@ -351,7 +351,7 @@ class MedicalUiRenderingTest {
     }
 
     @Test void rightLungTextureMirrorsTheOriginalPixels() throws Exception {
-        String path="/assets/decaying_aftermath/textures/gui/medical/native/lungfill";
+        String path="/assets/abjection/textures/gui/medical/native/lungfill";
         try(var leftIn=getClass().getResourceAsStream(path+".png");
             var rightIn=getClass().getResourceAsStream(path+"_right.png")) {
             assertNotNull(leftIn);assertNotNull(rightIn);
@@ -456,7 +456,7 @@ class MedicalUiRenderingTest {
 
     @Test void sourceDimensionsMatchAllNineUnmodifiedCuPngs() throws Exception {
         for (var icon : icons()) {
-            try (var input = getClass().getResourceAsStream("/assets/decaying_aftermath/textures/gui/status/" + icon.name() + ".png")) {
+            try (var input = getClass().getResourceAsStream("/assets/abjection/textures/gui/status/" + icon.name() + ".png")) {
                 assertNotNull(input, icon.name());
                 var image = ImageIO.read(input);
                 assertEquals(icon.width(), image.getWidth(), icon.name());

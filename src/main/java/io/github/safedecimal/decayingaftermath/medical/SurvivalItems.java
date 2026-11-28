@@ -26,7 +26,7 @@ public final class SurvivalItems {
     public static final Item HERBAL_TEA=register("herbal_tea",new SurvivalConsumableItem(properties("herbal_tea").stacksTo(16)
             .component(DataComponents.CONSUMABLE,Consumable.builder().consumeSeconds(1.6f)
                     .animation(ItemUseAnimation.DRINK).sound(SoundEvents.GENERIC_DRINK).hasConsumeParticles(false).build()),
-            TreatmentKind.HERBAL_TEA,.35f,0,0,true,"decaying_aftermath.hint.herbal_tea"));
+            TreatmentKind.HERBAL_TEA,.35f,0,0,true,"abjection.hint.herbal_tea"));
     public static final Item NALOXONE=plain("naloxone",16);
     public static final Item COMBAT_PEN=plain("combatpen",1);
     public static final Item BLOOD_BAG=plain("blood_bag",1);
@@ -38,7 +38,7 @@ public final class SurvivalItems {
     public static final Item DIRTY_WATER_BOTTLE=drink("dirty_water_bottle",.4f,.35f,0);
     public static final Item COFFEE=drink("coffee",.2f,0,1);
     public static final Item PEMMICAN=register("pemmican",new SurvivalConsumableItem(properties("pemmican").stacksTo(16)
-            .food(new FoodProperties(8,.8f,false)),null,0,0,0,false,"decaying_aftermath.hint.pemmican"));
+            .food(new FoodProperties(8,.8f,false)),null,0,0,0,false,"abjection.hint.pemmican"));
     public static final Item BACKPACK=register("backpack",new MedicalSupplyItem(properties("backpack").stacksTo(1)
             .component(DataComponents.EQUIPPABLE,Equippable.builder(EquipmentSlot.CHEST)
                     .setEquipSound(SoundEvents.ARMOR_EQUIP_LEATHER).setDamageOnHurt(false).build()),"backpack"));
@@ -55,13 +55,13 @@ public final class SurvivalItems {
         return register(id,new SurvivalConsumableItem(properties(id).stacksTo(16)
                 .component(DataComponents.CONSUMABLE,Consumable.builder().consumeSeconds(1.6f)
                         .animation(ItemUseAnimation.EAT).sound(SoundEvents.GENERIC_EAT).hasConsumeParticles(false).build()),
-                kind,0,0,0,false,"decaying_aftermath.hint."+id));
+                kind,0,0,0,false,"abjection.hint."+id));
     }
     private static Item drink(String id,float water,float pathogens,float caffeine) {
         return register(id,new SurvivalConsumableItem(properties(id).stacksTo(16)
                 .component(DataComponents.CONSUMABLE,Consumable.builder().consumeSeconds(1.6f)
                         .animation(ItemUseAnimation.DRINK).sound(SoundEvents.GENERIC_DRINK).hasConsumeParticles(false).build()),
-                null,water,pathogens,caffeine,true,"decaying_aftermath.hint."+id));
+                null,water,pathogens,caffeine,true,"abjection.hint."+id));
     }
     private static Item plain(String id,int count){return register(id,new MedicalSupplyItem(properties(id).stacksTo(count),id));}
     private static Item.Properties properties(String id){return new Item.Properties().setId(key(id));}

@@ -9,7 +9,7 @@ import java.util.function.Consumer;
 
 public final class MedicalSupplyItem extends Item {
     private final String hint;
-    public MedicalSupplyItem(Properties properties,String id){super(properties);hint="decaying_aftermath.hint."+id;}
+    public MedicalSupplyItem(Properties properties,String id){super(properties);hint="abjection.hint."+id;}
     @Override public void appendHoverText(ItemStack stack,TooltipContext context,TooltipDisplay display,
             Consumer<Component> tooltip,TooltipFlag flag) {
         super.appendHoverText(stack,context,display,tooltip,flag);tooltip.accept(Component.translatable(hint));

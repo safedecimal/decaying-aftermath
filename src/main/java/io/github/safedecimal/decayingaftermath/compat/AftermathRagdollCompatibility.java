@@ -37,7 +37,7 @@ public final class AftermathRagdollCompatibility {
             return port.serial.getInt(bodies.get(deadPlayer.getId()));
         } catch(ReflectiveOperationException | LinkageError error) {
             broken=true;
-            System.getLogger("decaying_aftermath.compat").log(System.Logger.Level.WARNING,
+            System.getLogger("abjection.compat").log(System.Logger.Level.WARNING,
                     "Cannot extend native Ragdollified death body: "+error);return 0;
         }
     }

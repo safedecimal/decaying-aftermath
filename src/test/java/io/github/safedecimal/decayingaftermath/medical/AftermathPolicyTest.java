@@ -66,7 +66,7 @@ class AftermathPolicyTest {
         assertEquals(AftermathPolicy.Cause.SEVERE_DEPRESSION,AftermathPolicy.fromMood(MedicalPhysiology.mood(low)*100));
     }
     @Test void allMusicIsRealStreamedVorbisAndNumbIsBundledSlowedAndDistorted() throws Exception {
-        Path assets=Path.of("src/main/resources/assets/decaying_aftermath");
+        Path assets=Path.of("src/main/resources/assets/abjection");
         var sounds=JsonParser.parseString(Files.readString(assets.resolve("sounds.json"))).getAsJsonObject();
         for(String key:AftermathPolicy.PLAYLIST)assertTrue(sounds.getAsJsonObject(key).getAsJsonArray("sounds").get(0).getAsJsonObject().get("stream").getAsBoolean());
         var manifest=JsonParser.parseString(Files.readString(assets.resolve("aftermath_audio_manifest.json"))).getAsJsonObject();
@@ -77,10 +77,10 @@ class AftermathPolicyTest {
         byte[] ogg=Files.readAllBytes(assets.resolve(numb.get("path").getAsString()));assertEquals("OggS",new String(ogg,0,4));
     }
     @Test void thinFontUsesValidLowercaseNativeResourceLocation() throws Exception {
-        Path assets=Path.of("src/main/resources/assets/decaying_aftermath");
+        Path assets=Path.of("src/main/resources/assets/abjection");
         var json=JsonParser.parseString(Files.readString(assets.resolve("font/aftermath_thin.json"))).getAsJsonObject();
         String file=json.getAsJsonArray("providers").get(0).getAsJsonObject().get("file").getAsString();
-        assertEquals("decaying_aftermath:vcr_osd_mono.ttf",file);
+        assertEquals("abjection:vcr_osd_mono.ttf",file);
         assertEquals(75864,Files.size(assets.resolve("font/vcr_osd_mono.ttf")));
     }
     @Test void cameraAndEveryDeathBranchAreBoundIntoNativeMixinsAndServerAuthority() throws Exception {

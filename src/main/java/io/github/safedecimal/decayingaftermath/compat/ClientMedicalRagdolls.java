@@ -119,6 +119,6 @@ public final class ClientMedicalRagdolls {
     }
     private static void fail(Throwable error) {
         broken = true;
-        System.getLogger("decaying_aftermath.compat").log(System.Logger.Level.WARNING, "Medical client ragdoll bridge disabled: " + error);
+        System.getLogger("abjection.compat").log(System.Logger.Level.WARNING, "Medical client ragdoll bridge disabled: " + error);
     }
 }

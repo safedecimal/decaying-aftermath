@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "id": "decaying_aftermath_guitest",
+  "id": "abjection_guitest",
   "version": "1.0.0",
   "name": "Medical GUI regression (test only)",
   "environment": "client",
@@ -12,7 +12,7 @@
     ]
   },
   "depends": {
-    "decaying_aftermath": "*",
+    "abjection": "*",
     "fabric-client-gametest-api-v1": "*"
   }
 }

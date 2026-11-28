@@ -1,0 +1,255 @@
+{
+  "procedure_spray": {
+    "sounds": [
+      "abjection:procedure_spray"
+    ]
+  },
+  "heartbeat": {
+    "sounds": [
+      {
+        "name": "abjection:heartbeat",
+        "stream": false
+      }
+    ]
+  },
+  "heartbeat_monitor": {
+    "sounds": [
+      {
+        "name": "abjection:heartbeat_monitor",
+        "stream": false
+      }
+    ]
+  },
+  "thought_type": {
+    "sounds": [
+      {
+        "name": "abjection:thought_type",
+        "stream": false
+      }
+    ]
+  },
+  "text_ping": {
+    "sounds": [
+      {
+        "name": "abjection:text_ping",
+        "stream": false
+      }
+    ]
+  },
+  "procedure_bandage": {
+    "sounds": [
+      {
+        "name": "abjection:procedure_bandage",
+        "stream": false
+      }
+    ]
+  },
+  "procedure_syringe": {
+    "sounds": [
+      {
+        "name": "abjection:procedure_syringe",
+        "stream": false
+      }
+    ]
+  },
+  "procedure_syringe_loop": {
+    "sounds": [
+      {
+        "name": "abjection:procedure_syringe_loop",
+        "stream": false
+      }
+    ]
+  },
+  "procedure_splint": {
+    "sounds": [
+      {
+        "name": "abjection:procedure_splint",
+        "stream": false
+      }
+    ]
+  },
+  "unconscious": {
+    "sounds": [
+      {
+        "name": "abjection:unconscious",
+        "stream": true
+      }
+    ]
+  },
+  "last_standing": {
+    "sounds": [
+      {
+        "name": "abjection:last_standing",
+        "stream": true
+      }
+    ]
+  },
+  "last_standing_drone": {
+    "sounds": [
+      {
+        "name": "abjection:last_standing_drone",
+        "stream": true
+      }
+    ]
+  },
+  "heartbeat_heavy": {
+    "sounds": [
+      {
+        "name": "abjection:heartbeat_heavy",
+        "stream": false
+      }
+    ]
+  },
+  "critical": {
+    "sounds": [
+      {
+        "name": "abjection:critical",
+        "stream": true
+      }
+    ]
+  },
+  "procedure_syringe_fail": {
+    "sounds": [
+      {
+        "name": "abjection:procedure_syringe_fail",
+        "stream": false
+      }
+    ]
+  },
+  "brain_dying_music": {
+    "sounds": [
+      {
+        "name": "abjection:brain_dying_music",
+        "stream": true
+      }
+    ]
+  },
+  "death_music": {
+    "sounds": [
+      {
+        "name": "abjection:death_music",
+        "stream": true
+      }
+    ]
+  },
+  "pain_drone": {
+    "sounds": [
+      {
+        "name": "abjection:pain_drone",
+        "stream": true
+      }
+    ]
+  },
+  "dying_drone": {
+    "sounds": [
+      {
+        "name": "abjection:dying_drone",
+        "stream": true
+      }
+    ]
+  },
+  "exhausted_drone": {
+    "sounds": [
+      {
+        "name": "abjection:exhausted_drone",
+        "stream": true
+      }
+    ]
+  },
+  "tired_drone": {
+    "sounds": [
+      {
+        "name": "abjection:tired_drone",
+        "stream": true
+      }
+    ]
+  },
+  "cu_aedstart": {
+    "sounds": [
+      {
+        "name": "abjection:cu_aedstart",
+        "stream": false
+      }
+    ]
+  },
+  "cu_aedanalyze": {
+    "sounds": [
+      {
+        "name": "abjection:cu_aedanalyze",
+        "stream": false
+      }
+    ]
+  },
+  "cu_aedfail": {
+    "sounds": [
+      {
+        "name": "abjection:cu_aedfail",
+        "stream": false
+      }
+    ]
+  },
+  "cu_aedcharge": {
+    "sounds": [
+      {
+        "name": "abjection:cu_aedcharge",
+        "stream": false
+      }
+    ]
+  },
+  "cu_manualdefib": {
+    "sounds": [
+      {
+        "name": "abjection:cu_manualdefib",
+        "stream": false
+      }
+    ]
+  },
+  "afterlife_lobby_time": {
+    "sounds": [
+      {
+        "name": "abjection:afterlife/lobby_time",
+        "stream": true
+      }
+    ]
+  },
+  "afterlife_airport_lounge": {
+    "sounds": [
+      {
+        "name": "abjection:afterlife/airport_lounge",
+        "stream": true
+      }
+    ]
+  },
+  "afterlife_bossa_antigua": {
+    "sounds": [
+      {
+        "name": "abjection:afterlife/bossa_antigua",
+        "stream": true
+      }
+    ]
+  },
+  "afterlife_leopard_print_elevator": {
+    "sounds": [
+      {
+        "name": "abjection:afterlife/leopard_print_elevator",
+        "stream": true
+      }
+    ]
+  },
+  "afterlife_george_street_shuffle": {
+    "sounds": [
+      {
+        "name": "abjection:afterlife/george_street_shuffle",
+        "stream": true
+      }
+    ]
+  },
+  "afterlife_depression": {
+    "sounds": [
+      {
+        "name": "abjection:afterlife/numb",
+        "stream": true
+      }
+    ]
+  }
+}

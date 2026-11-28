@@ -188,7 +188,7 @@ public final class MedicalClient {
         var dep = s.depression();
         if (dep != lastDepression) {
             if (dep.active() && !ThoughtTyper.hasMessage()) {
-                ThoughtTyper.enqueue(Component.translatable("decaying_aftermath.thought.depression." + dep.id()).getString());
+                ThoughtTyper.enqueue(Component.translatable("abjection.thought.depression." + dep.id()).getString());
             }
             lastDepression = dep;
             depressionThoughtTicks = 20 * 45;
@@ -201,7 +201,7 @@ public final class MedicalClient {
                     client.getSoundManager().play(SimpleSoundInstance.forUI(net.minecraft.sounds.SoundEvents.AMBIENT_CAVE.value(), 0.7f, 0.28f));
                 }
                 if (!ThoughtTyper.hasMessage()) {
-                    ThoughtTyper.enqueue(Component.translatable("decaying_aftermath.thought.depression." + dep.id()).getString());
+                    ThoughtTyper.enqueue(Component.translatable("abjection.thought.depression." + dep.id()).getString());
                 }
             }
         } else {
@@ -213,12 +213,12 @@ public final class MedicalClient {
         if (flashback && !lastPtsdFlashback && client.player != null) {
             client.getSoundManager().play(SimpleSoundInstance.forUI(net.minecraft.sounds.SoundEvents.AMBIENT_CAVE.value(), 0.65f, 0.34f));
             if (!ThoughtTyper.hasMessage()) {
-                ThoughtTyper.enqueue(Component.translatable("decaying_aftermath.thought.ptsd." + (ptsdThoughtIndex++ & 3)).getString());
+                ThoughtTyper.enqueue(Component.translatable("abjection.thought.ptsd." + (ptsdThoughtIndex++ & 3)).getString());
             }
             ptsdThoughtTicks = 20 * 45;
         } else if (ptsd && !lastPtsd) {
             if (!ThoughtTyper.hasMessage()) {
-                ThoughtTyper.enqueue(Component.translatable("decaying_aftermath.thought.ptsd." + (ptsdThoughtIndex++ & 3)).getString());
+                ThoughtTyper.enqueue(Component.translatable("abjection.thought.ptsd." + (ptsdThoughtIndex++ & 3)).getString());
             }
             ptsdThoughtTicks = 20 * 50;
         }
@@ -232,7 +232,7 @@ public final class MedicalClient {
         if (ptsdThoughtTicks == 0) {
             ptsdThoughtTicks = flashback ? 20 * 30 : 20 * 65;
             if (!ThoughtTyper.hasMessage()) {
-                ThoughtTyper.enqueue(Component.translatable("decaying_aftermath.thought.ptsd." + (ptsdThoughtIndex++ & 3)).getString());
+                ThoughtTyper.enqueue(Component.translatable("abjection.thought.ptsd." + (ptsdThoughtIndex++ & 3)).getString());
             }
         }
     }
@@ -247,6 +247,7 @@ public final class MedicalClient {
         blackoutRelief = 0;
         standKeyHeld = false;
         pauseHintTicks=0;
+        SelfHarmScreen.reset();
         depressionThoughtTicks=0; ptsdThoughtTicks=0; ptsdThoughtIndex=0;
         lastPtsd=false; lastPtsdFlashback=false;
         lastDepression=io.github.safedecimal.decayingaftermath.medical.DepressionType.NONE;
@@ -261,7 +262,7 @@ public final class MedicalClient {
                 && ClientMedicalState.snapshot().mode() == BodySnapshot.Mode.UNCONSCIOUS;
     }
     public static boolean blocksPause(Minecraft client) {
-        if (AftermathClient.locked()) return true;
+        if (AftermathClient.locked() || SelfHarmScreen.active()) return true;
         return client.level!=null&&client.player!=null&&client.player.isAlive()
                 &&ClientMedicalState.received()
                 &&MedicalPausePolicy.blocked(ClientMedicalState.snapshot());
@@ -314,7 +315,7 @@ public final class MedicalClient {
         BodySnapshot body = ClientMedicalState.snapshot();
         extractPain(graphics);
         if(body.racingHeart() && client.gui.screen()==null && body.mode()==BodySnapshot.Mode.CONSCIOUS) {
-            graphics.centeredText(client.font,Component.translatable("decaying_aftermath.defib.racing",
+            graphics.centeredText(client.font,Component.translatable("abjection.defib.racing",
                     Math.round(body.bpm())).getString(),graphics.guiWidth()/2,graphics.guiHeight()-68,0xFFFFAE72);
         }
         double sleepBlack=MedicalPresentationPolicy.sleepBlackout(body,TIMELINE.black(),blackoutRelief);
@@ -341,7 +342,7 @@ public final class MedicalClient {
             var box = ConsciousnessLayout.at(graphics.guiWidth(), graphics.guiHeight());
             extractRecoveryRing(graphics, box, body, alpha);
             if(body.cardiacArrest()) graphics.centeredText(client.font,
-                    Component.translatable("decaying_aftermath.defib.arrest",(-body.cardiacTicks()+19)/20).getString(),
+                    Component.translatable("abjection.defib.arrest",(-body.cardiacTicks()+19)/20).getString(),
                     graphics.guiWidth()/2,Math.max(3,box.y()-13),0xFFF19486);
             // Blackout feedback belongs to the world HUD, not to an inventory screen.
             if (alpha>0) {
@@ -388,7 +389,7 @@ public final class MedicalClient {
             extractHud(graphics);
             if(pauseHintTicks>0) {
                 int tint=color(.65*Math.min(1,pauseHintTicks/20d),0xEEEEEE);
-                var lines=client.font.split(Component.translatable("decaying_aftermath.pause.denied"),Math.max(60,graphics.guiWidth()-24));
+                var lines=client.font.split(Component.translatable("abjection.pause.denied"),Math.max(60,graphics.guiWidth()-24));
                 for(int i=0;i<lines.size();i++)graphics.centeredText(client.font,lines.get(i),graphics.guiWidth()/2,10+i*10,tint);
             }
         } finally {graphics.pose().popMatrix();}
