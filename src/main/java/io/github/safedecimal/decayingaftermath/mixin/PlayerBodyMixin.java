@@ -50,6 +50,7 @@ public abstract class PlayerBodyMixin {
     @Mixin(LivingEntity.class)
     public abstract static class Health implements ServerBodyOwner {
         @Shadow protected boolean dead;
+        @Shadow public int deathTime;
         @Unique private BodyModel decayingAftermath$body;
         @Unique private boolean decayingAftermath$bodyReady;
 
@@ -100,6 +101,17 @@ public abstract class PlayerBodyMixin {
             if ((Object) this instanceof ServerPlayer player) {
                 ServerMedicalSystem.killMedically(player, player.damageSources().genericKill());
                 ci.cancel();
+            }
+        }
+
+        @Inject(method = "tickDeath", at = @At("HEAD"), cancellable = true)
+        private void abjection$preventStaleServerDeathTime(CallbackInfo ci) {
+            if ((Object) this instanceof ServerPlayer player) {
+                BodyModel body = decayingAftermath$body;
+                if (body == null || body.mode() != BodySnapshot.Mode.DEAD) {
+                    this.deathTime = 0;
+                    ci.cancel();
+                }
             }
         }
 

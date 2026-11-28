@@ -34,12 +34,11 @@ public abstract class AftermathCameraMixin {
         if (client.player != null && client.player.isAlive() && !client.player.isSleeping()
                 && client.options.getCameraType().isFirstPerson()
                 && io.github.safedecimal.decayingaftermath.client.ClientMedicalState.received()
-                && ((io.github.safedecimal.decayingaftermath.client.ClientMedicalState.snapshot().voluntarySleeping())
-                        || (!io.github.safedecimal.decayingaftermath.compat.OptionalMedicalCompatibility.ragdollifiedSupported()
-                                && io.github.safedecimal.decayingaftermath.compat.MedicalCollapsePolicy.collapsed(
-                                        io.github.safedecimal.decayingaftermath.client.ClientMedicalState.snapshot(),
-                                        client.player.isAlive(), client.player.isSleeping(),
-                                        client.player.isCreative() || client.player.isSpectator())))) {
+                && !io.github.safedecimal.decayingaftermath.compat.ClientMedicalRagdolls.isCameraAttached()
+                && io.github.safedecimal.decayingaftermath.compat.MedicalCollapsePolicy.collapsed(
+                        io.github.safedecimal.decayingaftermath.client.ClientMedicalState.snapshot(),
+                        client.player.isAlive(), client.player.isSleeping(),
+                        client.player.isCreative() || client.player.isSpectator())) {
             Vec3 pos = position();
             setPosition(new Vec3(pos.x, Math.max(client.player.getY() + 0.25, pos.y - 1.05), pos.z));
         }

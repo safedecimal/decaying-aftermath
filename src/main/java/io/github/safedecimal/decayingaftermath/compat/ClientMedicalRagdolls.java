@@ -14,8 +14,10 @@ import io.github.safedecimal.decayingaftermath.medical.BodyPart;
 public final class ClientMedicalRagdolls {
     private record Owned(UUID uuid, int serial) {}
     private record Api(Method get, Method hide, Method remove, Method persistent, Method serial,
-            Method uuid, Method level, Method transform, Class<?> part) {}
+            Method uuid, Method level, Method transform, Class<?> part,
+            Method attachCamera, Method detachCameraById, Object headPart, Object defaultCamOpts) {}
     private static final Map<Integer, Owned> OWNED = new HashMap<>();
+    private static int attachedCameraId = -1;
     private static Object level;
     private static Api api;
     private static boolean broken;
@@ -25,13 +27,21 @@ public final class ClientMedicalRagdolls {
             Class<?> manager = Class.forName("com.raiiiden.ragdollified.client.ClientRagdollManager");
             Class<?> body = Class.forName("com.raiiiden.ragdollified.client.ClientRagdoll");
             Class<?> part = Class.forName("com.raiiiden.ragdollified.RagdollPart");
+            Class<?> ragApi = Class.forName("com.raiiiden.ragdollified.api.RagdollifiedApi");
+            Class<?> camOpts = Class.forName("com.raiiiden.ragdollified.api.CameraOptions");
+            Object headPart = part.getField("HEAD").get(null);
+            Object defaultCamOpts = camOpts.getField("DEFAULT").get(null);
             api = new Api(manager.getMethod("get", int.class), manager.getMethod("setEntityHidden", int.class, boolean.class),
                     manager.getMethod("requestRemoveRagdoll", int.class), manager.getMethod("setPersistent", int.class, boolean.class),
                     body.getMethod("getBodySerial"), body.getMethod("getPlayerUUID"), body.getMethod("getLevel"),
-                    body.getMethod("getSmoothedTransform", part), part);
+                    body.getMethod("getSmoothedTransform", part), part,
+                    ragApi.getMethod("attachCamera", int.class, part, camOpts),
+                    ragApi.getMethod("detachCamera", int.class),
+                    headPart, defaultCamOpts);
         }
         return api;
     }
+    public static boolean isCameraAttached() { return attachedCameraId >= 0; }
     public static void tick() {
         if (broken || !OptionalMedicalCompatibility.ragdollifiedSupported()) return;
         var client = Minecraft.getInstance();
@@ -47,8 +57,17 @@ public final class ClientMedicalRagdolls {
                 if (collapse && matches && visual.ragdollSerial() == (int)port.serial().invoke(body)) {
                     port.persistent().invoke(null, id, true); port.hide().invoke(null, id, true);
                     OWNED.put(id, new Owned(player.getUUID(), (int)port.serial().invoke(body)));
+                    if (player == client.player && attachedCameraId != id) {
+                        if ((boolean) port.attachCamera().invoke(null, id, port.headPart(), port.defaultCamOpts())) {
+                            attachedCameraId = id;
+                        }
+                    }
                 } else if (owned != null) {
                     port.hide().invoke(null, id, false);
+                    if (attachedCameraId == id) {
+                        port.detachCameraById().invoke(null, id);
+                        attachedCameraId = -1;
+                    }
                     // Keep real death bodies, changed serials and reused entity identities untouched.
                     if (player.isAlive() && matches && owned.uuid().equals(player.getUUID())
                             && owned.serial() == (int)port.serial().invoke(body)) port.remove().invoke(null, id);
@@ -59,16 +78,25 @@ public final class ClientMedicalRagdolls {
             while (iterator.hasNext()) {
                 var entry = iterator.next(); var entity = client.level.getEntity(entry.getKey());
                 if (entity == null || !entry.getValue().uuid().equals(entity.getUUID())) {
-                    port.hide().invoke(null, entry.getKey(), false); iterator.remove();
+                    port.hide().invoke(null, entry.getKey(), false);
+                    if (attachedCameraId == entry.getKey()) {
+                        port.detachCameraById().invoke(null, entry.getKey());
+                        attachedCameraId = -1;
+                    }
+                    iterator.remove();
                 }
             }
         } catch (ReflectiveOperationException | LinkageError error) { fail(error); }
     }
     public static void reset() {
         if (api != null && !broken) {
-            try { for (int id : OWNED.keySet()) api.hide().invoke(null, id, false); }
+            try {
+                for (int id : OWNED.keySet()) api.hide().invoke(null, id, false);
+                if (attachedCameraId >= 0) api.detachCameraById().invoke(null, attachedCameraId);
+            }
             catch (ReflectiveOperationException | LinkageError error) { fail(error); }
         }
+        attachedCameraId = -1;
         OWNED.clear(); level = null;
     }
     public static Vec3 origin(LivingEntity entity, BodyPart part) {

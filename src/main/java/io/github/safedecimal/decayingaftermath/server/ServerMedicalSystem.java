@@ -163,6 +163,7 @@ public final class ServerMedicalSystem {
         io.github.safedecimal.decayingaftermath.network.SelfHarmNetwork.cancelFor(player);
         io.github.safedecimal.decayingaftermath.compat.MedicalRagdollCompatibility.release(player);
         player.removeAllEffects();player.clearFire();player.setTicksFrozen(0);
+        player.deathTime = 0; player.hurtTime = 0;
         player.setAirSupply(player.getMaxAirSupply());player.resetFallDistance();
         player.getFoodData().setFoodLevel(20);player.getFoodData().setSaturation(5);
         player.setDeltaMovement(Vec3.ZERO);
