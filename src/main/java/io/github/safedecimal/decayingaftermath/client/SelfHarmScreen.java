@@ -1,5 +1,6 @@
 package io.github.safedecimal.decayingaftermath.client;
 
+import io.github.safedecimal.decayingaftermath.medical.BodyPart;
 import io.github.safedecimal.decayingaftermath.medical.BodySnapshot;
 import io.github.safedecimal.decayingaftermath.network.SelfHarmNetwork;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -178,9 +179,20 @@ public final class SelfHarmScreen extends Screen {
         g.pose().translate(ox, oy);
         g.pose().scale(scale, scale);
 
-        // Human Steve-proportioned forearm silhouette in schematic black/white CU style (no claws).
-        int armX = 36, armY = 148, armW = 184, armH = 44, armDepth = 12;
-        CuMedicalHand.cube(g, armX, armY, armW, armH, armDepth, 0xFF141115, 0xFFDADADA);
+        // Compute hand + held weapon position: lowers & trembles as hesitations approach 0, then plunges on cut.
+        float tension = 1f - state.hesitationsLeft() / (float) Math.max(1, state.maxHesitations());
+        double stabProgress = cutAnimTicks > 0
+                ? Math.sin(Math.clamp(1f - (cutAnimTicks - partialTick) / 8f, 0f, 1f) * Math.PI)
+                : 0.0;
+
+        // Player forearm in 3D (/trynew3dsystem) or actual player 2D skin forearm.
+        int armX = 36, armY = 148, armW = 184, armH = 44;
+        if (New3dSystem.enabled()) {
+            Minigame3dRenderer.draw3dSelfHarmForearm(g, tension, stabProgress);
+        } else {
+            MinecraftBodyRenderer.part(g, BodyPart.LEFT_ARM, armX, armY, armW, armH, 0xFFE8D8D8);
+            g.outline(armX, armY, armW, armH, 0xFFDADADA);
+        }
 
         // Render completed slash marks and active cut progress on the forearm.
         int shownCuts = state.cutsDone();
@@ -191,16 +203,10 @@ public final class SelfHarmScreen extends Screen {
             drawCutWound(g, 76 + idx * 38, armY + 10, progress);
         }
 
-        // Compute hand + held weapon position: lowers & trembles as hesitations approach 0, then plunges on cut.
-        float tension = 1f - state.hesitationsLeft() / (float) Math.max(1, state.maxHesitations());
         float shakeAmp = 1.2f + tension * 4.5f + (recoilTicks > 0 ? 3.0f : 0f);
         double time = tickCount + partialTick;
         double jitterX = Math.sin(time * 2.3) * shakeAmp + Math.cos(time * 4.1) * (shakeAmp * 0.45);
         double jitterY = Math.cos(time * 2.9) * (shakeAmp * 0.65);
-
-        double stabProgress = cutAnimTicks > 0
-                ? Math.sin(Math.clamp(1f - (cutAnimTicks - partialTick) / 8f, 0f, 1f) * Math.PI)
-                : 0.0;
         double nudge = recoilTicks > 0 ? Math.sin((recoilTicks - partialTick) / 5.0 * Math.PI) * 10.0 : 0.0;
 
         int activeCutIndex = Math.min(2, Math.max(0, state.cutsDone() - (cutAnimTicks > 0 ? 1 : 0)));

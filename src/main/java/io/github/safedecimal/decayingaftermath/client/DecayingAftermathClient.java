@@ -12,6 +12,7 @@ public final class DecayingAftermathClient implements ClientModInitializer {
         DefibScreen.register();
         SelfHarmScreen.register();
         SuicideClient.register();
+        New3dSystem.register();
         ClientMedicalVisuals.register();
         MedicalClient.register();
         AftermathClient.register();

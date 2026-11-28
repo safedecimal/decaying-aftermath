@@ -1,8 +1,11 @@
 package io.github.safedecimal.decayingaftermath.client;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.world.entity.player.PlayerModelType;
 
-/** One Steve-proportioned arm cuboid: black faces and white edges, no fingers or player skin. */
+/** Player skin arm in 2D/3D for minigames and cursor; keeps schematic cuboid fallback in headless unit tests. */
 public final class CuMedicalHand {
     public static final int WIDTH=36,HEIGHT=108,DEPTH=9;
     private static final int BLACK=0xFF000000,WHITE=0xFFEAEAEA;
@@ -11,9 +14,40 @@ public final class CuMedicalHand {
     static final int HAND_FACE=0x88000000, HAND_EDGE=0xB8EAEAEA;
     private CuMedicalHand() {}
     public static void extract(GuiGraphicsExtractor g,double x,double y,float rotation,boolean grasp) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc != null && mc.player != null) {
+            if (New3dSystem.enabled()) {
+                Minigame3dRenderer.draw3dHandAt(g, x, y, rotation, grasp);
+                return;
+            }
+            extractPlayerSkinArm2d(g, mc.player, x, y, rotation, grasp);
+            return;
+        }
         g.pose().pushMatrix();g.pose().translate((float)x,(float)y);g.pose().rotate(rotation);
         // Minecraft's 4x12 arm ratio. Holding changes the tool interaction, not the arm's shape.
         cube(g,-GRIP_X,-GRIP_Y,WIDTH,HEIGHT,DEPTH,HAND_FACE,grasp?0xC8A9F0C6:HAND_EDGE);
+        g.pose().popMatrix();
+    }
+
+    private static void extractPlayerSkinArm2d(GuiGraphicsExtractor g, net.minecraft.client.player.LocalPlayer player,
+            double x, double y, float rotation, boolean grasp) {
+        boolean slim = player.getSkin().model() == PlayerModelType.SLIM;
+        var tex = player.getSkin().body().texturePath();
+        int u = 44, v = 20, outerU = 44, outerV = 36, sideU = 40;
+        int w = slim ? 3 : 4, h = 12;
+        int tint = grasp ? 0xFFE6FFF0 : 0xFFFFFFFF;
+        int sideTint = grasp ? 0xFFAED0BE : 0xFFC0C0C0;
+        g.pose().pushMatrix();
+        g.pose().translate((float) x, (float) y);
+        g.pose().rotate(rotation);
+        int bx = -GRIP_X, by = -GRIP_Y;
+        g.blit(RenderPipelines.GUI_TEXTURED, tex, bx, by, (float) u, (float) v, WIDTH, HEIGHT, w, h, 64, 64, tint);
+        g.blit(RenderPipelines.GUI_TEXTURED, tex, bx, by, (float) outerU, (float) outerV, WIDTH, HEIGHT, w, h, 64, 64, tint);
+        g.blit(RenderPipelines.GUI_TEXTURED, tex, bx + WIDTH, by + DEPTH / 2, (float) sideU, (float) v, DEPTH, HEIGHT, 4, h, 64, 64, sideTint);
+        g.fill(bx, by, bx + WIDTH, by + 1, grasp ? 0xC8A9F0C6 : 0x90EAEAEA);
+        g.fill(bx, by + HEIGHT - 1, bx + WIDTH, by + HEIGHT, grasp ? 0xC8A9F0C6 : 0x90EAEAEA);
+        g.fill(bx, by, bx + 1, by + HEIGHT, grasp ? 0xC8A9F0C6 : 0x90EAEAEA);
+        g.fill(bx + WIDTH - 1, by, bx + WIDTH, by + HEIGHT, grasp ? 0xC8A9F0C6 : 0x90EAEAEA);
         g.pose().popMatrix();
     }
     public static void cube(GuiGraphicsExtractor g,int x,int y,int w,int h,int depth) {

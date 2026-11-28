@@ -9,16 +9,22 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import io.github.safedecimal.decayingaftermath.medical.*;
 import io.github.safedecimal.decayingaftermath.network.MedicalNetwork;
 import io.github.safedecimal.decayingaftermath.network.SelfHarmNetwork;
+import io.github.safedecimal.decayingaftermath.network.Try3dPayload;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 
+import java.util.HashSet;
 import java.util.Locale;
+import java.util.Set;
+import java.util.UUID;
 
-/** /abjection command suite (heal, status, set stats/mental/parts, devices) plus /heal and /aftermath. */
+/** /abjection command suite (heal, status, set stats/mental/parts, devices) plus /heal, /aftermath, /awake, /suicide, /trynew3dsystem. */
 public final class MedicalCommands {
+    private static final Set<UUID> ENABLED_3D = new HashSet<>();
     private static boolean registered;
     private MedicalCommands() { }
 
@@ -35,6 +41,9 @@ public final class MedicalCommands {
 
             dispatcher.register(Commands.literal("suicide")
                     .executes(context -> execSuicide(context.getSource())));
+
+            dispatcher.register(Commands.literal("trynew3dsystem")
+                    .executes(context -> execTry3d(context.getSource())));
 
             dispatcher.register(buildRoot("aftermath"));
             dispatcher.register(buildRoot("abjection"));
@@ -288,6 +297,17 @@ public final class MedicalCommands {
             source.sendFailure(Component.translatable("abjection.suicide.unavailable"));
             return 0;
         }
+        return 1;
+    }
+
+    private static int execTry3d(CommandSourceStack source) throws CommandSyntaxException {
+        var player = source.getPlayerOrException();
+        boolean next = !ENABLED_3D.remove(player.getUUID());
+        if (next) ENABLED_3D.add(player.getUUID());
+        if (ServerPlayNetworking.canSend(player, Try3dPayload.TYPE)) {
+            ServerPlayNetworking.send(player, new Try3dPayload(next));
+        }
+        source.sendSuccess(() -> Component.translatable(next ? "abjection.3d.enabled" : "abjection.3d.disabled"), false);
         return 1;
     }
 

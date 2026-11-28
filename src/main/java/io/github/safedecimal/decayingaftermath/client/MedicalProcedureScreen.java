@@ -279,6 +279,7 @@ public final class MedicalProcedureScreen extends Screen {
         graphics.pose().pushMatrix();graphics.pose().translate(ox,oy);graphics.pose().scale(scale,scale);ProcedureVisuals.frame(graphics);
         graphics.centeredText(font,Component.translatable(part.translationKey()).getString(),128,-1,0xFFDDE3DE);
         if(isWrap()) {
+            if(New3dSystem.enabled()) Minigame3dRenderer.draw3dProcedureLimb(graphics, part, (float)hand.x(), (float)hand.y());
             MedicalClient.blit(graphics,"bandage_inner",65,65,126,126,164,164,0xFFFFFFFF);
             int diameter=Math.round(150*wrap.sizeMultiplier());
             MedicalClient.radialTexture(graphics,"bandage",128-diameter/2,128-diameter/2,diameter,200,wrap.coverage(),0xFFFFFFFF);
@@ -289,6 +290,7 @@ public final class MedicalProcedureScreen extends Screen {
             var woundPart=ClientMedicalState.snapshot().part(part);
             MedicalStatusIcons.drawBleeding(graphics,woundPart,128,128,32,MedicalStatusIcons.bleedingColor(woundPart));
         } else if(kind.injection()) {
+            if(New3dSystem.enabled()) Minigame3dRenderer.draw3dProcedureLimb(graphics, part, (float)hand.x(), (float)hand.y());
             MedicalClient.blit(graphics,"syringe_ground",-22,(int)Math.round(SYRINGE_ENTRY_Y),300,44,200,29,0xFFFFFFFF);
             CuMedicalHand.line(graphics,122,(int)SYRINGE_ENTRY_Y,134,(int)SYRINGE_ENTRY_Y);
             if(!holding)drawSyringe(graphics,toolX,toolY);
@@ -387,7 +389,13 @@ public final class MedicalProcedureScreen extends Screen {
             for(int i=0;i<5;i++) {int dy=(int)mouth.y()+3+(elapsed*3+i*7)%span;int dx=isAntiseptic()?(i-2)*Math.min(4,Math.max(1,(dy-(int)mouth.y())/5)):0;graphics.fill((int)mouth.x()+dx-1,dy,(int)mouth.x()+dx+2,Math.min(dy+3,bottom),isAntiseptic()?0xFF83E5D6:0xFFB0BDB3);}
         }
     }
-    private void drawSelectedPart(GuiGraphicsExtractor graphics,int x,int y,int w,int h) {ProcedureVisuals.part(graphics,part,x,y,w,h);}
+    private void drawSelectedPart(GuiGraphicsExtractor graphics,int x,int y,int w,int h) {
+        if(New3dSystem.enabled()) {
+            Minigame3dRenderer.draw3dProcedureLimb(graphics, part, (float)hand.x(), (float)hand.y());
+        } else {
+            ProcedureVisuals.part(graphics,part,x,y,w,h);
+        }
+    }
     private String guide() {
         String suffix=isWrap()?"wrap":kind.injection()?"syringe":isAntiseptic()?"antiseptic":isPotion()?"potion":kind.simpleTool()?"tool":kind==TreatmentKind.SPLINT?(stage==0?"splint_align":"splint_straps"):(stage==0?"tourniquet_fit":"tourniquet_tighten");
         return Component.translatable("abjection.procedure.guide."+suffix).getString();

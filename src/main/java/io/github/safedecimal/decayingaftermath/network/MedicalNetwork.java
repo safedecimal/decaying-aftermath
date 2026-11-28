@@ -25,6 +25,7 @@ public final class MedicalNetwork {
     public static void register() {
         PayloadTypeRegistry.clientboundPlay().register(BodyPayload.TYPE,BodyPayload.CODEC);
         PayloadTypeRegistry.clientboundPlay().register(ThoughtPayload.TYPE,ThoughtPayload.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(Try3dPayload.TYPE,Try3dPayload.CODEC);
         PayloadTypeRegistry.serverboundPlay().register(MedicalActionPayload.TYPE,MedicalActionPayload.CODEC);
         PayloadTypeRegistry.serverboundPlay().register(StandUpPayload.TYPE, StandUpPayload.CODEC);
         PayloadTypeRegistry.serverboundPlay().register(CaveSoundPayload.TYPE, CaveSoundPayload.CODEC);

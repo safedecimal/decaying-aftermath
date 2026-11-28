@@ -10,7 +10,7 @@ import net.minecraft.world.entity.LivingEntity;
 public final class CruorVisualCompatibility {
     private static volatile boolean broken;
     private record NativeFields(Field bodies, Field bleed, Field healedSince, Field droplets, Field blood,
-            Method bodyFor, Method bloodOf, Method emitting, Method spawn, Method color, Method dried) {}
+            Method bodyFor, Method bloodOf, Method emitting, Method spawn, Method burst, Method color, Method dried) {}
     private static final ClassValue<NativeFields> FIELDS = new ClassValue<>() {
         @Override protected NativeFields computeValue(Class<?> type) {
             try {
@@ -33,6 +33,7 @@ public final class CruorVisualCompatibility {
                         bloodTypes.getMethod("of", LivingEntity.class), drops.getMethod("emitting", int.class),
                         drops.getMethod("spawn", double.class, double.class, double.class, float.class, float.class,
                                 float.class, float.class, int.class, int.class, int.class, float.class, int.class),
+                        drops.getMethod("burst", double.class, double.class, double.class, boolean.class, boolean.class, int.class),
                         bloodType.getMethod("color"), bloodType.getMethod("dried"));
             } catch (ReflectiveOperationException error) { throw new IllegalStateException(error); }
         }
@@ -46,22 +47,40 @@ public final class CruorVisualCompatibility {
             Object droplets = fields.droplets().get(nativeBodyBlood);
             for (var neck : io.github.safedecimal.decayingaftermath.client.SuicideClient.activeNeckBleeds()) {
                 var pos = neck.origin();
+                var dir = neck.direction();
                 var random = client.level.getRandom();
                 Object blood = fields.bloodOf().invoke(null, client.player != null ? client.player : client.level.players().stream().findFirst().orElse(null));
                 if (blood != null) {
-                    int burst = neck.remainingTicks > 300 ? 4 : 2;
+                    int color = (int) fields.color().invoke(blood);
+                    int dried = (int) fields.dried().invoke(blood);
                     fields.emitting().invoke(droplets, neck.entityId);
                     try {
+                        if (!neck.cruorBursted) {
+                            neck.cruorBursted = true;
+                            fields.burst().invoke(droplets, pos.x, pos.y + 0.12, pos.z, true, true, 52);
+                            for (int i = 0; i < 48; i++) {
+                                float speed = 0.25f + random.nextFloat() * 0.55f;
+                                float vx = (random.nextFloat() - 0.5f) * 2.0f * speed;
+                                float vy = 0.18f + random.nextFloat() * 0.52f;
+                                float vz = (random.nextFloat() - 0.5f) * 2.0f * speed;
+                                fields.spawn().invoke(droplets, pos.x, pos.y + 0.08, pos.z,
+                                        vx, vy, vz, 1.5f + random.nextFloat() * 0.8f, color, dried, 3,
+                                        1.1f + random.nextFloat() * 0.3f, 160);
+                            }
+                        }
+                        int burst = neck.remainingTicks > 300 ? 6 : 3;
                         for (int i = 0; i < burst; i++) {
+                            float jet = 0.22f + random.nextFloat() * 0.28f;
+                            float vx = (float) (dir.x * jet + (random.nextFloat() - 0.5f) * 0.18f);
+                            float vy = (float) (dir.y * jet + 0.08f + random.nextFloat() * 0.16f);
+                            float vz = (float) (dir.z * jet + (random.nextFloat() - 0.5f) * 0.18f);
                             fields.spawn().invoke(droplets,
                                     pos.x + (random.nextFloat() - .5) * .08,
                                     pos.y,
                                     pos.z + (random.nextFloat() - .5) * .08,
-                                    (random.nextFloat() - .5f) * .16f,
-                                    .10f + random.nextFloat() * .18f,
-                                    (random.nextFloat() - .5f) * .16f,
-                                    1.25f, (int) fields.color().invoke(blood), (int) fields.dried().invoke(blood), 3,
-                                    .95f + random.nextFloat() * .25f, 140);
+                                    vx, vy, vz,
+                                    1.25f + random.nextFloat() * 0.45f, color, dried, 3,
+                                    1.0f + random.nextFloat() * .25f, 140);
                         }
                     } finally {
                         fields.emitting().invoke(droplets, -1);

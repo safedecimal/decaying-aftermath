@@ -161,6 +161,9 @@ public final class DefibScreen extends Screen {
         if(!aborted)cursor.hide(minecraft.getWindow().handle());else cursor.restore();
         g.pose().pushMatrix();g.pose().translate(ox,oy);g.pose().scale(scale,scale);
         sprite(g,"base_minigamescreen",0,0,1048,1048,256,256,0xFFFFFFFF);
+        if(New3dSystem.enabled()) {
+            Minigame3dRenderer.draw3dDefibChest(g, (float)(128+hand.x()*.25), (float)(128-hand.y()*.25));
+        }
         guide(g);
         if(automatic)drawAed(g);else drawManual(g);
         sprite(g,automatic?"device_aed":"device_manual_defibrillator",-381,-155,40,automatic?40:29,automatic?12:14,automatic?12:10,0xFFFFFFFF);

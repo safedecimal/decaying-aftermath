@@ -123,14 +123,32 @@ public final class ClientMedicalRagdolls {
             double px=vec.getField("x").getFloat(pos), py=vec.getField("y").getFloat(pos), pz=vec.getField("z").getFloat(pos);
             double qx=quat.getField("x").getFloat(rot), qy=quat.getField("y").getFloat(rot),
                    qz=quat.getField("z").getFloat(rot), qw=quat.getField("w").getFloat(rot);
-            // Rotate local (0, 0.375, 0) up-vector to the top edge of the torso (neck stump).
-            double upY = 0.375;
+            double upY = 0.40;
             double ux = 2.0 * (qx * qy - qw * qz) * upY;
             double uy = (1.0 - 2.0 * (qx * qx + qz * qz)) * upY;
             double uz = 2.0 * (qy * qz + qw * qx) * upY;
             double nx = px + ux, ny = py + uy, nz = pz + uz;
             return Double.isFinite(nx) && Double.isFinite(ny) && Double.isFinite(nz) ? new Vec3(nx, ny, nz) : null;
         } catch (ReflectiveOperationException | LinkageError error) { fail(error); return null; }
+    }
+    /** Normalized torso-up direction out of the severed neck stump. */
+    public static Vec3 neckDirection(int id, UUID uuid) {
+        if (broken || uuid==null || !OptionalMedicalCompatibility.ragdollifiedSupported()) return new Vec3(0, 1, 0);
+        try {
+            Api port=api(); Object body=port.get().invoke(null,id);
+            if (body==null || !uuid.equals(port.uuid().invoke(body)) || port.level().invoke(body)!=Minecraft.getInstance().level) return new Vec3(0, 1, 0);
+            Object transform=port.transform().invoke(body,port.part().getField("TORSO").get(null));
+            if (transform==null) return new Vec3(0, 1, 0);
+            Object rot=transform.getClass().getField("rotation").get(transform);
+            Class<?> quat=rot.getClass();
+            double qx=quat.getField("x").getFloat(rot), qy=quat.getField("y").getFloat(rot),
+                   qz=quat.getField("z").getFloat(rot), qw=quat.getField("w").getFloat(rot);
+            double ux = 2.0 * (qx * qy - qw * qz);
+            double uy = 1.0 - 2.0 * (qx * qx + qz * qz);
+            double uz = 2.0 * (qy * qz + qw * qx);
+            Vec3 v = new Vec3(ux, uy, uz);
+            return v.lengthSqr() > 1e-6 ? v.normalize() : new Vec3(0, 1, 0);
+        } catch (ReflectiveOperationException | LinkageError error) { fail(error); return new Vec3(0, 1, 0); }
     }
     public static void unpinDeath(int id, UUID uuid) {
         if (broken || uuid==null || !OptionalMedicalCompatibility.ragdollifiedSupported()) return;

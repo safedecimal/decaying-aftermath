@@ -32,6 +32,8 @@ public final class SuicideClient {
         public final UUID playerUuid;
         public final double fallbackX, fallbackY, fallbackZ;
         public int remainingTicks;
+        public boolean initialBursted;
+        public boolean cruorBursted;
 
         NeckBleed(int entityId, UUID playerUuid, double x, double y, double z, int ticks) {
             this.entityId = entityId;
@@ -45,6 +47,10 @@ public final class SuicideClient {
         public Vec3 origin() {
             Vec3 ragdollNeck = ClientMedicalRagdolls.neckOrigin(entityId, playerUuid);
             return ragdollNeck != null ? ragdollNeck : new Vec3(fallbackX, fallbackY - 0.35, fallbackZ);
+        }
+
+        public Vec3 direction() {
+            return ClientMedicalRagdolls.neckDirection(entityId, playerUuid);
         }
     }
 
@@ -101,14 +107,26 @@ public final class SuicideClient {
                 continue;
             }
             Vec3 pos = bleed.origin();
-            int count = bleed.remainingTicks > 300 ? 5 : 2;
+            Vec3 dir = bleed.direction();
+            if (!bleed.initialBursted) {
+                bleed.initialBursted = true;
+                for (int i = 0; i < 45; i++) {
+                    double vx = (Math.random() - 0.5) * 1.4;
+                    double vy = 0.25 + Math.random() * 0.95;
+                    double vz = (Math.random() - 0.5) * 1.4;
+                    client.level.addParticle(BLOOD_DROP, pos.x, pos.y + 0.1, pos.z, vx, vy, vz);
+                }
+            }
+            int count = bleed.remainingTicks > 300 ? 6 : 3;
             for (int i = 0; i < count; i++) {
-                double vx = (Math.random() - 0.5) * 0.14;
-                double vy = 0.08 + Math.random() * 0.18;
-                double vz = (Math.random() - 0.5) * 0.14;
-                client.level.addParticle(BLOOD_DUST, pos.x, pos.y, pos.z, vx, vy, vz);
+                double jet = 0.35 + Math.random() * 0.45;
+                double vx = dir.x * jet + (Math.random() - 0.5) * 0.32;
+                double vy = dir.y * jet + 0.15 + Math.random() * 0.25;
+                double vz = dir.z * jet + (Math.random() - 0.5) * 0.32;
+                client.level.addParticle(BLOOD_DROP, pos.x, pos.y, pos.z, vx, vy, vz);
                 if (i % 2 == 0) {
-                    client.level.addParticle(BLOOD_DROP, pos.x, pos.y, pos.z, vx * 1.3, vy * 1.4, vz * 1.3);
+                    client.level.addParticle(BLOOD_DUST, pos.x + (Math.random() - 0.5) * 0.12,
+                            pos.y + Math.random() * 0.1, pos.z + (Math.random() - 0.5) * 0.12, 0, 0, 0);
                 }
             }
         }
