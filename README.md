@@ -1,8 +1,15 @@
-# Decaying Aftermath
+# Abjection
 
-Decaying Aftermath is a standalone **Minecraft 26.3 / Fabric** mod written for **Java 25**. It adds a medical and survival gameplay layer, including body-part injuries, treatment procedures, vitals, and related UI.
+Abjection (formerly *Decaying Aftermath*) is a standalone **Minecraft 26.3 / Fabric** mod written for **Java 25**. It adds a deep medical, physiological, and psychological survival layer: localized body-part injuries, typed bleeding, interactive treatment procedures, vitals, defibrillators, depression/mood dynamics, and a post-mortem aftermath.
 
 [Русская версия](README_RU.md)
+
+## Features
+
+- **Localized body model**: separate head, torso, arms, and legs with tissue integrity, fractures, burns, cold injuries, embedded foreign objects, and typed external/internal bleeding (capillary, venous, arterial).
+- **Interactive treatment procedures**: bandaging, pressure dressings, splints, tourniquets, antiseptic sprays, local anesthetics, tweezers extraction, chest drains, blood/saline bags, syringes, and AED / manual defibrillators.
+- **Vitals & physiology**: blood volume, oxygenation, red cells/plasma, pain, consciousness, energy, cardiac rhythm/arrest, hydration, nutrition, body temperature, encumbrance, and infection progression.
+- **Mental health & aftermath**: mood tracking, multiple depression types and treatments, and a locked camera / sensory aftermath sequence upon death.
 
 ## Requirements
 

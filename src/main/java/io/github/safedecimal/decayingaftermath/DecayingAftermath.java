@@ -21,6 +21,6 @@ public final class DecayingAftermath implements ModInitializer {
         io.github.safedecimal.decayingaftermath.network.MedicalNetwork.register();
         io.github.safedecimal.decayingaftermath.network.DefibNetwork.register();
         io.github.safedecimal.decayingaftermath.server.ServerAftermathSystem.register();
-        LOGGER.info("Decaying Aftermath initialized.");
+        LOGGER.info("Abjection initialized.");
     }
 }

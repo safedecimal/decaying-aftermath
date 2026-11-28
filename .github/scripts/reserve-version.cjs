@@ -60,7 +60,7 @@ async function reserveVersion({ github, context, core, versionText, previousVers
     ...repo,
     tag_name: tag,
     target_commitish: context.sha,
-    name: `Decaying Aftermath ${version}`,
+    name: `Abjection ${version}`,
     body: `Minecraft 26.3 / Fabric.\n\nVersion reserved before build. Commit: ${context.sha}`,
     draft: true,
     prerelease: version.includes('-'),

@@ -81,7 +81,7 @@ jobs:
             const crypto = require('node:crypto');
             const version = process.env.MOD_VERSION;
             const release_id = Number(process.env.RELEASE_ID);
-            const name = `decaying-aftermath-${version}.jar`;
+            const name = `abjection-${version}.jar`;
             const data = fs.readFileSync(`build/libs/${name}`);
             const sha256 = crypto.createHash('sha256').update(data).digest('hex');
             await github.rest.repos.uploadReleaseAsset({

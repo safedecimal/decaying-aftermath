@@ -6,7 +6,7 @@ version = providers.fileContents(layout.projectDirectory.file('VERSION')).asText
 group = 'io.github.safedecimal.decayingaftermath'
 
 base {
-    archivesName = 'decaying-aftermath'
+    archivesName = 'abjection'
 }
 
 dependencies {
@@ -136,6 +136,6 @@ tasks.withType(JavaCompile).configureEach {
 
 jar {
     from('LICENSE') {
-        rename { "${it}_decaying-aftermath" }
+        rename { "${it}_abjection" }
     }
 }
