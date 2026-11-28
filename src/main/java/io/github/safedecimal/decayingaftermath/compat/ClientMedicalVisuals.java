@@ -40,8 +40,9 @@ public final class ClientMedicalVisuals {
             var summary = CACHE.live(client.level, entity.getId(), entity.getUUID(), true, true, System.nanoTime());
             var posture = MedicalCollapsePolicy.posture(snapshot, entity.isAlive(), entity.isSleeping(),
                     client.player.isCreative() || client.player.isSpectator());
+            boolean collapse = posture == MedicalCollapsePolicy.Posture.COLLAPSED || posture == MedicalCollapsePolicy.Posture.SLEEPING;
             return new MedicalVisualCache.Visual(MedicalBleedOrigins.total(parts), false, parts,
-                    posture == MedicalCollapsePolicy.Posture.COLLAPSED && summary != null ? summary.ragdollSerial() : 0,
+                    collapse && summary != null ? summary.ragdollSerial() : 0,
                     posture.ordinal());
         }
         return CACHE.live(client.level, entity.getId(), entity.getUUID(), true, true, System.nanoTime());

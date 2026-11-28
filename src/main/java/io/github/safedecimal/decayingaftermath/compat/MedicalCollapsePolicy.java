@@ -16,7 +16,8 @@ public final class MedicalCollapsePolicy {
     }
 
     public static boolean collapsed(BodySnapshot snapshot, boolean alive, boolean sleeping, boolean exempt) {
-        return posture(snapshot, alive, sleeping, exempt) == Posture.COLLAPSED;
+        Posture p = posture(snapshot, alive, sleeping, exempt);
+        return p == Posture.COLLAPSED || p == Posture.SLEEPING;
     }
 
     public static Posture posture(BodySnapshot snapshot, boolean alive, boolean sleeping, boolean exempt) {

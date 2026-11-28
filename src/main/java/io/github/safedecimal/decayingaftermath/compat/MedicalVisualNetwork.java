@@ -20,9 +20,10 @@ public final class MedicalVisualNetwork {
         var parts = java.util.Arrays.stream(snapshot.parts()).map(BodySnapshot.PartSnapshot::bleeding).toList();
         float bleeding = MedicalBleedOrigins.total(parts);
         var posture = MedicalCollapsePolicy.posture(snapshot, victim.isAlive(), victim.isSleeping(), victim.isCreative() || victim.isSpectator());
+        boolean collapse = posture == MedicalCollapsePolicy.Posture.COLLAPSED || posture == MedicalCollapsePolicy.Posture.SLEEPING;
         var payload = new MedicalVisualPayload(victim.getId(), victim.getUUID(), Math.clamp(bleeding, 0, 6),
                 snapshot.mode() == BodySnapshot.Mode.DEAD, parts,
-                posture == MedicalCollapsePolicy.Posture.COLLAPSED ? MedicalRagdollCompatibility.bodySerial(victim) : 0,
+                collapse ? MedicalRagdollCompatibility.bodySerial(victim) : 0,
                 posture.ordinal());
         var watchers = MedicalVisualAudience.select(PlayerLookup.tracking(victim), victim,
                 watcher -> ServerPlayNetworking.canSend(watcher, MedicalVisualPayload.TYPE));

@@ -31,7 +31,7 @@ public record MedicalVisualPayload(int entityId, UUID playerId, float bleeding, 
     public MedicalVisualPayload(int entityId, UUID playerId, float bleeding, boolean dead) {
         this(entityId, playerId, bleeding, dead, MedicalBleedOrigins.uniform(bleeding), 0, 0);
     }
-    public boolean collapsed() { return ragdollSerial > 0 || posture == 2; }
+    public boolean collapsed() { return ragdollSerial > 0 || posture == 2 || posture == 3; }
     @Override public Type<MedicalVisualPayload> type() { return TYPE; }
     private void write(RegistryFriendlyByteBuf buffer) {
         buffer.writeVarInt(entityId); buffer.writeUUID(playerId); buffer.writeFloat(bleeding); buffer.writeBoolean(dead);

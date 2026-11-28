@@ -66,6 +66,9 @@ class VoluntarySleepTest {
         var snap = body.snapshot();
         assertEquals(1.0, MedicalPresentationPolicy.sleepCircleAlpha(snap, false));
         assertTrue(MedicalPresentationPolicy.sleepBlackout(snap, 0, 0) >= 0.9);
+        assertEquals(io.github.safedecimal.decayingaftermath.compat.MedicalCollapsePolicy.Posture.SLEEPING,
+                io.github.safedecimal.decayingaftermath.compat.MedicalCollapsePolicy.posture(snap, true, false, false));
+        assertTrue(io.github.safedecimal.decayingaftermath.compat.MedicalCollapsePolicy.collapsed(snap, true, false, false));
 
         var buf = new RegistryFriendlyByteBuf(Unpooled.buffer(), RegistryAccess.EMPTY);
         try {

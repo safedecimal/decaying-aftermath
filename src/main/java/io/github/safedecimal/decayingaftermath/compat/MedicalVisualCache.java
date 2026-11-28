@@ -13,7 +13,7 @@ public final class MedicalVisualCache<L> {
             this(bleeding, dead, partBleeding, ragdollSerial, ragdollSerial > 0 ? 2 : 0);
         }
         public Visual(float bleeding, boolean dead) { this(bleeding, dead, MedicalBleedOrigins.uniform(bleeding), 0, 0); }
-        public boolean collapsed() { return ragdollSerial > 0 || posture == 2; }
+        public boolean collapsed() { return ragdollSerial > 0 || posture == 2 || posture == 3; }
     }
     private record Entry(int entityId, Visual visual, long updated) {}
     private final LinkedHashMap<UUID, Entry> entries = new LinkedHashMap<>();
