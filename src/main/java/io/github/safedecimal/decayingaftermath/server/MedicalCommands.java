@@ -33,6 +33,9 @@ public final class MedicalCommands {
             dispatcher.register(Commands.literal("awake")
                     .executes(context -> execAwake(context.getSource())));
 
+            dispatcher.register(Commands.literal("suicide")
+                    .executes(context -> execSuicide(context.getSource())));
+
             dispatcher.register(buildRoot("aftermath"));
             dispatcher.register(buildRoot("abjection"));
         });
@@ -276,6 +279,15 @@ public final class MedicalCommands {
             return 0;
         }
         source.sendSuccess(() -> Component.translatable("abjection.sleep.awake_done"), false);
+        return 1;
+    }
+
+    private static int execSuicide(CommandSourceStack source) throws CommandSyntaxException {
+        var player = source.getPlayerOrException();
+        if (!ServerSuicideSystem.start(player)) {
+            source.sendFailure(Component.translatable("abjection.suicide.unavailable"));
+            return 0;
+        }
         return 1;
     }
 

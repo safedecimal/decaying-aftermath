@@ -11,17 +11,20 @@ public final class DecayingAftermathClient implements ClientModInitializer {
         ClientMedicalState.register();
         DefibScreen.register();
         SelfHarmScreen.register();
+        SuicideClient.register();
         ClientMedicalVisuals.register();
         MedicalClient.register();
         AftermathClient.register();
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
             ClientMedicalState.reset(); ClientMedicalVisuals.reset(); PulseState.reset();
             SelfHarmScreen.reset();
+            SuicideClient.reset();
             io.github.safedecimal.decayingaftermath.compat.ClientMedicalRagdolls.reset();
         });
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             io.github.safedecimal.decayingaftermath.compat.ClientMedicalRagdolls.tick();
             SelfHarmScreen.ensureOpen(client);
+            SuicideClient.tick(client);
             if (client.player == null || client.level == null) {
                 PulseState.reset();
                 ClientMedicalVisuals.reset();

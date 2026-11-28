@@ -120,9 +120,9 @@ public final class MedicalClient {
         if (client.isPaused()) return;
         // Thoughts are action-bar text: a fainted player neither reads nor hears them, and
         // nothing accumulates for the moment of waking up either.
-        boolean thoughtsAllowed = !UnconsciousPresentationPolicy.hintsHidden(body);
+        boolean thoughtsAllowed = SuicideClient.active() || !UnconsciousPresentationPolicy.hintsHidden(body);
         if (thoughtsAllowed) {
-            updateDepressionFeedback(client, body);
+            if (!SuicideClient.active()) updateDepressionFeedback(client, body);
             if (ThoughtTyper.tick()) sound("thought_type", 0.45f, 1f);
             if (ThoughtTyper.hasMessage())
                 client.gui.hud.setOverlayMessage(Component.literal(ThoughtTyper.visible()), false);
@@ -249,6 +249,7 @@ public final class MedicalClient {
         standKeyHeld = false;
         pauseHintTicks=0;
         SelfHarmScreen.reset();
+        SuicideClient.reset();
         depressionThoughtTicks=0; ptsdThoughtTicks=0; ptsdThoughtIndex=0;
         lastPtsd=false; lastPtsdFlashback=false;
         lastDepression=io.github.safedecimal.decayingaftermath.medical.DepressionType.NONE;
@@ -264,7 +265,7 @@ public final class MedicalClient {
                         || ClientMedicalState.snapshot().voluntarySleeping());
     }
     public static boolean blocksPause(Minecraft client) {
-        if (AftermathClient.locked() || SelfHarmScreen.active()) return true;
+        if (AftermathClient.locked() || SelfHarmScreen.active() || SuicideClient.active()) return true;
         return client.level!=null&&client.player!=null&&client.player.isAlive()
                 &&ClientMedicalState.received()
                 &&MedicalPausePolicy.blocked(ClientMedicalState.snapshot());
@@ -389,6 +390,7 @@ public final class MedicalClient {
         graphics.nextStratum();graphics.pose().pushMatrix();graphics.pose().identity();
         try {
             extractHud(graphics);
+            SuicideClient.extractOverlay(graphics);
             if(pauseHintTicks>0) {
                 int tint=color(.65*Math.min(1,pauseHintTicks/20d),0xEEEEEE);
                 var lines=client.font.split(Component.translatable("abjection.pause.denied"),Math.max(60,graphics.guiWidth()-24));

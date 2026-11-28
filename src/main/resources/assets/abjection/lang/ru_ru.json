@@ -169,5 +169,7 @@
   "abjection.sleep.awake": "Awake",
   "abjection.sleep.awake_done": "Вы проснулись.",
   "abjection.sleep.awake_denied": "Вы не спите самостоятельно.",
-  "abjection.sleep.too_awake": "Я сейчас слишком бодр, чтобы уснуть."
+  "abjection.sleep.too_awake": "Я сейчас слишком бодр, чтобы уснуть.",
+  "abjection.thought.suicide": "Стой... Что это пищит? Что я наделал?! Нет, нет, Я НЕ ХОЧУ УМИРАТЬ! СТОЙ!—",
+  "abjection.suicide.unavailable": "Сейчас это невозможно."
 }

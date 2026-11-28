@@ -251,5 +251,21 @@
         "stream": true
       }
     ]
+  },
+  "selfdestruct1": {
+    "sounds": [
+      {
+        "name": "abjection:selfdestruct1",
+        "stream": false
+      }
+    ]
+  },
+  "selfdestruct2": {
+    "sounds": [
+      {
+        "name": "abjection:selfdestruct2",
+        "stream": false
+      }
+    ]
   }
 }
