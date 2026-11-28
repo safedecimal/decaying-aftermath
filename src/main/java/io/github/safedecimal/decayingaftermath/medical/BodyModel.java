@@ -18,6 +18,8 @@ public final class BodyModel {
     public static final int DYING_TICKS = 20 * 60;
     public static final int WAKE_UP_TICKS = 20 * 6;
     public static final int BONE_HEAL_TICKS = 20 * 60 * 8; // Deliberately compressed game recovery time.
+    public static final int FULL_SLEEP_TICKS = 20 * 60;
+    public static final int MIN_CONSCIOUS_WAKE_TICKS = 20 * 8;
     private static final int PARTS = BodyPart.values().length;
     private final float[] integrity = new float[PARTS];
     private final BleedProfile[] bleeding = new BleedProfile[PARTS];
@@ -49,6 +51,8 @@ public final class BodyModel {
     private int lastStandingTicks, wakeTicks, stableTicks, cardiacTicks;
     private int lastStandingBoostTicks, dyingTicks = -1;
     private boolean lastStandingSpent, faintRecovered;
+    private boolean voluntarySleeping;
+    private int voluntarySleepTicks;
 
     public BodyModel() { reset(); }
 
@@ -68,6 +72,7 @@ public final class BodyModel {
         brainHealth=1;
         lastStandingTicks = wakeTicks = stableTicks = cardiacTicks = 0; lastStandingSpent = false;
         lastStandingBoostTicks = 0; dyingTicks = -1; faintRecovered = false;
+        voluntarySleeping = false; voluntarySleepTicks = 0;
     }
 
     /** Input is already mitigated vanilla damage units, not normalized tissue damage. */
@@ -110,6 +115,7 @@ public final class BodyModel {
             fractured[i] = true; boneHealing[i]=0;
         }
         faintRecovered = false; // A new injury may cause a new faint, unlike an unchanged wound.
+        voluntarySleeping = false; voluntarySleepTicks = 0;
         survival.mental().onTrauma(amount);
         evaluateAndAlign(false);
     }
@@ -131,6 +137,7 @@ public final class BodyModel {
             if (bandaged[i]) bleeding[i] = bleeding[i].scale(.7f);
         }
         faintRecovered = false;
+        voluntarySleeping = false; voluntarySleepTicks = 0;
         survival.mental().onSelfHarm(mentalRelief);
         evaluateAndAlign(false);
     }
@@ -312,10 +319,44 @@ public final class BodyModel {
         tick(BodyEnvironment.temperate(sprinting,moving));
     }
 
+    public boolean voluntarySleeping() { return voluntarySleeping && mode == Mode.CONSCIOUS; }
+    public int voluntarySleepTicks() { return voluntarySleepTicks; }
+
+    public boolean startVoluntarySleep() {
+        if (mode != Mode.CONSCIOUS || cardiacTicks < 0 || voluntarySleeping) return false;
+        voluntarySleeping = true;
+        voluntarySleepTicks = 0;
+        return true;
+    }
+
+    /** Only wakes if voluntarily sleeping; fainted/unconscious states cannot be bypassed with Awake. */
+    public boolean wakeVoluntarily() {
+        if (!voluntarySleeping || mode != Mode.CONSCIOUS) return false;
+        if (voluntarySleepTicks >= 200) survival.wakeFromNight();
+        voluntarySleeping = false;
+        voluntarySleepTicks = 0;
+        return true;
+    }
+
     public void tick(BodyEnvironment environment) {
         Objects.requireNonNull(environment);
         boolean sprinting=environment.sprinting(),moving=environment.moving();
-        if (mode == Mode.DEAD) { bpm = 0; return; }
+        if (mode == Mode.DEAD) { bpm = 0; voluntarySleeping = false; voluntarySleepTicks = 0; return; }
+        if (voluntarySleeping && (mode != Mode.CONSCIOUS || cardiacTicks < 0)) {
+            voluntarySleeping = false;
+            voluntarySleepTicks = 0;
+        }
+        BodyEnvironment effectiveEnv = voluntarySleeping && !environment.sleeping()
+                ? new BodyEnvironment(environment.ambientTemperature(), environment.insulation(),
+                        environment.wet(), environment.breathable(), true, false, false,
+                        environment.encumbrance(), environment.carryingCapacity(),
+                        environment.metabolismEnabled(), environment.temperatureEnabled(),
+                        environment.lightLevel(), environment.daylightSurface(), environment.nearCampfire(),
+                        environment.undergroundCave(), environment.naturalGreenery(), environment.hostileMobsNearby(),
+                        environment.jukeboxMood(), environment.sleepDeprivedTicks(), environment.mentalHealthEnabled())
+                : environment;
+        sprinting = effectiveEnv.sprinting();
+        moving = effectiveEnv.moving();
         if (lastStandingBoostTicks > 0) lastStandingBoostTicks--;
         float totalBleedFlow = 0;
         float clotting = survival.clottingFactor();
@@ -399,7 +440,7 @@ public final class BodyModel {
             // A dry applied dressing remains actual care, not hunger/vanilla HP regen.
             receivingCare |= bandaged[i] && externalSeverity <= .001f;
         }
-        survival.tick(environment,MedicalPhysiology.bloodLossPerTick(totalBleedFlow),sepsis(),
+        survival.tick(effectiveEnv,MedicalPhysiology.bloodLossPerTick(totalBleedFlow),sepsis(),
                 cardiacTicks<0?0:Math.clamp(blood/.5f,0,1),mode==Mode.LAST_STANDING,
                 effectivePain(),brainHealth,drug);
         blood=survival.bloodVolume();
@@ -407,22 +448,23 @@ public final class BodyModel {
         drug = Math.max(0, drug - .0002f);
         float activeDrug=survival.effectiveOpiate(drug);
         float depression = Math.clamp((activeDrug - .7f) / .6f, 0, 1.8f);
-        float breathRecovery = environment.breathable() ? .0008f * (1 - Math.min(1, depression))*(1-lungCollapse) : 0;
+        float breathRecovery = effectiveEnv.breathable() ? .0008f * (1 - Math.min(1, depression))*(1-lungCollapse) : 0;
         oxygen = unit(oxygen + (cardiacTicks < 0 ? 0 : breathRecovery) - depression * .0012f
                 - Math.max(0, .35f - blood) * .0015f - sepsis() * .00015f
-                - lungCollapse*.0005f - (environment.breathable()?0:.0008f));
+                - lungCollapse*.0005f - (effectiveEnv.breathable()?0:.0008f));
         if (moving && oxygen < .7f) oxygen = unit(oxygen - (sprinting ? .00018f : .00006f));
         boolean exertion = moving && mode != Mode.UNCONSCIOUS;
         float recovery = exertion || cardiacTicks < 0 ? 0 : .0007f * oxygen * survival.oxygenDelivery(1-lungCollapse)
                 * Math.min(1,survival.hydration()*2)*Math.min(1,survival.nutrition()*2)*(1-survival.fatigue()*.7f);
-        float load=1+Math.max(0,environment.encumbrance()-.5f)*.6f;
+        if (voluntarySleeping && cardiacTicks >= 0) recovery = Math.max(recovery, .00085f);
+        float load=1+Math.max(0,effectiveEnv.encumbrance()-.5f)*.6f;
         energy = unit(energy + recovery - (exertion ? sprinting ? .0012f : .00035f : 0)*load
                 - Math.max(0,activeDrug-.3f)*.00012f - sepsis()*.00018f - survival.systemicStress()*.00018f);
         if(survival.nutrition()<.08f) energy=unit(energy-.0001f);
         if(mode!=Mode.LAST_STANDING&&mode!=Mode.DYING) {
             float delivery=cardiacTicks<0?0:oxygen*survival.oxygenDelivery(1-lungCollapse)*Math.clamp(blood/.5f,0,1);
             brainHealth=BrainPhysiology.advance(brainHealth,delivery,survival.nutrition(),survival.hydration(),
-                    survival.systemicStress(),!moving||environment.sleeping());
+                    survival.systemicStress(),!moving||effectiveEnv.sleeping());
         }
         if(survival.thermalStress()>.8f) integrity[BodyPart.TORSO.ordinal()]=unit(integrity[BodyPart.TORSO.ordinal()]-.000025f);
         if(survival.nutrition()<.02f||survival.hydration()<.04f||survival.systemicStress()>.85f)
@@ -454,6 +496,22 @@ public final class BodyModel {
         if (CardiacRhythm.unstable(cardiacTicks)) {
             bpm = CardiacRhythm.racingBpm(cardiacTicks);
         } else bpm += (target - bpm) * (target > bpm ? .04f : .015f);
+        if (voluntarySleeping) {
+            if (mode != Mode.CONSCIOUS || cardiacTicks < 0) {
+                voluntarySleeping = false;
+                voluntarySleepTicks = 0;
+            } else {
+                voluntarySleepTicks++;
+                boolean wellRested = voluntarySleepTicks >= FULL_SLEEP_TICKS;
+                boolean fullConsciousness = voluntarySleepTicks >= MIN_CONSCIOUS_WAKE_TICKS
+                        && consciousness() >= 0.999f && energy >= 0.99f && survival.fatigue() <= 0.02f;
+                if (wellRested || fullConsciousness) {
+                    voluntarySleeping = false;
+                    voluntarySleepTicks = 0;
+                    survival.wakeFromNight();
+                }
+            }
+        }
     }
 
     /** For environmental suffocation/drowning: no invented anatomical cut is created. */
@@ -585,8 +643,11 @@ public final class BodyModel {
         float progress = mode == Mode.UNCONSCIOUS ? (float) wakeTicks / WAKE_UP_TICKS
                 : mode == Mode.LAST_STANDING ? (float) lastStandingTicks / LAST_STANDING_TICKS
                 : mode == Mode.DYING ? (float) Math.max(0, dyingTicks) / DYING_TICKS : 1;
+        float sleepProg = (voluntarySleeping && mode == Mode.CONSCIOUS)
+                ? Math.clamp((float) voluntarySleepTicks / FULL_SLEEP_TICKS, 0f, 1f) : 0f;
         return new BodySnapshot(unit(condition), blood, oxygen, effectivePain(), drug, bpm, mode,
-                progress, energy, consciousness(), parts,survival.snapshot(totalInternalBleeding(),1-lungCollapse),null,cardiacTicks,brainHealth);
+                progress, energy, consciousness(), parts,survival.snapshot(totalInternalBleeding(),1-lungCollapse),null,cardiacTicks,brainHealth,
+                voluntarySleeping && mode == Mode.CONSCIOUS, sleepProg);
     }
 
     /** Snapshot-only restore is conservative; use SavedState to preserve all treatment timers. */
@@ -642,7 +703,8 @@ public final class BodyModel {
                 lastStandingSpent, stableTicks, lastStandingTicks, lastStandingBoostTicks, dyingTicks,
                 disinfectionTicks, anestheticTicks, infectionAgeTicks, skinHealAmount, bandageSlowAmount, localPain,
                 new WoundState(burns,internalBleeding,openWounds,foreignBodies,boneHealing,coolingTicks,lungCollapse,chestDrain,suppressedBleeding,coldInjuries),
-                survival.save(totalInternalBleeding(),1-lungCollapse), faintRecovered);
+                survival.save(totalInternalBleeding(),1-lungCollapse), faintRecovered,
+                voluntarySleeping && mode == Mode.CONSCIOUS, voluntarySleepTicks);
     }
 
     public static BodyModel restoreState(SavedState state) {
@@ -653,6 +715,8 @@ public final class BodyModel {
         copyTimers(state.tourniquetTicks(), model.tourniquetTicks);
         model.lastStandingSpent = state.lastStandingSpent();
         model.faintRecovered = state.faintRecovered();
+        model.voluntarySleeping = state.voluntarySleeping() && model.mode == Mode.CONSCIOUS;
+        model.voluntarySleepTicks = model.voluntarySleeping ? Math.clamp(state.voluntarySleepTicks(), 0, FULL_SLEEP_TICKS) : 0;
         model.stableTicks = Math.clamp(state.stableTicks(), 0, 1200);
         model.lastStandingTicks = Math.clamp(state.lastStandingTicks(), 0, LAST_STANDING_TICKS);
         model.lastStandingBoostTicks = Math.clamp(state.lastStandingBoostTicks(), 0, LAST_STANDING_BOOST_TICKS);
@@ -680,7 +744,18 @@ public final class BodyModel {
             int[] tourniquetTicks, boolean lastStandingSpent, int stableTicks, int lastStandingTicks,
             int lastStandingBoostTicks, int dyingTicks, int[] disinfectionTicks, int[] anestheticTicks,
             int[] infectionAgeTicks, float[] skinHealAmount, float[] bandageSlowAmount, float[] rawLocalPain,
-            WoundState wounds,SurvivalModel.SavedState survivalState, boolean faintRecovered) {
+            WoundState wounds,SurvivalModel.SavedState survivalState, boolean faintRecovered,
+            boolean voluntarySleeping, int voluntarySleepTicks) {
+        public SavedState(BodySnapshot snapshot, int[] careTicks, int[] regenerationTicks,
+                int[] tourniquetTicks, boolean lastStandingSpent, int stableTicks, int lastStandingTicks,
+                int lastStandingBoostTicks, int dyingTicks, int[] disinfectionTicks, int[] anestheticTicks,
+                int[] infectionAgeTicks, float[] skinHealAmount, float[] bandageSlowAmount, float[] rawLocalPain,
+                WoundState wounds, SurvivalModel.SavedState survivalState, boolean faintRecovered) {
+            this(snapshot, careTicks, regenerationTicks, tourniquetTicks, lastStandingSpent, stableTicks,
+                    lastStandingTicks, lastStandingBoostTicks, dyingTicks, disinfectionTicks, anestheticTicks,
+                    infectionAgeTicks, skinHealAmount, bandageSlowAmount, rawLocalPain, wounds, survivalState, faintRecovered,
+                    snapshot.voluntarySleeping(), Math.round(snapshot.sleepProgress() * FULL_SLEEP_TICKS));
+        }
         public SavedState(BodySnapshot snapshot, int[] careTicks, int[] regenerationTicks,
                 int[] tourniquetTicks, boolean lastStandingSpent, int stableTicks, int lastStandingTicks,
                 int lastStandingBoostTicks, int dyingTicks, int[] disinfectionTicks, int[] anestheticTicks,

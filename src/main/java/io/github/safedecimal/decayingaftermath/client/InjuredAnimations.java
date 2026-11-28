@@ -151,7 +151,7 @@ public final class InjuredAnimations {
         Posture posture = resolvePosture(player, client);
         if (posture == Posture.NORMAL) return;
 
-        if (posture == Posture.COLLAPSED) {
+        if (posture == Posture.COLLAPSED || posture == Posture.SLEEPING) {
             applyCollapsedRagdollPose(model, state.id);
             return;
         }
@@ -185,6 +185,7 @@ public final class InjuredAnimations {
         var visual = ClientMedicalVisuals.forLiving(player);
         if (visual == null) return Posture.NORMAL;
         if (visual.collapsed()) return Posture.COLLAPSED;
+        if (visual.posture() == Posture.SLEEPING.ordinal()) return Posture.SLEEPING;
         return visual.posture() == Posture.INJURED.ordinal() ? Posture.INJURED : Posture.NORMAL;
     }
 

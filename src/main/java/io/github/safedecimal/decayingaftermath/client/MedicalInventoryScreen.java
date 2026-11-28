@@ -26,6 +26,8 @@ import net.minecraft.world.item.crafting.display.RecipeDisplay;
 public final class MedicalInventoryScreen extends AbstractContainerScreen<InventoryMenu> implements RecipeUpdateListener {
     private static final int CANVAS_W=MedicalInventoryLayout.WIDTH, CANVAS_H=MedicalInventoryLayout.HEIGHT;
     private static final float CURSOR_SCALE=.28f;
+    private static final Identifier SLEEP_BACK = Identifier.fromNamespaceAndPath("abjection", "textures/gui/medical/sleep_button_back.png");
+    private static final Identifier SLEEP_ICON = Identifier.fromNamespaceAndPath("abjection", "textures/gui/medical/sleep_button.png");
     private int[][] originalPositions;
     private final CraftingRecipeBookComponent recipeBook;
     private final ProcedureCursor cursor=new ProcedureCursor();
@@ -151,6 +153,20 @@ public final class MedicalInventoryScreen extends AbstractContainerScreen<Invent
             MedicalStatusIcons.body(graphics,states[i],b);
         }
         graphics.item(Items.KNOWLEDGE_BOOK.getDefaultInstance(),MedicalInventoryLayout.RECIPE_X,MedicalInventoryLayout.RECIPE_Y);
+        boolean canSleep = ClientMedicalState.snapshot().mode() == BodySnapshot.Mode.CONSCIOUS
+                && !ClientMedicalState.snapshot().voluntarySleeping();
+        boolean sleepHover = virtualX(mouseX) >= MedicalInventoryLayout.SLEEP_X
+                && virtualX(mouseX) < MedicalInventoryLayout.SLEEP_X + MedicalInventoryLayout.SLEEP_SIZE
+                && virtualY(mouseY) >= MedicalInventoryLayout.SLEEP_Y
+                && virtualY(mouseY) < MedicalInventoryLayout.SLEEP_Y + MedicalInventoryLayout.SLEEP_SIZE;
+        int backTint = canSleep ? (sleepHover ? 0xFFFFFFFF : 0xFFD8D8D8) : 0xFF707070;
+        int iconTint = canSleep ? (sleepHover ? 0xFFBCE6FF : 0xFFFFFFFF) : 0xFF888888;
+        graphics.blit(RenderPipelines.GUI_TEXTURED, SLEEP_BACK,
+                MedicalInventoryLayout.SLEEP_X, MedicalInventoryLayout.SLEEP_Y,
+                0f, 0f, MedicalInventoryLayout.SLEEP_SIZE, MedicalInventoryLayout.SLEEP_SIZE, 32, 32, 32, 32, backTint);
+        graphics.blit(RenderPipelines.GUI_TEXTURED, SLEEP_ICON,
+                MedicalInventoryLayout.SLEEP_X + 3, MedicalInventoryLayout.SLEEP_Y + 4,
+                0f, 0f, 18, 16, 26, 24, 26, 24, iconTint);
         graphics.pose().popMatrix();
     }
     @Override protected void extractLabels(GuiGraphicsExtractor graphics,int mouseX,int mouseY) {
@@ -158,7 +174,13 @@ public final class MedicalInventoryScreen extends AbstractContainerScreen<Invent
         graphics.text(font,Component.translatable("abjection.inventory.selected",Component.translatable("container.inventory"),pretty(selected)).getString(),30,153,0xFFFFFFFF,false);
     }
     private void extractBodyTooltip(GuiGraphicsExtractor graphics,BodySnapshot body,int mouseX,int mouseY) {
-        BodyPart hover=partAt(virtualX(mouseX),virtualY(mouseY));
+        double vx = virtualX(mouseX), vy = virtualY(mouseY);
+        if (vx >= MedicalInventoryLayout.SLEEP_X && vx < MedicalInventoryLayout.SLEEP_X + MedicalInventoryLayout.SLEEP_SIZE
+                && vy >= MedicalInventoryLayout.SLEEP_Y && vy < MedicalInventoryLayout.SLEEP_Y + MedicalInventoryLayout.SLEEP_SIZE) {
+            graphics.setTooltipForNextFrame(font, List.of(Component.translatable("abjection.sleep.button").getVisualOrderText()), mouseX, mouseY);
+            return;
+        }
+        BodyPart hover=partAt(vx,vy);
         if(hover!=null) {
             var lines=bodyTooltip(hover,body.part(hover)).stream().map(Component::getVisualOrderText).toList();
             graphics.setTooltipForNextFrame(font,lines,mouseX,mouseY);
@@ -226,6 +248,16 @@ public final class MedicalInventoryScreen extends AbstractContainerScreen<Invent
         if(e.x()>=MedicalInventoryLayout.RECIPE_X-2&&e.x()<MedicalInventoryLayout.RECIPE_X+18
                 &&e.y()>=MedicalInventoryLayout.RECIPE_Y-2&&e.y()<MedicalInventoryLayout.RECIPE_Y+18) {
             clearMedicalCarry();recipeBook.toggleVisibility();return true;
+        }
+        if(event.button()==1 && pendingSlot<0 && menu.getCarried().isEmpty()
+                && e.x()>=MedicalInventoryLayout.SLEEP_X && e.x()<MedicalInventoryLayout.SLEEP_X+MedicalInventoryLayout.SLEEP_SIZE
+                && e.y()>=MedicalInventoryLayout.SLEEP_Y && e.y()<MedicalInventoryLayout.SLEEP_Y+MedicalInventoryLayout.SLEEP_SIZE) {
+            clearMedicalCarry();
+            if(ClientMedicalState.snapshot().mode()==BodySnapshot.Mode.CONSCIOUS) {
+                ClientMedicalState.startSleep();
+                onClose();
+            }
+            return true;
         }
         BodyPart part=partAt(e.x(),e.y());
         if(part!=null&&event.button()==3&&(event.modifiers()&1)!=0&&menu.getCarried().isEmpty()

@@ -32,7 +32,7 @@ public final class MedicalVisualCache<L> {
             java.util.List<Float> parts, int ragdollSerial, int posture, long now) {
         if (currentLevel == null || observedLevel != currentLevel || id < 0 || uuid == null
                 || !Float.isFinite(bleeding) || bleeding < 0 || bleeding > 6 || ragdollSerial < 0 || dead && ragdollSerial != 0
-                || posture < 0 || posture > 2 || (dead && posture != 0)) return false;
+                || posture < 0 || posture > 3 || (dead && posture != 0)) return false;
         try { parts = MedicalBleedOrigins.checked(parts); } catch (IllegalArgumentException | NullPointerException error) { return false; }
         if (Math.abs(MedicalBleedOrigins.total(parts) - bleeding) > .0001f) return false;
         enterLevel(currentLevel);

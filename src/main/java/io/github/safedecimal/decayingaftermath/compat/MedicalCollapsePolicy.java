@@ -7,7 +7,7 @@ import io.github.safedecimal.decayingaftermath.medical.BodySnapshot.PartSnapshot
 
 /** Sleeping is not a medical collapse; incapable-of-walking trauma collapses into a ragdoll. */
 public final class MedicalCollapsePolicy {
-    public enum Posture { NORMAL, INJURED, COLLAPSED }
+    public enum Posture { NORMAL, INJURED, COLLAPSED, SLEEPING }
 
     private MedicalCollapsePolicy() {}
 
@@ -24,6 +24,7 @@ public final class MedicalCollapsePolicy {
             return Posture.NORMAL;
         }
         if (cannotWalk(snapshot)) return Posture.COLLAPSED;
+        if (snapshot.voluntarySleeping()) return Posture.SLEEPING;
         if (severelyInjuredWalkable(snapshot)) return Posture.INJURED;
         return Posture.NORMAL;
     }

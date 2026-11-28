@@ -7,7 +7,7 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
 
 public record BodyPayload(BodySnapshot snapshot) implements CustomPacketPayload {
-    public static final Type<BodyPayload> TYPE = new Type<>(Identifier.fromNamespaceAndPath("abjection", "body_v11"));
+    public static final Type<BodyPayload> TYPE = new Type<>(Identifier.fromNamespaceAndPath("abjection", "body_v12"));
     public static final StreamCodec<RegistryFriendlyByteBuf, BodyPayload> CODEC = CustomPacketPayload.codec(BodyPayload::write, BodyPayload::read);
     @Override public Type<BodyPayload> type() { return TYPE; }
     private void write(RegistryFriendlyByteBuf b) {
@@ -37,6 +37,7 @@ public record BodyPayload(BodySnapshot snapshot) implements CustomPacketPayload 
         b.writeFloat(s.anxiolytic());b.writeFloat(s.therapyProgress());b.writeVarInt(s.moodFactors());
         b.writeFloat(s.ptsdLoad());b.writeVarInt(s.rememberedDeaths());b.writeBoolean(s.ptsdFlashback());
         b.writeEnum(snapshot.bloodGroup()); b.writeInt(snapshot.cardiacTicks());b.writeFloat(snapshot.brainHealth());
+        b.writeBoolean(snapshot.voluntarySleeping());b.writeFloat(snapshot.sleepProgress());
     }
     private static BodyPayload read(RegistryFriendlyByteBuf b) {
         float condition=b.readFloat(), blood=b.readFloat(), oxygen=b.readFloat(), pain=b.readFloat(), drug=b.readFloat(), bpm=b.readFloat();
@@ -58,6 +59,6 @@ public record BodyPayload(BodySnapshot snapshot) implements CustomPacketPayload 
                 b.readFloat(),b.readEnum(DepressionType.class),b.readFloat(),b.readFloat(),b.readFloat(),b.readVarInt(),
                 b.readFloat(),b.readVarInt(),b.readBoolean());
         var group=b.readEnum(BloodGroup.class);
-        return new BodyPayload(new BodySnapshot(condition,blood,oxygen,pain,drug,bpm,BodySnapshot.Mode.values()[mode],progress,energy,consciousness,parts,s,group,b.readInt(),b.readFloat()));
+        return new BodyPayload(new BodySnapshot(condition,blood,oxygen,pain,drug,bpm,BodySnapshot.Mode.values()[mode],progress,energy,consciousness,parts,s,group,b.readInt(),b.readFloat(),b.readBoolean(),b.readFloat()));
     }
 }

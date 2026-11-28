@@ -163,5 +163,10 @@
   "abjection.self_harm.title": "СЛФХ",
   "abjection.self_harm.prompt": "Нажимайте ЛКМ",
   "abjection.thought.self_harm.urge": "Внутри всё кричит... рука сама тянется к лезвию.",
-  "abjection.thought.self_harm.after": "Боль в коже на миг заглушила пустоту внутри."
+  "abjection.thought.self_harm.after": "Боль в коже на миг заглушила пустоту внутри.",
+  "abjection.sleep.title": "Сон",
+  "abjection.sleep.button": "Лечь спать (где угодно)",
+  "abjection.sleep.awake": "Awake",
+  "abjection.sleep.awake_done": "Вы проснулись.",
+  "abjection.sleep.awake_denied": "Вы не спите самостоятельно."
 }

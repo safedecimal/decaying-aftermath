@@ -5,7 +5,14 @@ import java.util.Objects;
 /** Game-only quantities are normalized except BPM and the cumulative 0..3 drug burden. */
 public record BodySnapshot(float condition, float blood, float oxygen, float pain, float drug,
         float bpm, Mode mode, float consciousnessProgress, float energy, float consciousness,
-        PartSnapshot[] parts, SurvivalSnapshot survival, BloodGroup bloodGroup, int cardiacTicks,float brainHealth) {
+        PartSnapshot[] parts, SurvivalSnapshot survival, BloodGroup bloodGroup, int cardiacTicks, float brainHealth,
+        boolean voluntarySleeping, float sleepProgress) {
+    public BodySnapshot(float condition, float blood, float oxygen, float pain, float drug,
+            float bpm, Mode mode, float consciousnessProgress, float energy, float consciousness,
+            PartSnapshot[] parts, SurvivalSnapshot survival, BloodGroup bloodGroup, int cardiacTicks, float brainHealth) {
+        this(condition, blood, oxygen, pain, drug, bpm, mode, consciousnessProgress, energy, consciousness,
+                parts, survival, bloodGroup, cardiacTicks, brainHealth, false, 0f);
+    }
     public BodySnapshot(float condition,float blood,float oxygen,float pain,float drug,float bpm,Mode mode,
             float progress,float energy,float consciousness,PartSnapshot[] parts,SurvivalSnapshot survival,
             BloodGroup group,int cardiacTicks) {
@@ -20,15 +27,15 @@ public record BodySnapshot(float condition, float blood, float oxygen, float pai
     public boolean racingHeart() { return CardiacRhythm.unstable(cardiacTicks); }
     public BodySnapshot withCardiacTicks(int ticks) {
         return new BodySnapshot(condition,blood,oxygen,pain,drug,bpm,mode,consciousnessProgress,
-                energy,consciousness,parts,survival,bloodGroup,ticks,brainHealth);
+                energy,consciousness,parts,survival,bloodGroup,ticks,brainHealth,voluntarySleeping,sleepProgress);
     }
     public BodySnapshot withParts(PartSnapshot[] values) {
         return new BodySnapshot(condition,blood,oxygen,pain,drug,bpm,mode,consciousnessProgress,
-                energy,consciousness,values,survival,bloodGroup,cardiacTicks,brainHealth);
+                energy,consciousness,values,survival,bloodGroup,cardiacTicks,brainHealth,voluntarySleeping,sleepProgress);
     }
     public BodySnapshot withBrainHealth(float value) {
         return new BodySnapshot(condition,blood,oxygen,pain,drug,bpm,mode,consciousnessProgress,
-                energy,consciousness,parts,survival,bloodGroup,cardiacTicks,value);
+                energy,consciousness,parts,survival,bloodGroup,cardiacTicks,value,voluntarySleeping,sleepProgress);
     }
     // Append modes: saved pre-0.3.9 ordinal 3 must continue to mean DEAD.
     public enum Mode { CONSCIOUS, UNCONSCIOUS, LAST_STANDING, DEAD, DYING }
@@ -43,7 +50,8 @@ public record BodySnapshot(float condition, float blood, float oxygen, float pai
 
     public BodySnapshot withBloodGroup(BloodGroup group) {
         return new BodySnapshot(condition,blood,oxygen,pain,drug,bpm,mode,consciousnessProgress,
-                energy,consciousness,parts,survival,Objects.requireNonNull(group),cardiacTicks,brainHealth);
+                energy,consciousness,parts,survival,Objects.requireNonNull(group),cardiacTicks,brainHealth,
+                voluntarySleeping,sleepProgress);
     }
 
     public BodySnapshot(float condition, float blood, float oxygen, float pain, float drug,
@@ -68,6 +76,8 @@ public record BodySnapshot(float condition, float blood, float oxygen, float pai
         consciousnessProgress = unit(consciousnessProgress);
         energy = unit(energy); consciousness = unit(consciousness);
         brainHealth=mode==Mode.DEAD?0:unit(brainHealth);
+        if (mode != Mode.CONSCIOUS) { voluntarySleeping = false; sleepProgress = 0f; }
+        else sleepProgress = voluntarySleeping ? unit(sleepProgress) : 0f;
         Objects.requireNonNull(mode, "mode");
         Objects.requireNonNull(survival, "survival");
         Objects.requireNonNull(parts, "parts");

@@ -75,6 +75,7 @@ public final class MedicalClient {
         if(waitingForLiveBody) {if(body.mode()==BodySnapshot.Mode.DEAD)return;waitingForLiveBody=false;}
         if(pauseHintTicks>0)pauseHintTicks--;
         if(!blocksPause(client))pauseHintTicks=0;
+        VoluntarySleepScreen.sync(client);
         updateUnconsciousControls(client);
         if(body.mode()==BodySnapshot.Mode.DEAD||!client.player.isAlive())PAIN.reset();
         else PAIN.advance(body.pain(),client.isPaused()?0:seconds);
@@ -256,10 +257,11 @@ public final class MedicalClient {
         currentPlayer=null;waitingForLiveBody=false;
     }
     public static boolean blocksInventory(Minecraft client) {
-        if (AftermathClient.locked()) return true;
+        if (AftermathClient.locked() || SelfHarmScreen.active()) return true;
         return client.player != null && client.player.isAlive() && !client.player.isCreative()
                 && !client.player.isSpectator() && ClientMedicalState.received()
-                && ClientMedicalState.snapshot().mode() == BodySnapshot.Mode.UNCONSCIOUS;
+                && (ClientMedicalState.snapshot().mode() == BodySnapshot.Mode.UNCONSCIOUS
+                        || ClientMedicalState.snapshot().voluntarySleeping());
     }
     public static boolean blocksPause(Minecraft client) {
         if (AftermathClient.locked() || SelfHarmScreen.active()) return true;
@@ -400,7 +402,9 @@ public final class MedicalClient {
         blit(graphics, "unconscious_ring", box.x(), box.y(), box.diameter(), box.diameter(),
                 149, 149, color(alpha * .35, 0xFFFFFF));
         radialTexture(graphics, "unconscious_ring", box.x(), box.y(), box.diameter(),
-                149, body.cardiacArrest() ? -body.cardiacTicks()/(float)io.github.safedecimal.decayingaftermath.medical.CardiacRhythm.RESCUE : body.consciousnessProgress(), color(alpha, 0xFFFFFF));
+                149, body.voluntarySleeping() ? body.sleepProgress()
+                        : body.cardiacArrest() ? -body.cardiacTicks()/(float)io.github.safedecimal.decayingaftermath.medical.CardiacRhythm.RESCUE
+                        : body.consciousnessProgress(), color(alpha, 0xFFFFFF));
     }
 
     private static int color(double alpha, int rgb) {

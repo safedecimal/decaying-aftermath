@@ -104,7 +104,8 @@ public final class ServerSurvivalEnvironment {
 
         int timeSinceRest = Math.max(0, player.getStats().getValue(Stats.CUSTOM.get(Stats.TIME_SINCE_REST)));
 
-        return new BodyEnvironment(ambient,insulation,wet,breathable,player.isSleeping(),player.isSprinting(),
+        boolean sleeping = player.isSleeping() || ServerMedicalSystem.get(player).voluntarySleeping();
+        return new BodyEnvironment(ambient,insulation,wet,breathable,sleeping,player.isSprinting(),
                 !player.isPassenger()&&(player.getDeltaMovement().horizontalDistance()>.01
                         ||player.position().subtract(player.oldPosition()).horizontalDistance()>.01),
                 config.encumbrance?mass:0,capacity,config.metabolism,config.temperature,

@@ -99,8 +99,34 @@ public final class ServerMedicalSystem {
     public static boolean canAct(ServerPlayer player) {
         if (ServerAftermathSystem.active(player)) return false;
         if (player.isCreative() || player.isSpectator()) return true;
-        Mode mode = get(player).mode();
+        BodyModel body = get(player);
+        if (body.voluntarySleeping()) return false;
+        Mode mode = body.mode();
         return player.isAlive() && (mode == Mode.CONSCIOUS || mode == Mode.LAST_STANDING || mode == Mode.DYING);
+    }
+
+    public static boolean startSleep(ServerPlayer player) {
+        if (!player.isAlive() || player.isCreative() || player.isSpectator()
+                || ServerAftermathSystem.active(player)
+                || io.github.safedecimal.decayingaftermath.network.SelfHarmNetwork.isActive(player)) {
+            return false;
+        }
+        BodyModel body = get(player);
+        if (!body.startVoluntarySleep()) return false;
+        io.github.safedecimal.decayingaftermath.network.MedicalNetwork.cancelProcedures(player);
+        io.github.safedecimal.decayingaftermath.network.DefibNetwork.cancelFor(player);
+        player.closeContainer();
+        player.stopUsingItem();
+        player.setSprinting(false);
+        syncBody(player, body.snapshot());
+        return true;
+    }
+
+    public static boolean wakeFromSleep(ServerPlayer player) {
+        BodyModel body = get(player);
+        if (!body.wakeVoluntarily()) return false;
+        syncBody(player, body.snapshot());
+        return true;
     }
     /** Explicit administrator reset, independent of canAct and ordinary treatment budgets. */
     public static void healFully(ServerPlayer player) {resetFully(player,true);}
@@ -336,11 +362,11 @@ public final class ServerMedicalSystem {
         BodySnapshot snapshot = model.snapshot();
         if(snapshot.energy()<.08f||snapshot.survival().encumbrance()>1.8f)player.setSprinting(false);
         if (player.tickCount % 5 == 0) applyInjuryModifiers(player, snapshot, true);
-        if (io.github.safedecimal.decayingaftermath.compat.MedicalCollapsePolicy.cannotWalk(snapshot)) {
+        if (snapshot.voluntarySleeping() || io.github.safedecimal.decayingaftermath.compat.MedicalCollapsePolicy.cannotWalk(snapshot)) {
             Vec3 motion = player.getDeltaMovement();
             player.setDeltaMovement(0, Math.min(0, motion.y), 0);
             player.setSprinting(false);
-            if (snapshot.mode() == Mode.UNCONSCIOUS) player.stopUsingItem();
+            if (snapshot.mode() == Mode.UNCONSCIOUS || snapshot.voluntarySleeping()) player.stopUsingItem();
         }
         if (snapshot.mode() == Mode.UNCONSCIOUS || snapshot.mode() == Mode.DEAD) {
             io.github.safedecimal.decayingaftermath.network.SelfHarmNetwork.cancelFor(player);
@@ -356,7 +382,8 @@ public final class ServerMedicalSystem {
     }
 
     private static void applyInjuryModifiers(ServerPlayer player, BodySnapshot snapshot, boolean active) {
-        boolean immobilized = active && io.github.safedecimal.decayingaftermath.compat.MedicalCollapsePolicy.cannotWalk(snapshot);
+        boolean immobilized = active && (snapshot.voluntarySleeping()
+                || io.github.safedecimal.decayingaftermath.compat.MedicalCollapsePolicy.cannotWalk(snapshot));
         double legs = immobilized ? 1.0 : active ? (limbPenalty(snapshot.part(BodyPart.LEFT_LEG))
                 + limbPenalty(snapshot.part(BodyPart.RIGHT_LEG))) * .5 : 0;
         double arms = active ? (limbPenalty(snapshot.part(BodyPart.LEFT_ARM))

@@ -21,7 +21,7 @@ public record MedicalVisualPayload(int entityId, UUID playerId, float bleeding, 
         partBleeding = MedicalBleedOrigins.checked(partBleeding);
         if (Math.abs(MedicalBleedOrigins.total(partBleeding) - bleeding) > .0001f || ragdollSerial < 0 || dead && ragdollSerial != 0)
             throw new IllegalArgumentException("Inconsistent medical visual summary");
-        if (posture < 0 || posture > 2 || (dead && posture != 0))
+        if (posture < 0 || posture > 3 || (dead && posture != 0))
             throw new IllegalArgumentException("Invalid posture in medical visual summary");
     }
     public MedicalVisualPayload(int entityId, UUID playerId, float bleeding, boolean dead,

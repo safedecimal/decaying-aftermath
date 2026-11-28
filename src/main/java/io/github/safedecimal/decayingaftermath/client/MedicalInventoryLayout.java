@@ -5,6 +5,7 @@ public final class MedicalInventoryLayout {
     public static final int WIDTH=260, HEIGHT=250;
     public static final int HOTBAR_X=19, HOTBAR_Y=223;
     public static final int RECIPE_X=229, RECIPE_Y=112;
+    public static final int SLEEP_X=218, SLEEP_Y=218, SLEEP_SIZE=24;
     public record Position(int x,int y) {}
     private MedicalInventoryLayout() {}
 

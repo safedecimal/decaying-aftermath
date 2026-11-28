@@ -30,6 +30,9 @@ public final class MedicalCommands {
                     .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                     .executes(context -> execHeal(context.getSource())));
 
+            dispatcher.register(Commands.literal("awake")
+                    .executes(context -> execAwake(context.getSource())));
+
             dispatcher.register(buildRoot("aftermath"));
             dispatcher.register(buildRoot("abjection"));
         });
@@ -43,6 +46,7 @@ public final class MedicalCommands {
                 .executes(context -> execHeal(context.getSource())));
 
         root.then(Commands.literal("status").executes(context -> execStatus(context.getSource())));
+        root.then(Commands.literal("awake").executes(context -> execAwake(context.getSource())));
 
         root.then(Commands.literal("self_harm")
                 .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
@@ -262,6 +266,16 @@ public final class MedicalCommands {
         }
         ServerMedicalSystem.healFully(player);
         source.sendSuccess(() -> Component.translatable("abjection.heal.done"), false);
+        return 1;
+    }
+
+    private static int execAwake(CommandSourceStack source) throws CommandSyntaxException {
+        var player = source.getPlayerOrException();
+        if (!ServerMedicalSystem.wakeFromSleep(player)) {
+            source.sendFailure(Component.translatable("abjection.sleep.awake_denied"));
+            return 0;
+        }
+        source.sendSuccess(() -> Component.translatable("abjection.sleep.awake_done"), false);
         return 1;
     }
 

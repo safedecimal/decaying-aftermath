@@ -10,6 +10,8 @@ public final class SurvivalPersistence {
     private SurvivalPersistence(){ }
     public static void save(ValueOutput node,BodyModel.SavedState state) {
         node.putBoolean("faint_recovered",state.faintRecovered());
+        node.putBoolean("voluntary_sleeping",state.voluntarySleeping());
+        node.putInt("voluntary_sleep_ticks",state.voluntarySleepTicks());
         var s=state.survivalState();var v=s.snapshot();ValueOutput out=node.child("survival");
         out.putFloat("hydration",v.hydration());out.putFloat("nutrition",v.nutrition());out.putFloat("temperature",v.temperature());
         out.putFloat("fatigue",v.fatigue());out.putFloat("toxin",v.toxin());out.putFloat("plasma",v.plasma());out.putFloat("red_cells",v.redCells());
@@ -88,10 +90,13 @@ public final class SurvivalPersistence {
                 number(s,"light_deficit",0,0,1),number(s,"situational_stress",0,0,1),
                 number(s,"chronic_burden",0,0,1),number(s,"psychosis_load",0,0,1),
                 flashbackTicks,flashbackCooldown);
+        boolean volSleep=node.getBooleanOr("voluntary_sleeping",false);
+        int volSleepTicks=Math.clamp(node.getIntOr("voluntary_sleep_ticks",0),0,BodyModel.FULL_SLEEP_TICKS);
         return new BodyModel.SavedState(legacy.snapshot().withParts(parts),legacy.careTicks(),legacy.regenerationTicks(),legacy.tourniquetTicks(),
                 legacy.lastStandingSpent(),legacy.stableTicks(),legacy.lastStandingTicks(),legacy.lastStandingBoostTicks(),
                 legacy.dyingTicks(),legacy.disinfectionTicks(),legacy.anestheticTicks(),legacy.infectionAgeTicks(),
-                legacy.skinHealAmount(),legacy.bandageSlowAmount(),legacy.rawLocalPain(),wounds,survival,node.getBooleanOr("faint_recovered",false));
+                legacy.skinHealAmount(),legacy.bandageSlowAmount(),legacy.rawLocalPain(),wounds,survival,node.getBooleanOr("faint_recovered",false),
+                volSleep,volSleepTicks);
     }
     private static void putFlow(ValueOutput node,String prefix,BleedProfile flow) {
         node.putFloat(prefix+"capillary",flow.capillary());

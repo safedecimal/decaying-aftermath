@@ -25,6 +25,12 @@ public final class ClientMedicalState {
     public static void reportCaveSound() {
         if (ClientPlayNetworking.canSend(CaveSoundPayload.TYPE)) ClientPlayNetworking.send(CaveSoundPayload.INSTANCE);
     }
+    public static void startSleep() {
+        if (ClientPlayNetworking.canSend(SleepPayload.TYPE)) ClientPlayNetworking.send(new SleepPayload(false));
+    }
+    public static void wakeFromSleep() {
+        if (ClientPlayNetworking.canSend(SleepPayload.TYPE)) ClientPlayNetworking.send(new SleepPayload(true));
+    }
     public static void beginProcedure(int slot,BodyPart part,TreatmentKind kind) { send(MedicalActionPayload.BEGIN,slot,part,kind,0); }
     public static void sendTreatment(int slot,BodyPart part,TreatmentKind kind,float amount) { send(MedicalActionPayload.APPLY,slot,part,kind,amount); }
     public static void finishProcedure(int slot,BodyPart part,TreatmentKind kind) { send(MedicalActionPayload.FINISH,slot,part,kind,0); }

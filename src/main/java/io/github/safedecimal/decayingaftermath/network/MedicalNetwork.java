@@ -28,10 +28,16 @@ public final class MedicalNetwork {
         PayloadTypeRegistry.serverboundPlay().register(MedicalActionPayload.TYPE,MedicalActionPayload.CODEC);
         PayloadTypeRegistry.serverboundPlay().register(StandUpPayload.TYPE, StandUpPayload.CODEC);
         PayloadTypeRegistry.serverboundPlay().register(CaveSoundPayload.TYPE, CaveSoundPayload.CODEC);
+        PayloadTypeRegistry.serverboundPlay().register(SleepPayload.TYPE, SleepPayload.CODEC);
         ServerPlayNetworking.registerGlobalReceiver(StandUpPayload.TYPE,
                 (p,c)->c.server().execute(()->ServerMedicalSystem.tryStandUp(c.player())));
         ServerPlayNetworking.registerGlobalReceiver(CaveSoundPayload.TYPE,
                 (p,c)->c.server().execute(()->handleCaveSound(c.player())));
+        ServerPlayNetworking.registerGlobalReceiver(SleepPayload.TYPE,
+                (p,c)->c.server().execute(()->{
+                    if (p.wake()) ServerMedicalSystem.wakeFromSleep(c.player());
+                    else ServerMedicalSystem.startSleep(c.player());
+                }));
         ServerPlayNetworking.registerGlobalReceiver(MedicalActionPayload.TYPE,(p,c)->c.server().execute(()->handle(c.player(),p)));
         ServerPlayConnectionEvents.DISCONNECT.register((h,s)->{SESSIONS.remove(h.getPlayer().getUUID());LAST_CAVE_SOUND.remove(h.getPlayer().getUUID());});
         ServerPlayerEvents.COPY_FROM.register((oldPlayer,newPlayer,alive)->SESSIONS.remove(oldPlayer.getUUID()));

@@ -163,5 +163,10 @@
   "abjection.self_harm.title": "Self-Harm",
   "abjection.self_harm.prompt": "Press LMB",
   "abjection.thought.self_harm.urge": "Everything inside is screaming... my hand reaches for the blade.",
-  "abjection.thought.self_harm.after": "The sharp pain in my skin briefly numbed the emptiness inside."
+  "abjection.thought.self_harm.after": "The sharp pain in my skin briefly numbed the emptiness inside.",
+  "abjection.sleep.title": "Sleep",
+  "abjection.sleep.button": "Sleep (anywhere)",
+  "abjection.sleep.awake": "Awake",
+  "abjection.sleep.awake_done": "You woke up.",
+  "abjection.sleep.awake_denied": "You are not voluntarily asleep."
 }

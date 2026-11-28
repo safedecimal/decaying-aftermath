@@ -147,7 +147,7 @@ class MedicalMonitorRevisionTest {
                 assertEquals(b.survival(),decoded.survival());assertArrayEquals(b.parts(),decoded.parts());
                 assertEquals(buffer.writerIndex(),buffer.readerIndex());
             }
-            assertTrue(BodyPayload.TYPE.id().toString().endsWith("body_v11"));
+            assertTrue(BodyPayload.TYPE.id().toString().endsWith("body_v12"));
         } finally { buffer.release(); }
     }
     private ValueInput input(Map<String,Object> data) {

@@ -60,8 +60,8 @@ public final class MedicalPresentationPolicy {
     public static double sleepCircleAlpha(BodySnapshot body,boolean lastStandIntro) {
         if(body==null||lastStandIntro||body.mode()==BodySnapshot.Mode.DEAD
                 ||body.mode()==BodySnapshot.Mode.LAST_STANDING)return 0;
-        return body.mode()==BodySnapshot.Mode.UNCONSCIOUS||body.mode()==BodySnapshot.Mode.DYING
-                ||body.cardiacArrest()?1:0;
+        return body.voluntarySleeping()||body.mode()==BodySnapshot.Mode.UNCONSCIOUS
+                ||body.mode()==BodySnapshot.Mode.DYING||body.cardiacArrest()?1:0;
     }
     /** The first blackout packet must not leave a visible world while waiting for client fades. */
     public static double sleepBlackout(BodySnapshot body,double fadedBlack,double relief) {
@@ -69,6 +69,8 @@ public final class MedicalPresentationPolicy {
         if(body!=null&&body.mode()==BodySnapshot.Mode.UNCONSCIOUS) {
             black=Math.max(.965,black);
             if(Double.isFinite(relief))black-=Math.clamp(relief,0,.13);
+        } else if (body!=null&&body.voluntarySleeping()) {
+            black=Math.max(.92,black);
         }
         return Math.max(0,black);
     }
