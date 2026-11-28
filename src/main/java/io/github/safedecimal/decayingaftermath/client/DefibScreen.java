@@ -163,6 +163,7 @@ public final class DefibScreen extends Screen {
         sprite(g,"base_minigamescreen",0,0,1048,1048,256,256,0xFFFFFFFF);
         if(New3dSystem.enabled()) {
             Minigame3dRenderer.draw3dDefibChest(g, (float)(128+hand.x()*.25), (float)(128-hand.y()*.25));
+            g.nextStratum();
         }
         guide(g);
         if(automatic)drawAed(g);else drawManual(g);

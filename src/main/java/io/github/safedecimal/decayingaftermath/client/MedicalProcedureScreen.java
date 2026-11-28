@@ -279,7 +279,10 @@ public final class MedicalProcedureScreen extends Screen {
         graphics.pose().pushMatrix();graphics.pose().translate(ox,oy);graphics.pose().scale(scale,scale);ProcedureVisuals.frame(graphics);
         graphics.centeredText(font,Component.translatable(part.translationKey()).getString(),128,-1,0xFFDDE3DE);
         if(isWrap()) {
-            if(New3dSystem.enabled()) Minigame3dRenderer.draw3dProcedureLimb(graphics, part, (float)hand.x(), (float)hand.y());
+            if(New3dSystem.enabled()) {
+                Minigame3dRenderer.draw3dProcedureLimb(graphics, part, (float)hand.x(), (float)hand.y());
+                graphics.nextStratum();
+            }
             MedicalClient.blit(graphics,"bandage_inner",65,65,126,126,164,164,0xFFFFFFFF);
             int diameter=Math.round(150*wrap.sizeMultiplier());
             MedicalClient.radialTexture(graphics,"bandage",128-diameter/2,128-diameter/2,diameter,200,wrap.coverage(),0xFFFFFFFF);
@@ -290,7 +293,10 @@ public final class MedicalProcedureScreen extends Screen {
             var woundPart=ClientMedicalState.snapshot().part(part);
             MedicalStatusIcons.drawBleeding(graphics,woundPart,128,128,32,MedicalStatusIcons.bleedingColor(woundPart));
         } else if(kind.injection()) {
-            if(New3dSystem.enabled()) Minigame3dRenderer.draw3dProcedureLimb(graphics, part, (float)hand.x(), (float)hand.y());
+            if(New3dSystem.enabled()) {
+                Minigame3dRenderer.draw3dProcedureLimb(graphics, part, (float)hand.x(), (float)hand.y());
+                graphics.nextStratum();
+            }
             MedicalClient.blit(graphics,"syringe_ground",-22,(int)Math.round(SYRINGE_ENTRY_Y),300,44,200,29,0xFFFFFFFF);
             CuMedicalHand.line(graphics,122,(int)SYRINGE_ENTRY_Y,134,(int)SYRINGE_ENTRY_Y);
             if(!holding)drawSyringe(graphics,toolX,toolY);
@@ -329,6 +335,7 @@ public final class MedicalProcedureScreen extends Screen {
         ProcedureVisuals.beginWorkArea(graphics);
         float handAngle=handRotation+hand.rotation(isWrap())+(kind.injection()?(float)Math.toRadians(65):0);
         CuMedicalHand.extract(graphics,handX,handY,handAngle,holding||injecting);
+        if(New3dSystem.enabled()) graphics.nextStratum();
         // Held items stay readable in front of the translucent arm, at the same frame-time grip.
         if(draggingTool()) {
             if(isWrap())drawBandageRoll(graphics,toolX,toolY,visualAngle);
@@ -392,6 +399,7 @@ public final class MedicalProcedureScreen extends Screen {
     private void drawSelectedPart(GuiGraphicsExtractor graphics,int x,int y,int w,int h) {
         if(New3dSystem.enabled()) {
             Minigame3dRenderer.draw3dProcedureLimb(graphics, part, (float)hand.x(), (float)hand.y());
+            graphics.nextStratum();
         } else {
             ProcedureVisuals.part(graphics,part,x,y,w,h);
         }

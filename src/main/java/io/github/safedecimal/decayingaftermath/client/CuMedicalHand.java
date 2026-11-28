@@ -41,14 +41,38 @@ public final class CuMedicalHand {
         g.pose().translate((float) x, (float) y);
         g.pose().rotate(rotation);
         int bx = -GRIP_X, by = -GRIP_Y;
+        // Rotate 180 degrees around the arm's center so fingers/palm sit at the cursor/grip (0, 0) and shoulder extends down.
+        g.pose().pushMatrix();
+        g.pose().translate(bx + WIDTH / 2.0f, by + HEIGHT / 2.0f);
+        g.pose().rotate((float) Math.PI);
+        g.pose().translate(-(bx + WIDTH / 2.0f), -(by + HEIGHT / 2.0f));
         g.blit(RenderPipelines.GUI_TEXTURED, tex, bx, by, (float) u, (float) v, WIDTH, HEIGHT, w, h, 64, 64, tint);
         g.blit(RenderPipelines.GUI_TEXTURED, tex, bx, by, (float) outerU, (float) outerV, WIDTH, HEIGHT, w, h, 64, 64, tint);
-        g.blit(RenderPipelines.GUI_TEXTURED, tex, bx + WIDTH, by + DEPTH / 2, (float) sideU, (float) v, DEPTH, HEIGHT, 4, h, 64, 64, sideTint);
-        g.fill(bx, by, bx + WIDTH, by + 1, grasp ? 0xC8A9F0C6 : 0x90EAEAEA);
-        g.fill(bx, by + HEIGHT - 1, bx + WIDTH, by + HEIGHT, grasp ? 0xC8A9F0C6 : 0x90EAEAEA);
-        g.fill(bx, by, bx + 1, by + HEIGHT, grasp ? 0xC8A9F0C6 : 0x90EAEAEA);
-        g.fill(bx + WIDTH - 1, by, bx + WIDTH, by + HEIGHT, grasp ? 0xC8A9F0C6 : 0x90EAEAEA);
         g.pose().popMatrix();
+
+        g.pose().pushMatrix();
+        g.pose().translate(bx + WIDTH + DEPTH / 2.0f, by + DEPTH / 2.0f + HEIGHT / 2.0f);
+        g.pose().rotate((float) Math.PI);
+        g.pose().translate(-(bx + WIDTH + DEPTH / 2.0f), -(by + DEPTH / 2.0f + HEIGHT / 2.0f));
+        g.blit(RenderPipelines.GUI_TEXTURED, tex, bx + WIDTH, by + DEPTH / 2, (float) sideU, (float) v, DEPTH, HEIGHT, 4, h, 64, 64, sideTint);
+        g.blit(RenderPipelines.GUI_TEXTURED, tex, bx + WIDTH, by + DEPTH / 2, (float) sideU, (float) outerV, DEPTH, HEIGHT, 4, h, 64, 64, sideTint);
+        g.pose().popMatrix();
+
+        drawHandHitbox(g, grasp);
+        g.pose().popMatrix();
+    }
+
+    static void drawHandHitbox(GuiGraphicsExtractor g, boolean grasp) {
+        int bx = -GRIP_X, by = -GRIP_Y;
+        float matScale = Math.max(0.15f, (float) Math.hypot(g.pose().m00(), g.pose().m01()));
+        int b = Math.clamp(Math.round(1.0f / matScale), 1, 4);
+        int edge = grasp ? 0xC8A9F0C6 : 0x90EAEAEA;
+        g.fill(bx, by, bx + WIDTH, by + b, edge);
+        g.fill(bx, by + HEIGHT - b, bx + WIDTH, by + HEIGHT, edge);
+        g.fill(bx, by, bx + b, by + HEIGHT, edge);
+        g.fill(bx + WIDTH - b, by, bx + WIDTH, by + HEIGHT, edge);
+        int dot = grasp ? 0xFF90F4B0 : 0xFFFFD88A;
+        g.fill(-b, -b, b + 1, b + 1, dot);
     }
     public static void cube(GuiGraphicsExtractor g,int x,int y,int w,int h,int depth) {
         cube(g,x,y,w,h,depth,BLACK,WHITE);

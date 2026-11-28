@@ -189,6 +189,7 @@ public final class SelfHarmScreen extends Screen {
         int armX = 36, armY = 148, armW = 184, armH = 44;
         if (New3dSystem.enabled()) {
             Minigame3dRenderer.draw3dSelfHarmForearm(g, tension, stabProgress);
+            g.nextStratum();
         } else {
             MinecraftBodyRenderer.part(g, BodyPart.LEFT_ARM, armX, armY, armW, armH, 0xFFE8D8D8);
             g.outline(armX, armY, armW, armH, 0xFFDADADA);

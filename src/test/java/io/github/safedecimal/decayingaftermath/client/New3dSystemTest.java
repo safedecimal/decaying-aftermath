@@ -49,4 +49,19 @@ class New3dSystemTest {
         String sh = Files.readString(Path.of("src/main/java/io/github/safedecimal/decayingaftermath/client/SelfHarmScreen.java"));
         assertTrue(sh.contains("Minigame3dRenderer.draw3dSelfHarmForearm"));
     }
+
+    @Test
+    void handIsFlippedInBoth2dAnd3dWithFullScaleAndVisibleHitbox() throws Exception {
+        String hand = Files.readString(Path.of("src/main/java/io/github/safedecimal/decayingaftermath/client/CuMedicalHand.java"));
+        assertTrue(hand.contains("Math.PI"));
+        assertTrue(hand.contains("drawHandHitbox"));
+
+        String r3d = Files.readString(Path.of("src/main/java/io/github/safedecimal/decayingaftermath/client/Minigame3dRenderer.java"));
+        assertTrue(r3d.contains("Math.PI + totalAngleRad"));
+        assertTrue(r3d.contains("144f * matScale"));
+        assertTrue(r3d.contains("CuMedicalHand.drawHandHitbox"));
+        assertTrue(r3d.contains("transformPosition(-4f, 50f"));
+        assertTrue(r3d.contains("transformPosition(lx1, ly0"));
+        assertTrue(r3d.contains("transformPosition(lx0, ly1"));
+    }
 }
